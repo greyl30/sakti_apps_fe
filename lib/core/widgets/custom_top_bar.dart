@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
 
+import '../constants/app_assets.dart';
 import '../router/route_name.dart';
 import '../theme/app_colors.dart';
 
@@ -14,7 +16,7 @@ class CustomTopBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 106,
+      height: 98,
       padding: const EdgeInsets.fromLTRB(14, 18, 24, 18),
       decoration: const BoxDecoration(
         gradient: LinearGradient(
@@ -23,8 +25,8 @@ class CustomTopBar extends StatelessWidget {
           end: Alignment.bottomCenter,
         ),
         borderRadius: BorderRadius.only(
-          bottomLeft: Radius.circular(28),
-          bottomRight: Radius.circular(28),
+          bottomLeft: Radius.circular(35),
+          bottomRight: Radius.circular(35),
         ),
       ),
       child: Row(
@@ -37,9 +39,11 @@ class CustomTopBar extends StatelessWidget {
                 context.go(RouteName.home);
               }
             },
-            icon: const Icon(Icons.chevron_left_rounded),
-            color: Colors.white,
-            iconSize: 34,
+            icon: SvgPicture.asset(
+              AppAssets.iconBack,
+              width: 40.36,
+              height: 40.36,
+            ),
             tooltip: 'Kembali',
           ),
           const SizedBox(width: 4),
@@ -50,7 +54,7 @@ class CustomTopBar extends StatelessWidget {
               overflow: TextOverflow.ellipsis,
               style: const TextStyle(
                 color: Colors.white,
-                fontSize: 20,
+                fontSize: 22,
                 fontWeight: FontWeight.w700,
               ),
             ),

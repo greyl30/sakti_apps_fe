@@ -18,7 +18,7 @@ class HomeReminderSection extends StatelessWidget {
         const Text(
           'Pengingat',
           style: TextStyle(
-            fontSize: 21,
+            fontSize: 22,
             fontWeight: FontWeight.w700,
             color: Colors.black,
           ),
@@ -27,12 +27,14 @@ class HomeReminderSection extends StatelessWidget {
         Container(
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(14),
+            borderRadius: BorderRadius.circular(15),
+            border: Border.all(color: AppColors.gray),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.08),
-                blurRadius: 12,
-                offset: const Offset(0, 5),
+                color: Colors.black.withOpacity(0.1),
+                offset: const Offset(0, 4),
+                blurRadius: 4,
+                spreadRadius: 0,
               ),
             ],
           ),
@@ -43,7 +45,7 @@ class HomeReminderSection extends StatelessWidget {
                 subtitle: 'Segera lakukan sebelum pukul 08.00',
                 onTap: onReminderTap,
               ),
-              const Divider(height: 1, indent: 58, endIndent: 16),
+              const Divider(height: 1, indent: 20, endIndent: 20, color: AppColors.gray),
               _ReminderTile(
                 title: 'Jangan Lupa Presensi Keluar',
                 subtitle: 'Lakukan tepat saat pulang',
@@ -81,9 +83,9 @@ class _ReminderTile extends StatelessWidget {
               width: 32,
               height: 32,
               padding: const EdgeInsets.all(8),
-              decoration: const BoxDecoration(
-                color: Color(0xFFFFEFED),
-                shape: BoxShape.circle,
+              decoration: BoxDecoration(
+                color: const Color(0xFFFFEFED),
+                  borderRadius: BorderRadius.circular(12),
               ),
               child: SvgPicture.asset(
                 AppAssets.iconPengingat,
@@ -122,13 +124,16 @@ class _ReminderTile extends StatelessWidget {
                 ],
               ),
             ),
-            SvgPicture.asset(
-              AppAssets.iconNext,
-              width: 16,
-              height: 16,
-              colorFilter: const ColorFilter.mode(
-                Color(0xFF9B9B9B),
-                BlendMode.srcIn,
+            Transform.translate(
+              offset: const Offset(-12, 0),
+              child: SvgPicture.asset(
+                AppAssets.iconNext,
+                width: 12,
+                height: 12,
+                colorFilter: const ColorFilter.mode(
+                  Color(0xFF9B9B9B),
+                  BlendMode.srcIn,
+                ),
               ),
             ),
           ],

@@ -13,4 +13,10 @@ class AppAssets {
   static const iconOut = 'assets/icons/out.svg';
   static const iconPengingat = 'assets/icons/pengingat.svg';
   static const iconPerson = 'assets/icons/person.svg';
+  static const iconBack = 'assets/icons/back.svg';
+  static const iconBelbulat = 'assets/icons/belbulat.svg';
+  static const iconCheck = 'assets/icons/check.svg';
+  static const iconLokasi = 'assets/icons/lokasi.svg';
+  static const iconTips = 'assets/icons/tips.svg';
+
 }

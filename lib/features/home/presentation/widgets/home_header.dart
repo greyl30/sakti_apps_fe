@@ -23,7 +23,7 @@ class HomeHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 106,
+      height: 98,
       padding: const EdgeInsets.fromLTRB(24, 18, 24, 18),
       decoration: const BoxDecoration(
         gradient: LinearGradient(
@@ -32,8 +32,8 @@ class HomeHeader extends StatelessWidget {
           end: Alignment.bottomCenter,
         ),
         borderRadius: BorderRadius.only(
-          bottomLeft: Radius.circular(28),
-          bottomRight: Radius.circular(28),
+          bottomLeft: Radius.circular(35),
+          bottomRight: Radius.circular(35),
         ),
       ),
       child: Row(
@@ -42,8 +42,8 @@ class HomeHeader extends StatelessWidget {
             onTap: onProfileTap,
             customBorder: const CircleBorder(),
             child: Container(
-              width: 48,
-              height: 48,
+              width: 50,
+              height: 50,
               padding: const EdgeInsets.all(11),
               decoration: BoxDecoration(
                 color: Colors.white.withValues(alpha: 0.15),
@@ -98,21 +98,10 @@ class HomeHeader extends StatelessWidget {
           InkWell(
             onTap: onNotificationTap,
             customBorder: const CircleBorder(),
-            child: Container(
-              width: 38,
-              height: 38,
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.18),
-                shape: BoxShape.circle,
-              ),
-              child: SvgPicture.asset(
-                AppAssets.iconBell,
-                colorFilter: const ColorFilter.mode(
-                  Colors.white,
-                  BlendMode.srcIn,
-                ),
-              ),
+            child: SvgPicture.asset(
+              AppAssets.iconBelbulat,
+              width: 40.36,
+              height: 40.36,
             ),
           ),
         ],

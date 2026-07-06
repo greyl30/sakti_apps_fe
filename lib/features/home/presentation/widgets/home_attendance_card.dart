@@ -30,7 +30,7 @@ class HomeAttendanceCard extends StatelessWidget {
         const Text(
           'Presensi hari ini',
           style: TextStyle(
-            fontSize: 21,
+            fontSize: 22,
             fontWeight: FontWeight.w700,
             color: Colors.black,
           ),
@@ -46,17 +46,18 @@ class HomeAttendanceCard extends StatelessWidget {
                 right: 0,
                 top: 0,
                 child: Container(
-                  height: 112,
+                  height: 117,
                   padding: const EdgeInsets.fromLTRB(18, 18, 18, 34),
                   decoration: BoxDecoration(
                     color: AppColors.whiteBackground,
-                    borderRadius: BorderRadius.circular(14),
+                    borderRadius: BorderRadius.circular(15),
                     border: Border.all(color: AppColors.gray),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.18),
-                        blurRadius: 14,
-                        offset: const Offset(0, 8),
+                        color: Colors.black.withOpacity(0.1),
+                        offset: const Offset(0, 4),
+                        blurRadius: 4,
+                        spreadRadius: 0,
                       ),
                     ],
                   ),
@@ -135,11 +136,11 @@ class _WorkScheduleBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 48,
+      height: 47,
       padding: const EdgeInsets.symmetric(horizontal: 14),
       decoration: BoxDecoration(
         color: AppColors.primaryRed,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(15),
       ),
       child: Row(
         children: [
@@ -157,15 +158,18 @@ class _WorkScheduleBar extends StatelessWidget {
               overflow: TextOverflow.ellipsis,
               style: const TextStyle(
                 color: Colors.white,
-                fontSize: 11,
+                fontSize: 12,
                 fontWeight: FontWeight.w700,
               ),
             ),
           ),
-          Container(
-            width: 1,
-            height: 28,
-            color: Colors.white.withValues(alpha: 0.65),
+          Transform.translate(
+            offset: const Offset(-12, 0),
+            child: Container(
+              width: 1,
+              height: 28,
+              color: Colors.white.withValues(alpha: 0.65),
+            ),
           ),
           const SizedBox(width: 11),
           SvgPicture.asset(
@@ -179,7 +183,7 @@ class _WorkScheduleBar extends StatelessWidget {
             '08.00 - 16.30',
             style: TextStyle(
               color: Colors.white,
-              fontSize: 11,
+              fontSize: 12,
               fontWeight: FontWeight.w700,
             ),
           ),

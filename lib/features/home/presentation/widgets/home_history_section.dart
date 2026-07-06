@@ -28,7 +28,7 @@ class HomeHistorySection extends StatelessWidget {
               child: Text(
                 'Riwayat Presensi',
                 style: TextStyle(
-                  fontSize: 21,
+                  fontSize: 22,
                   fontWeight: FontWeight.w700,
                   color: Colors.black,
                 ),
@@ -44,7 +44,7 @@ class HomeHistorySection extends StatelessWidget {
               ),
               child: const Text(
                 'Lihat semua',
-                style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700),
+                style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
               ),
             ),
           ],
@@ -52,7 +52,7 @@ class HomeHistorySection extends StatelessWidget {
         const SizedBox(height: 10),
         ...histories.map(
           (history) => Padding(
-            padding: const EdgeInsets.only(bottom: 10),
+            padding: const EdgeInsets.only(bottom: 12),
             child: _HistoryCard(history: history),
           ),
         ),
@@ -73,12 +73,14 @@ class _HistoryCard extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(16, 13, 16, 14),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(15),
+        border: Border.all(color: AppColors.gray),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.07),
-            blurRadius: 12,
-            offset: const Offset(0, 5),
+            color: Colors.black.withOpacity(0.1),
+            offset: const Offset(0, 4),
+            blurRadius: 4,
+            spreadRadius: 0,
           ),
         ],
       ),
@@ -88,7 +90,7 @@ class _HistoryCard extends StatelessWidget {
           Text(
             history.date,
             style: const TextStyle(
-              fontSize: 12,
+              fontSize: 13,
               fontWeight: FontWeight.w700,
               color: Colors.black,
             ),
