@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'app_bottom_navigation.dart';
+import 'custom_top_bar.dart';
 
 /// Halaman placeholder reusable untuk menu yang belum diimplementasikan.
 class PlaceholderPage extends StatelessWidget {
@@ -18,26 +19,33 @@ class PlaceholderPage extends StatelessWidget {
     final hasBottomNavigation = bottomNavigationIndex != null;
 
     return Scaffold(
-      appBar: hasBottomNavigation
-          ? null
-          : AppBar(title: Text(title), centerTitle: true),
-      body: Center(
+      body: SafeArea(
+        bottom: false,
         child: Column(
-          mainAxisSize: MainAxisSize.min,
           children: [
-            Text(
-              title,
-              textAlign: TextAlign.center,
-              style: Theme.of(
-                context,
-              ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Coming Soon',
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: const Color(0xFF7A7A7A),
-                fontWeight: FontWeight.w500,
+            CustomTopBar(title: title),
+            Expanded(
+              child: Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      title.toUpperCase(),
+                      textAlign: TextAlign.center,
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Coming Soon',
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: const Color(0xFF7A7A7A),
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ],

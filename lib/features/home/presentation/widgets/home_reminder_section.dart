@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 import '../../../../core/constants/app_assets.dart';
+import '../../../../core/theme/app_colors.dart';
 
 /// Section pengingat presensi pada homepage.
 class HomeReminderSection extends StatelessWidget {
@@ -87,7 +88,7 @@ class _ReminderTile extends StatelessWidget {
               child: SvgPicture.asset(
                 AppAssets.iconPengingat,
                 colorFilter: const ColorFilter.mode(
-                  Color(0xFFE23F36),
+                  AppColors.primaryRed,
                   BlendMode.srcIn,
                 ),
               ),

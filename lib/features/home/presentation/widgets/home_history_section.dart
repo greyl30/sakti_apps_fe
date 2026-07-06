@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 import '../../../../core/constants/app_assets.dart';
+import '../../../../core/theme/app_colors.dart';
 
-/// Section riwayat presensi dummy terakhir.
+/// Widget riwayat
+/// Menampilkan tiga data presensi dummy terakhir.
 class HomeHistorySection extends StatelessWidget {
   const HomeHistorySection({super.key, required this.onSeeAllTap});
 
@@ -35,7 +37,7 @@ class HomeHistorySection extends StatelessWidget {
             TextButton(
               onPressed: onSeeAllTap,
               style: TextButton.styleFrom(
-                foregroundColor: const Color(0xFF1A8BA1),
+                foregroundColor: AppColors.secondaryBlue,
                 padding: const EdgeInsets.symmetric(horizontal: 6),
                 minimumSize: const Size(0, 32),
                 tapTargetSize: MaterialTapTargetSize.shrinkWrap,
@@ -98,7 +100,7 @@ class _HistoryCard extends StatelessWidget {
                 child: _HistoryTime(
                   icon: AppAssets.iconIn,
                   iconBackground: const Color(0xFFEAFBFF),
-                  iconColor: const Color(0xFF2BB6CF),
+                  iconColor: AppColors.secondaryBlue,
                   label: 'Presensi Masuk',
                   time: history.checkIn,
                 ),
@@ -108,7 +110,7 @@ class _HistoryCard extends StatelessWidget {
                 child: _HistoryTime(
                   icon: AppAssets.iconOut,
                   iconBackground: const Color(0xFFFFF1F0),
-                  iconColor: const Color(0xFFE23F36),
+                  iconColor: AppColors.primaryRed,
                   label: 'Presensi Keluar',
                   time: history.checkOut,
                 ),
