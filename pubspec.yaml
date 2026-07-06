@@ -55,6 +55,7 @@ dependencies:
 
   # Utility
   intl: ^0.20.2
+  flutter_svg: ^2.0.17
   logger: ^2.6.1
 
   shared_preferences: ^2.5.3
