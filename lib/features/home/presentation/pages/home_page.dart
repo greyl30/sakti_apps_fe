@@ -40,7 +40,8 @@ class HomePage extends StatelessWidget {
                   HomeAttendanceCard(
                     isCheckedIn: isCheckedIn,
                     canCheckOut: canCheckOut,
-                    onAttendanceTap: () => context.push(RouteName.attendance),
+                    onCheckInTap: () => debugPrint('Presensi Masuk'),
+                    onCheckOutTap: () => debugPrint('Presensi Keluar'),
                   ),
                   const SizedBox(height: 20),
                   HomeReminderSection(

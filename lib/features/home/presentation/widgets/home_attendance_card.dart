@@ -13,12 +13,14 @@ class HomeAttendanceCard extends StatelessWidget {
     super.key,
     required this.isCheckedIn,
     required this.canCheckOut,
-    required this.onAttendanceTap,
+    required this.onCheckInTap,
+    required this.onCheckOutTap,
   });
 
   final bool isCheckedIn;
   final bool canCheckOut;
-  final VoidCallback onAttendanceTap;
+  final VoidCallback onCheckInTap;
+  final VoidCallback onCheckOutTap;
 
   @override
   Widget build(BuildContext context) {
@@ -54,7 +56,7 @@ class HomeAttendanceCard extends StatelessWidget {
                     border: Border.all(color: AppColors.gray),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
+                        color: Colors.black.withValues(alpha: 0.1),
                         offset: const Offset(0, 4),
                         blurRadius: 4,
                         spreadRadius: 0,
@@ -75,7 +77,7 @@ class HomeAttendanceCard extends StatelessWidget {
                         label: 'Presensi Masuk',
                         icon: AppAssets.iconIn,
                         isEnabled: !isCheckedIn,
-                        onTap: onAttendanceTap,
+                        onTap: onCheckInTap,
                       ),
                     ),
                     const SizedBox(width: 14),
@@ -84,7 +86,7 @@ class HomeAttendanceCard extends StatelessWidget {
                         label: 'Presensi Keluar',
                         icon: AppAssets.iconOut,
                         isEnabled: canCheckOut,
-                        onTap: onAttendanceTap,
+                        onTap: onCheckOutTap,
                       ),
                     ),
                   ],
@@ -158,7 +160,7 @@ class _WorkScheduleBar extends StatelessWidget {
               overflow: TextOverflow.ellipsis,
               style: const TextStyle(
                 color: Colors.white,
-                fontSize: 12,
+                fontSize: 13,
                 fontWeight: FontWeight.w700,
               ),
             ),
