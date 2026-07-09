@@ -13,7 +13,7 @@ import '../../features/auth/presentation/pages/forgot_password_page.dart';
 import 'route_name.dart';
 
 final appRouter = GoRouter(
-  initialLocation: RouteName.login,
+  initialLocation: RouteName.splash,
   routes: [
     GoRoute(
       path: RouteName.splash,
