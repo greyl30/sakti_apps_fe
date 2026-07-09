@@ -27,7 +27,7 @@ class HomePage extends StatelessWidget {
           padding: EdgeInsets.zero,
           children: [
             HomeHeader(
-              userName: 'Wijaya Kusuma',
+              userName: 'Keonho',
               positionLabel: 'Staff | IT & Sistem Informasi',
               onProfileTap: () => context.push(RouteName.profile),
               onNotificationTap: () => context.push(RouteName.notification),
@@ -40,7 +40,8 @@ class HomePage extends StatelessWidget {
                   HomeAttendanceCard(
                     isCheckedIn: isCheckedIn,
                     canCheckOut: canCheckOut,
-                    onCheckInTap: () => debugPrint('Presensi Masuk'),
+                    onCheckInTap: () =>
+                        context.push(RouteName.checkInVerification),
                     onCheckOutTap: () => debugPrint('Presensi Keluar'),
                   ),
                   const SizedBox(height: 20),

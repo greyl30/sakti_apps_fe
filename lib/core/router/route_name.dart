@@ -4,6 +4,10 @@ class RouteName {
   static const forgotPassword = '/forgot-password';
   static const home = '/home';
   static const attendance = '/attendance';
+  static const checkInVerification = '/attendance/check-in/verification';
+  static const checkInLoading = '/attendance/check-in/loading';
+  static const checkInConfirmation = '/attendance/check-in/confirmation';
+  static const checkInSuccess = '/attendance/check-in/success';
   static const leave = '/leave';
   static const emergency = '/emergency';
   static const notification = '/notification';

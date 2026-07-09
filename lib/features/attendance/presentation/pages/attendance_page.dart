@@ -19,8 +19,8 @@ class AttendancePage extends StatelessWidget {
     context.go(RouteName.home);
   }
 
-  void _startCheckIn() {
-    debugPrint('Presensi Masuk');
+  void _startCheckIn(BuildContext context) {
+    context.push(RouteName.checkInVerification);
   }
 
   void _startCheckOut() {
@@ -50,7 +50,7 @@ class AttendancePage extends StatelessWidget {
                     borderColor: const Color(0xFFE9B7B7),
                     iconBackgroundColor: const Color(0xFFF3C3C3),
                     foregroundColor: AppColors.primaryRed,
-                    onTap: _startCheckIn,
+                    onTap: () => _startCheckIn(context),
                   ),
                   const SizedBox(height: 28),
                   // Card Presensi Keluar
