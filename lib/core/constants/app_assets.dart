@@ -2,7 +2,6 @@ class AppAssets {
   static const logo = 'assets/images/logo.png';
 
   static const iconAbsen = 'assets/icons/absen.svg';
-  static const iconBell = 'assets/icons/bel.svg';
   static const iconCalendar = 'assets/icons/calender.svg';
   static const iconCuti = 'assets/icons/cuti.svg';
   static const iconDarurat = 'assets/icons/darurat.svg';
@@ -18,5 +17,17 @@ class AppAssets {
   static const iconCheck = 'assets/icons/check.svg';
   static const iconLokasi = 'assets/icons/lokasi.svg';
   static const iconTips = 'assets/icons/tips.svg';
-
+  static const iconAlasan = 'assets/icons/alasan.svg';
+  static const iconBack2 = 'assets/icons/back2.svg';
+  static const iconPending = 'assets/icons/pending.svg';
+  static const iconSisa = 'assets/icons/sisa.svg';
+  static const iconSplash1 = 'assets/icons/splash1.svg';
+  static const iconSplash2 = 'assets/icons/splash2.svg';
+  static const iconSplas3 = 'assets/icons/splash3.svg';
+  static const splash1 = 'assets/icons/splash1.svg';
+  static const splash2 = 'assets/icons/splash2.svg';
+  static const splash3 = 'assets/icons/splash3.svg';
+  static const back2 = 'assets/icons/back2.svg';
+  static const iconDurasi = 'assets/icons/durasi.svg';
+  static const iconGps = 'assets/icons/gps.svg';
 }

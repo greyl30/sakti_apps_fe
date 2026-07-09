@@ -9,10 +9,11 @@ import '../../features/leave/presentation/pages/leave_page.dart';
 import '../../features/notification/presentation/pages/notification_page.dart';
 import '../../features/profile/presentation/pages/profile_page.dart';
 import '../../features/splash/presentation/pages/splash_page.dart';
+import '../../features/auth/presentation/pages/forgot_password_page.dart';
 import 'route_name.dart';
 
 final appRouter = GoRouter(
-  initialLocation: RouteName.home,
+  initialLocation: RouteName.splash,
   routes: [
     GoRoute(
       path: RouteName.splash,
@@ -21,6 +22,10 @@ final appRouter = GoRouter(
     GoRoute(
       path: RouteName.login,
       builder: (context, state) => const LoginPage(),
+    ),
+    GoRoute(
+      path: RouteName.forgotPassword,
+      builder: (context, state) => const ForgotPasswordPage(),
     ),
     GoRoute(
       path: RouteName.home,
