@@ -10,8 +10,16 @@ import '../../features/auth/presentation/pages/forgot_password_page.dart';
 import '../../features/auth/presentation/pages/login_page.dart';
 import '../../features/darurat/presentation/pages/emergency_page.dart';
 import '../../features/history/presentation/pages/history_page.dart';
+import '../../features/leave/presentation/models/leave_form_data.dart';
+import '../../features/leave/presentation/models/leave_request_status.dart';
+import '../../features/leave/presentation/pages/leave_apply_page.dart';
+import '../../features/leave/presentation/pages/leave_cancel_page.dart';
+import '../../features/leave/presentation/pages/leave_cancel_success_page.dart';
+import '../../features/leave/presentation/pages/leave_confirmation_page.dart';
 import '../../features/home/presentation/pages/home_page.dart';
 import '../../features/leave/presentation/pages/leave_page.dart';
+import '../../features/leave/presentation/pages/leave_status_page.dart';
+import '../../features/leave/presentation/pages/leave_success_page.dart';
 import '../../features/notification/presentation/pages/notification_page.dart';
 import '../../features/profile/presentation/pages/profile_page.dart';
 import '../../features/splash/presentation/pages/splash_page.dart';
@@ -85,6 +93,61 @@ final appRouter = GoRouter(
     GoRoute(
       path: RouteName.leave,
       builder: (context, state) => const LeavePage(),
+    ),
+    GoRoute(
+      path: RouteName.leaveApply,
+      builder: (context, state) => const LeaveApplyPage(),
+    ),
+    GoRoute(
+      path: RouteName.leaveConfirmation,
+      builder: (context, state) => LeaveConfirmationPage(
+        data: state.extra is LeaveFormData
+            ? state.extra! as LeaveFormData
+            : LeaveFormData(
+                type: 'Izin',
+                reason: 'Kepentingan keluarga di Surabaya',
+                startDate: DateTime(2026, 7, 13),
+                endDate: DateTime(2026, 7, 15),
+              ),
+      ),
+    ),
+    GoRoute(
+      path: RouteName.leaveStatus,
+      builder: (context, state) => LeaveStatusPage(
+        data: state.extra is LeaveRequestStatusData
+            ? state.extra! as LeaveRequestStatusData
+            : dummyLeaveWaitingSupervisor,
+      ),
+    ),
+    GoRoute(
+      path: RouteName.leaveSuccess,
+      builder: (context, state) => LeaveSuccessPage(
+        data: state.extra is LeaveRequestStatusData
+            ? state.extra! as LeaveRequestStatusData
+            : dummyLeaveApproved,
+      ),
+    ),
+    GoRoute(
+      path: RouteName.leaveCancel,
+      builder: (context, state) => LeaveCancelPage(
+        data: state.extra is LeaveRequestStatusData
+            ? state.extra! as LeaveRequestStatusData
+            : dummyLeaveApproved,
+      ),
+    ),
+    GoRoute(
+      path: RouteName.leaveCancelSuccess,
+      builder: (context, state) {
+        final extra = state.extra;
+        final data = extra is Map<String, Object?>
+            ? extra['data'] as LeaveRequestStatusData? ?? dummyLeaveApproved
+            : dummyLeaveApproved;
+        final reason = extra is Map<String, Object?>
+            ? extra['reason'] as String? ?? 'Ada keperluan mendadak lainnya'
+            : 'Ada keperluan mendadak lainnya';
+
+        return LeaveCancelSuccessPage(data: data, cancelReason: reason);
+      },
     ),
     GoRoute(
       path: RouteName.emergency,

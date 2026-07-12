@@ -7,6 +7,6 @@ class AttendanceUiState {
 }
 
 const dummyAttendanceUiState = AttendanceUiState(
-  isHoliday: true,
-  hasClockIn: false,
+  isHoliday: false,
+  hasClockIn: true,
 );

@@ -1,0 +1,87 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:go_router/go_router.dart';
+
+import '../../../../core/constants/app_assets.dart';
+import '../../../../core/router/route_name.dart';
+import '../../../../core/theme/app_colors.dart';
+
+class LeaveTopBar extends StatelessWidget {
+  const LeaveTopBar({
+    super.key,
+    required this.title,
+    required this.subtitle,
+    this.fallbackRoute = RouteName.leave,
+  });
+
+  final String title;
+  final String subtitle;
+  final String fallbackRoute;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 104,
+      padding: const EdgeInsets.fromLTRB(22, 18, 24, 20),
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          colors: [AppColors.gradientTop, AppColors.gradientBottom],
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+        ),
+        borderRadius: BorderRadius.only(
+          bottomLeft: Radius.circular(35),
+          bottomRight: Radius.circular(35),
+        ),
+      ),
+      child: Row(
+        children: [
+          // Tombol kembali
+          InkWell(
+            onTap: () {
+              if (context.canPop()) {
+                context.pop();
+                return;
+              }
+              context.go(fallbackRoute);
+            },
+            borderRadius: BorderRadius.circular(22),
+            child: SvgPicture.asset(AppAssets.iconBack, width: 40, height: 40),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 22,
+                    fontWeight: FontWeight.w700,
+                    height: 1.1,
+                  ),
+                ),
+                const SizedBox(height: 5),
+                Text(
+                  subtitle,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: .92),
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                    height: 1,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}

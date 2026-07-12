@@ -1,0 +1,64 @@
+import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+
+import '../../../../core/router/route_name.dart';
+import '../../../../core/theme/app_colors.dart';
+import '../../../../core/widgets/app_bottom_navigation.dart';
+import '../models/leave_request_status.dart';
+import '../widgets/leave_status_widgets.dart';
+import '../widgets/leave_top_bar.dart';
+
+class LeaveStatusPage extends StatelessWidget {
+  const LeaveStatusPage({super.key, required this.data});
+
+  final LeaveRequestStatusData data;
+
+  @override
+  Widget build(BuildContext context) {
+    if (data.status == LeaveApprovalStatus.approved) {
+      // Development-only redirect. Nantinya status approved berasal dari backend.
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (context.mounted) {
+          context.go(RouteName.leaveSuccess, extra: data);
+        }
+      });
+    }
+
+    final subtitle = data.stage == LeaveApprovalStage.currentSupervisor
+        ? 'Menunggu persetujuan atasan'
+        : 'Menunggu persetujuan HRD';
+
+    return Scaffold(
+      backgroundColor: AppColors.whiteBackground,
+      body: SafeArea(
+        bottom: false,
+        child: Column(
+          children: [
+            // Top AppBar status pengajuan
+            LeaveTopBar(
+              title: 'Status Pengajuan',
+              subtitle: subtitle,
+              fallbackRoute: RouteName.leave,
+            ),
+            Expanded(
+              child: ListView(
+                padding: const EdgeInsets.fromLTRB(24, 24, 24, 28),
+                children: [
+                  // Card status besar
+                  LeaveStatusCard(data: data),
+                  const SizedBox(height: 24),
+                  // Card detail pengajuan
+                  LeaveDetailCard(data: data),
+                  const SizedBox(height: 24),
+                  // Card alur persetujuan
+                  LeaveApprovalTimelineCard(data: data),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+      bottomNavigationBar: const AppBottomNavigation(currentIndex: 2),
+    );
+  }
+}

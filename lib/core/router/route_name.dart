@@ -13,6 +13,12 @@ class RouteName {
   static const checkOutConfirmation = '/attendance/check-out/confirmation';
   static const checkOutSuccess = '/attendance/check-out/success';
   static const leave = '/leave';
+  static const leaveApply = '/leave/apply';
+  static const leaveConfirmation = '/leave/confirmation';
+  static const leaveStatus = '/leave/status';
+  static const leaveSuccess = '/leave/success';
+  static const leaveCancel = '/leave/cancel';
+  static const leaveCancelSuccess = '/leave/cancel/success';
   static const emergency = '/emergency';
   static const notification = '/notification';
   static const profile = '/profile';
