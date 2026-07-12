@@ -6,11 +6,14 @@ import '../../../../core/constants/app_assets.dart';
 import '../../../../core/router/route_name.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/app_bottom_navigation.dart';
+import '../models/attendance_flow_type.dart';
 import '../widgets/attendance_flow_app_bar.dart';
 import '../widgets/attendance_primary_button.dart';
 
 class CheckInVerificationPage extends StatelessWidget {
-  const CheckInVerificationPage({super.key});
+  const CheckInVerificationPage({super.key, required this.flowType});
+
+  final AttendanceFlowType flowType;
 
   @override
   Widget build(BuildContext context) {
@@ -21,9 +24,9 @@ class CheckInVerificationPage extends StatelessWidget {
         child: Column(
           children: [
             // AppBar halaman verifikasi
-            const AttendanceFlowAppBar(
+            AttendanceFlowAppBar(
               title: 'Presensi',
-              subtitle: 'Verifikasi wajah dan lokasi',
+              subtitle: flowType.verificationSubtitle,
             ),
             Expanded(
               child: ListView(
@@ -107,7 +110,11 @@ class CheckInVerificationPage extends StatelessWidget {
                   // Tombol mulai verifikasi
                   AttendancePrimaryButton(
                     label: 'Mulai Verifikasi',
-                    onPressed: () => context.push(RouteName.checkInLoading),
+                    onPressed: () => context.push(
+                      flowType.isCheckIn
+                          ? RouteName.checkInLoading
+                          : RouteName.checkOutLoading,
+                    ),
                   ),
                 ],
               ),

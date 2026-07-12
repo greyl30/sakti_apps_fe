@@ -6,13 +6,24 @@ import '../../../../core/constants/app_assets.dart';
 import '../../../../core/router/route_name.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/app_bottom_navigation.dart';
+import '../models/attendance_flow_type.dart';
 import '../widgets/attendance_primary_button.dart';
 
 class CheckInSuccessPage extends StatelessWidget {
-  const CheckInSuccessPage({super.key});
+  const CheckInSuccessPage({
+    super.key,
+    required this.flowType,
+    this.isOvertime = false,
+  });
+
+  final AttendanceFlowType flowType;
+  final bool isOvertime;
 
   @override
   Widget build(BuildContext context) {
+    final timeValue = isOvertime ? '20:30 WIB' : flowType.successTime;
+    final totalWorkTime = isOvertime ? '12 jam 30 menit' : '9 jam 5 menit';
+
     return Scaffold(
       backgroundColor: AppColors.whiteBackground,
       body: SafeArea(
@@ -32,8 +43,8 @@ class CheckInSuccessPage extends StatelessWidget {
                         width: 120,
                         height: 120,
                         alignment: Alignment.center,
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFFFDDD9),
+                        decoration: const BoxDecoration(
+                          color: Color(0xFFFFDDD9),
                           shape: BoxShape.circle,
                         ),
                         child: Container(
@@ -77,10 +88,10 @@ class CheckInSuccessPage extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 22),
-                      const Text(
-                        'Presensi Masuk Berhasil!',
+                      Text(
+                        flowType.successTitle,
                         textAlign: TextAlign.center,
-                        style: TextStyle(
+                        style: const TextStyle(
                           color: Colors.black,
                           fontSize: 24,
                           fontWeight: FontWeight.w800,
@@ -107,40 +118,48 @@ class CheckInSuccessPage extends StatelessWidget {
                           borderRadius: BorderRadius.circular(15),
                           border: Border.all(color: const Color(0xFFC6E6F0)),
                         ),
-                        child: const Column(
+                        child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Presensi Masuk Tercatat',
-                              style: TextStyle(
+                              flowType.successRecordedLabel,
+                              style: const TextStyle(
                                 color: Color(0xFF8A8F98),
                                 fontSize: 11,
                                 fontWeight: FontWeight.w600,
                                 height: 1,
                               ),
                             ),
-                            SizedBox(height: 10),
+                            const SizedBox(height: 10),
                             Text(
-                              '08:00 WIB',
-                              style: TextStyle(
+                              timeValue,
+                              style: const TextStyle(
                                 color: Color(0xFF4C9CB2),
                                 fontSize: 20,
                                 fontWeight: FontWeight.w800,
                                 height: 1,
                               ),
                             ),
-                            SizedBox(height: 22),
-                            _SuccessInfoRow(
+                            const SizedBox(height: 22),
+                            const _SuccessInfoRow(
                               icon: AppAssets.iconCalendar,
                               label: 'Tanggal',
                               value: 'Senin, 23 Juni 2025',
                             ),
-                            SizedBox(height: 16),
-                            _SuccessInfoRow(
+                            const SizedBox(height: 16),
+                            const _SuccessInfoRow(
                               icon: AppAssets.iconLokasi,
                               label: 'Lokasi',
                               value: 'Kantor KOPEGTEL Malang',
                             ),
+                            if (!flowType.isCheckIn) ...[
+                              const SizedBox(height: 16),
+                              _SuccessInfoRow(
+                                icon: AppAssets.iconDurasi,
+                                label: 'Total Waktu',
+                                value: totalWorkTime,
+                              ),
+                            ],
                           ],
                         ),
                       ),

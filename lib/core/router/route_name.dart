@@ -8,6 +8,10 @@ class RouteName {
   static const checkInLoading = '/attendance/check-in/loading';
   static const checkInConfirmation = '/attendance/check-in/confirmation';
   static const checkInSuccess = '/attendance/check-in/success';
+  static const checkOutVerification = '/attendance/check-out/verification';
+  static const checkOutLoading = '/attendance/check-out/loading';
+  static const checkOutConfirmation = '/attendance/check-out/confirmation';
+  static const checkOutSuccess = '/attendance/check-out/success';
   static const leave = '/leave';
   static const emergency = '/emergency';
   static const notification = '/notification';

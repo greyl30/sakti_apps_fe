@@ -1,5 +1,6 @@
 import 'package:go_router/go_router.dart';
 
+import '../../features/attendance/presentation/models/attendance_flow_type.dart';
 import '../../features/attendance/presentation/pages/check_in_confirmation_page.dart';
 import '../../features/attendance/presentation/pages/check_in_loading_page.dart';
 import '../../features/attendance/presentation/pages/check_in_success_page.dart';
@@ -41,19 +42,45 @@ final appRouter = GoRouter(
     ),
     GoRoute(
       path: RouteName.checkInVerification,
-      builder: (context, state) => const CheckInVerificationPage(),
+      builder: (context, state) =>
+          const CheckInVerificationPage(flowType: AttendanceFlowType.checkIn),
     ),
     GoRoute(
       path: RouteName.checkInLoading,
-      builder: (context, state) => const CheckInLoadingPage(),
+      builder: (context, state) =>
+          const CheckInLoadingPage(flowType: AttendanceFlowType.checkIn),
     ),
     GoRoute(
       path: RouteName.checkInConfirmation,
-      builder: (context, state) => const CheckInConfirmationPage(),
+      builder: (context, state) =>
+          const CheckInConfirmationPage(flowType: AttendanceFlowType.checkIn),
     ),
     GoRoute(
       path: RouteName.checkInSuccess,
-      builder: (context, state) => const CheckInSuccessPage(),
+      builder: (context, state) =>
+          const CheckInSuccessPage(flowType: AttendanceFlowType.checkIn),
+    ),
+    GoRoute(
+      path: RouteName.checkOutVerification,
+      builder: (context, state) =>
+          const CheckInVerificationPage(flowType: AttendanceFlowType.checkOut),
+    ),
+    GoRoute(
+      path: RouteName.checkOutLoading,
+      builder: (context, state) =>
+          const CheckInLoadingPage(flowType: AttendanceFlowType.checkOut),
+    ),
+    GoRoute(
+      path: RouteName.checkOutConfirmation,
+      builder: (context, state) =>
+          const CheckInConfirmationPage(flowType: AttendanceFlowType.checkOut),
+    ),
+    GoRoute(
+      path: RouteName.checkOutSuccess,
+      builder: (context, state) => CheckInSuccessPage(
+        flowType: AttendanceFlowType.checkOut,
+        isOvertime: state.extra == true,
+      ),
     ),
     GoRoute(
       path: RouteName.leave,

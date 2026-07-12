@@ -11,13 +11,13 @@ import '../../../../core/theme/app_colors.dart';
 class HomeAttendanceCard extends StatelessWidget {
   const HomeAttendanceCard({
     super.key,
-    required this.isCheckedIn,
+    required this.isHoliday,
     required this.canCheckOut,
     required this.onCheckInTap,
     required this.onCheckOutTap,
   });
 
-  final bool isCheckedIn;
+  final bool isHoliday;
   final bool canCheckOut;
   final VoidCallback onCheckInTap;
   final VoidCallback onCheckOutTap;
@@ -63,7 +63,10 @@ class HomeAttendanceCard extends StatelessWidget {
                       ),
                     ],
                   ),
-                  child: _WorkScheduleBar(todayLabel: todayLabel),
+                  child: _WorkScheduleBar(
+                    todayLabel: todayLabel,
+                    isHoliday: isHoliday,
+                  ),
                 ),
               ),
               Positioned(
@@ -76,7 +79,7 @@ class HomeAttendanceCard extends StatelessWidget {
                       child: _AttendanceActionButton(
                         label: 'Presensi Masuk',
                         icon: AppAssets.iconIn,
-                        isEnabled: !isCheckedIn,
+                        isEnabled: !isHoliday,
                         onTap: onCheckInTap,
                       ),
                     ),
@@ -85,7 +88,7 @@ class HomeAttendanceCard extends StatelessWidget {
                       child: _AttendanceActionButton(
                         label: 'Presensi Keluar',
                         icon: AppAssets.iconOut,
-                        isEnabled: canCheckOut,
+                        isEnabled: !isHoliday && canCheckOut,
                         onTap: onCheckOutTap,
                       ),
                     ),
@@ -131,9 +134,10 @@ class HomeAttendanceCard extends StatelessWidget {
 }
 
 class _WorkScheduleBar extends StatelessWidget {
-  const _WorkScheduleBar({required this.todayLabel});
+  const _WorkScheduleBar({required this.todayLabel, required this.isHoliday});
 
   final String todayLabel;
+  final bool isHoliday;
 
   @override
   Widget build(BuildContext context) {
@@ -181,8 +185,8 @@ class _WorkScheduleBar extends StatelessWidget {
             colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
           ),
           const SizedBox(width: 8),
-          const Text(
-            '08.00 - 16.30',
+          Text(
+            isHoliday ? '-' : '08.00 - 16.30',
             style: TextStyle(
               color: Colors.white,
               fontSize: 12,
@@ -213,17 +217,15 @@ class _AttendanceActionButton extends StatelessWidget {
     final backgroundColor = isEnabled ? AppColors.primaryRed : AppColors.gray;
     final foregroundColor = isEnabled
         ? Colors.white
-        : Colors.white.withValues(alpha: 0.75);
+        : Colors.white.withValues(alpha: .75);
 
     return SizedBox(
       height: 46,
       child: FilledButton(
-        onPressed: isEnabled ? onTap : null,
+        onPressed: onTap,
         style: FilledButton.styleFrom(
           backgroundColor: backgroundColor,
-          disabledBackgroundColor: backgroundColor,
           foregroundColor: foregroundColor,
-          disabledForegroundColor: foregroundColor,
           padding: const EdgeInsets.symmetric(horizontal: 12),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(26),

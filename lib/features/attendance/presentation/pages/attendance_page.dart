@@ -6,6 +6,8 @@ import '../../../../core/constants/app_assets.dart';
 import '../../../../core/router/route_name.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/app_bottom_navigation.dart';
+import '../models/attendance_ui_state.dart';
+import '../widgets/attendance_status_dialog.dart';
 
 class AttendancePage extends StatelessWidget {
   const AttendancePage({super.key});
@@ -19,16 +21,38 @@ class AttendancePage extends StatelessWidget {
     context.go(RouteName.home);
   }
 
-  void _startCheckIn(BuildContext context) {
+  void _startCheckIn(BuildContext context, {required bool isHoliday}) {
+    if (isHoliday) {
+      _showHolidayDialog(context);
+      return;
+    }
+
     context.push(RouteName.checkInVerification);
   }
 
-  void _startCheckOut() {
-    debugPrint('Presensi Keluar');
+  void _startCheckOut(
+    BuildContext context, {
+    required bool isHoliday,
+    required bool hasClockIn,
+  }) {
+    if (isHoliday) {
+      _showHolidayDialog(context);
+      return;
+    }
+
+    if (!hasClockIn) {
+      _showCheckOutUnavailableDialog(context);
+      return;
+    }
+
+    context.push(RouteName.checkOutVerification);
   }
 
   @override
   Widget build(BuildContext context) {
+    // Dummy state presensi, nantinya diganti dari backend/provider.
+    const attendanceState = dummyAttendanceUiState;
+
     return Scaffold(
       backgroundColor: AppColors.whiteBackground,
       body: SafeArea(
@@ -50,7 +74,11 @@ class AttendancePage extends StatelessWidget {
                     borderColor: const Color(0xFFE9B7B7),
                     iconBackgroundColor: const Color(0xFFF3C3C3),
                     foregroundColor: AppColors.primaryRed,
-                    onTap: () => _startCheckIn(context),
+                    isEnabled: !attendanceState.isHoliday,
+                    onTap: () => _startCheckIn(
+                      context,
+                      isHoliday: attendanceState.isHoliday,
+                    ),
                   ),
                   const SizedBox(height: 28),
                   // Card Presensi Keluar
@@ -62,7 +90,14 @@ class AttendancePage extends StatelessWidget {
                     borderColor: const Color(0xFFB7DCE9),
                     iconBackgroundColor: const Color(0xFFC3E5F0),
                     foregroundColor: AppColors.secondaryBlue,
-                    onTap: _startCheckOut,
+                    isEnabled:
+                        !attendanceState.isHoliday &&
+                        attendanceState.hasClockIn,
+                    onTap: () => _startCheckOut(
+                      context,
+                      isHoliday: attendanceState.isHoliday,
+                      hasClockIn: attendanceState.hasClockIn,
+                    ),
                   ),
                 ],
               ),
@@ -71,6 +106,33 @@ class AttendancePage extends StatelessWidget {
         ),
       ),
       bottomNavigationBar: const AppBottomNavigation(currentIndex: 1),
+    );
+  }
+
+  void _showHolidayDialog(BuildContext context) {
+    showDialog<void>(
+      context: context,
+      builder: (dialogContext) => AttendanceStatusDialog(
+        icon: AppAssets.iconInfo,
+        title: 'Hari Ini Adalah Hari Libur',
+        description:
+            'Halaman presensi tidak tersedia,\nAnda tidak perlu melakukan presensi',
+        buttonText: 'Tutup',
+        onPressed: () => Navigator.of(dialogContext).pop(),
+      ),
+    );
+  }
+
+  void _showCheckOutUnavailableDialog(BuildContext context) {
+    showDialog<void>(
+      context: context,
+      builder: (dialogContext) => AttendanceStatusDialog(
+        icon: AppAssets.iconInfo,
+        title: 'Presensi Keluar Belum Tersedia',
+        description: 'Presensi keluar hanya dapat\ndilakukan mulai pukul 17.00',
+        buttonText: 'Tutup',
+        onPressed: () => Navigator.of(dialogContext).pop(),
+      ),
     );
   }
 }
@@ -150,6 +212,7 @@ class _AttendanceOptionCard extends StatelessWidget {
     required this.borderColor,
     required this.iconBackgroundColor,
     required this.foregroundColor,
+    required this.isEnabled,
     required this.onTap,
   });
 
@@ -160,6 +223,7 @@ class _AttendanceOptionCard extends StatelessWidget {
   final Color borderColor;
   final Color iconBackgroundColor;
   final Color foregroundColor;
+  final bool isEnabled;
   final VoidCallback onTap;
 
   @override
@@ -173,9 +237,11 @@ class _AttendanceOptionCard extends StatelessWidget {
           height: 114,
           padding: const EdgeInsets.symmetric(horizontal: 24),
           decoration: BoxDecoration(
-            color: backgroundColor,
+            color: isEnabled ? backgroundColor : const Color(0xFFF3F4F6),
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: borderColor),
+            border: Border.all(
+              color: isEnabled ? borderColor : const Color(0xFFDADDE2),
+            ),
           ),
           child: Row(
             children: [
@@ -184,7 +250,7 @@ class _AttendanceOptionCard extends StatelessWidget {
                 height: 64,
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
-                  color: iconBackgroundColor,
+                  color: isEnabled ? iconBackgroundColor : AppColors.gray,
                   borderRadius: BorderRadius.circular(18),
                 ),
                 child: SvgPicture.asset(
@@ -192,7 +258,7 @@ class _AttendanceOptionCard extends StatelessWidget {
                   width: 30,
                   height: 30,
                   colorFilter: ColorFilter.mode(
-                    foregroundColor,
+                    isEnabled ? foregroundColor : Colors.white,
                     BlendMode.srcIn,
                   ),
                 ),
@@ -208,7 +274,9 @@ class _AttendanceOptionCard extends StatelessWidget {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
-                        color: foregroundColor,
+                        color: isEnabled
+                            ? foregroundColor
+                            : const Color(0xFFB7BBC2),
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
                         height: 1,
@@ -220,7 +288,9 @@ class _AttendanceOptionCard extends StatelessWidget {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
-                        color: foregroundColor,
+                        color: isEnabled
+                            ? foregroundColor
+                            : const Color(0xFF8F949C),
                         fontSize: 22,
                         fontWeight: FontWeight.w700,
                         height: 1,

@@ -6,9 +6,16 @@ import '../../../../core/theme/app_colors.dart';
 
 /// Section pengingat presensi pada homepage.
 class HomeReminderSection extends StatelessWidget {
-  const HomeReminderSection({super.key, required this.onReminderTap});
+  const HomeReminderSection({
+    super.key,
+    required this.isHoliday,
+    required this.onCheckInReminderTap,
+    required this.onCheckOutReminderTap,
+  });
 
-  final VoidCallback onReminderTap;
+  final bool isHoliday;
+  final VoidCallback onCheckInReminderTap;
+  final VoidCallback onCheckOutReminderTap;
 
   @override
   Widget build(BuildContext context) {
@@ -31,27 +38,40 @@ class HomeReminderSection extends StatelessWidget {
             border: Border.all(color: AppColors.gray),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.1),
+                color: Colors.black.withValues(alpha: 0.08),
                 offset: const Offset(0, 4),
-                blurRadius: 4,
+                blurRadius: 14,
                 spreadRadius: 0,
               ),
             ],
           ),
           child: Column(
-            children: [
-              _ReminderTile(
-                title: 'Lengkapi Presensi Masuk',
-                subtitle: 'Segera lakukan sebelum pukul 08.00',
-                onTap: onReminderTap,
-              ),
-              const Divider(height: 1, indent: 20, endIndent: 20, color: AppColors.gray),
-              _ReminderTile(
-                title: 'Jangan Lupa Presensi Keluar',
-                subtitle: 'Lakukan tepat saat pulang',
-                onTap: onReminderTap,
-              ),
-            ],
+            children: isHoliday
+                ? [
+                    _ReminderTile(
+                      title: 'Hari ini adalah hari libur',
+                      subtitle: 'Anda tidak perlu melakukan presensi',
+                      onTap: onCheckInReminderTap,
+                    ),
+                  ]
+                : [
+                    _ReminderTile(
+                      title: 'Lengkapi Presensi Masuk',
+                      subtitle: 'Segera lakukan sebelum pukul 08.00',
+                      onTap: onCheckInReminderTap,
+                    ),
+                    const Divider(
+                      height: 1,
+                      indent: 20,
+                      endIndent: 20,
+                      color: AppColors.gray,
+                    ),
+                    _ReminderTile(
+                      title: 'Jangan Lupa Presensi Keluar',
+                      subtitle: 'Lakukan tepat saat pulang',
+                      onTap: onCheckOutReminderTap,
+                    ),
+                  ],
           ),
         ),
       ],
@@ -76,7 +96,7 @@ class _ReminderTile extends StatelessWidget {
       onTap: onTap,
       borderRadius: BorderRadius.circular(14),
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 13, 12, 13),
+        padding: const EdgeInsets.fromLTRB(16, 14.5, 12, 14.5),
         child: Row(
           children: [
             Container(
@@ -85,7 +105,7 @@ class _ReminderTile extends StatelessWidget {
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
                 color: const Color(0xFFFFEFED),
-                  borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(12),
               ),
               child: SvgPicture.asset(
                 AppAssets.iconPengingat,

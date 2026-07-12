@@ -6,10 +6,13 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/router/route_name.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/app_bottom_navigation.dart';
+import '../models/attendance_flow_type.dart';
 import '../widgets/attendance_flow_app_bar.dart';
 
 class CheckInLoadingPage extends StatefulWidget {
-  const CheckInLoadingPage({super.key});
+  const CheckInLoadingPage({super.key, required this.flowType});
+
+  final AttendanceFlowType flowType;
 
   @override
   State<CheckInLoadingPage> createState() => _CheckInLoadingPageState();
@@ -23,7 +26,11 @@ class _CheckInLoadingPageState extends State<CheckInLoadingPage> {
     // Loading verifikasi sementara sebelum masuk halaman konfirmasi.
     Timer(const Duration(seconds: 2), () {
       if (!mounted) return;
-      context.go(RouteName.checkInConfirmation);
+      context.go(
+        widget.flowType.isCheckIn
+            ? RouteName.checkInConfirmation
+            : RouteName.checkOutConfirmation,
+      );
     });
   }
 
@@ -31,16 +38,16 @@ class _CheckInLoadingPageState extends State<CheckInLoadingPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.whiteBackground,
-      body: const SafeArea(
+      body: SafeArea(
         bottom: false,
         child: Column(
           children: [
             // AppBar halaman loading
             AttendanceFlowAppBar(
               title: 'Presensi',
-              subtitle: 'Verifikasi wajah dan lokasi',
+              subtitle: widget.flowType.verificationSubtitle,
             ),
-            Expanded(
+            const Expanded(
               child: Center(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,

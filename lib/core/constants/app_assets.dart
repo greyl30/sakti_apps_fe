@@ -30,4 +30,6 @@ class AppAssets {
   static const back2 = 'assets/icons/back2.svg';
   static const iconDurasi = 'assets/icons/durasi.svg';
   static const iconGps = 'assets/icons/gps.svg';
+  static const iconLembur = 'assets/icons/lembur.svg';
+  static const iconInfo = 'assets/icons/info.svg';
 }
