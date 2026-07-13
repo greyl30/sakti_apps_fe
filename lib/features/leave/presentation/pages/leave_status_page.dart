@@ -9,9 +9,16 @@ import '../widgets/leave_status_widgets.dart';
 import '../widgets/leave_top_bar.dart';
 
 class LeaveStatusPage extends StatelessWidget {
-  const LeaveStatusPage({super.key, required this.data});
+  const LeaveStatusPage({
+    super.key,
+    required this.data,
+    this.fallbackRoute = RouteName.leave,
+    this.bottomNavigationIndex = 2,
+  });
 
   final LeaveRequestStatusData data;
+  final String fallbackRoute;
+  final int bottomNavigationIndex;
 
   @override
   Widget build(BuildContext context) {
@@ -38,7 +45,7 @@ class LeaveStatusPage extends StatelessWidget {
             LeaveTopBar(
               title: 'Status Pengajuan',
               subtitle: subtitle,
-              fallbackRoute: RouteName.leave,
+              fallbackRoute: fallbackRoute,
             ),
             Expanded(
               child: ListView(
@@ -58,7 +65,9 @@ class LeaveStatusPage extends StatelessWidget {
           ],
         ),
       ),
-      bottomNavigationBar: const AppBottomNavigation(currentIndex: 2),
+      bottomNavigationBar: AppBottomNavigation(
+        currentIndex: bottomNavigationIndex,
+      ),
     );
   }
 }

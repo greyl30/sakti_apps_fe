@@ -8,6 +8,13 @@ import '../../features/attendance/presentation/pages/check_in_verification_page.
 import '../../features/attendance/presentation/pages/attendance_page.dart';
 import '../../features/auth/presentation/pages/forgot_password_page.dart';
 import '../../features/auth/presentation/pages/login_page.dart';
+import '../../features/darurat/presentation/models/emergency_dispensation_data.dart';
+import '../../features/darurat/presentation/models/emergency_leave_data.dart';
+import '../../features/darurat/presentation/pages/emergency_dispensation_confirmation_page.dart';
+import '../../features/darurat/presentation/pages/emergency_dispensation_form_page.dart';
+import '../../features/darurat/presentation/pages/emergency_dispensation_success_page.dart';
+import '../../features/darurat/presentation/pages/emergency_leave_confirmation_page.dart';
+import '../../features/darurat/presentation/pages/emergency_leave_form_page.dart';
 import '../../features/darurat/presentation/pages/emergency_page.dart';
 import '../../features/history/presentation/pages/history_page.dart';
 import '../../features/leave/presentation/models/leave_form_data.dart';
@@ -113,11 +120,22 @@ final appRouter = GoRouter(
     ),
     GoRoute(
       path: RouteName.leaveStatus,
-      builder: (context, state) => LeaveStatusPage(
-        data: state.extra is LeaveRequestStatusData
-            ? state.extra! as LeaveRequestStatusData
-            : dummyLeaveWaitingSupervisor,
-      ),
+      builder: (context, state) {
+        final extra = state.extra;
+        final routeData = extra is LeaveStatusRouteData
+            ? extra
+            : LeaveStatusRouteData(
+                data: extra is LeaveRequestStatusData
+                    ? extra
+                    : dummyLeaveWaitingSupervisor,
+              );
+
+        return LeaveStatusPage(
+          data: routeData.data,
+          fallbackRoute: routeData.fallbackRoute,
+          bottomNavigationIndex: routeData.bottomNavigationIndex,
+        );
+      },
     ),
     GoRoute(
       path: RouteName.leaveSuccess,
@@ -152,6 +170,38 @@ final appRouter = GoRouter(
     GoRoute(
       path: RouteName.emergency,
       builder: (context, state) => const EmergencyPage(),
+    ),
+    GoRoute(
+      path: RouteName.emergencyDispensation,
+      builder: (context, state) => const EmergencyDispensationFormPage(),
+    ),
+    GoRoute(
+      path: RouteName.emergencyDispensationConfirmation,
+      builder: (context, state) => EmergencyDispensationConfirmationPage(
+        data: state.extra is EmergencyDispensationData
+            ? state.extra! as EmergencyDispensationData
+            : dummyEmergencyDispensationData(),
+      ),
+    ),
+    GoRoute(
+      path: RouteName.emergencyDispensationSuccess,
+      builder: (context, state) => EmergencyDispensationSuccessPage(
+        data: state.extra is EmergencyDispensationData
+            ? state.extra! as EmergencyDispensationData
+            : dummyEmergencyDispensationData(),
+      ),
+    ),
+    GoRoute(
+      path: RouteName.emergencyLeave,
+      builder: (context, state) => const EmergencyLeaveFormPage(),
+    ),
+    GoRoute(
+      path: RouteName.emergencyLeaveConfirmation,
+      builder: (context, state) => EmergencyLeaveConfirmationPage(
+        data: state.extra is EmergencyLeaveData
+            ? state.extra! as EmergencyLeaveData
+            : dummyEmergencyLeaveData(),
+      ),
     ),
     GoRoute(
       path: RouteName.notification,

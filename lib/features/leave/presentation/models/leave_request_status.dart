@@ -37,6 +37,18 @@ class LeaveRequestStatusData {
   int get totalDays => endDate.difference(startDate).inDays + 1;
 }
 
+class LeaveStatusRouteData {
+  const LeaveStatusRouteData({
+    required this.data,
+    this.fallbackRoute = '/leave',
+    this.bottomNavigationIndex = 2,
+  });
+
+  final LeaveRequestStatusData data;
+  final String fallbackRoute;
+  final int bottomNavigationIndex;
+}
+
 final dummyLeaveWaitingSupervisor = LeaveRequestStatusData(
   type: 'Izin',
   reason: 'Izin',
@@ -77,4 +89,17 @@ final dummyLeaveApproved = LeaveRequestStatusData(
   progress: ApprovalProgress.approved,
   supervisorApprovalDate: DateTime(2026, 7, 10, 11, 35),
   hrdApprovalDate: DateTime(2026, 7, 10, 14, 20),
+);
+
+final dummyEmergencyLeaveWaitingSupervisor = LeaveRequestStatusData(
+  type: 'Cuti Darurat',
+  reason: 'Pemulihan kesehatan',
+  startDate: DateTime(2026, 7, 2),
+  endDate: DateTime(2026, 7, 4),
+  submittedDate: DateTime(2026, 7, 6),
+  supervisorName: 'Hendru Kusuma',
+  hrdName: 'HRD',
+  stage: LeaveApprovalStage.currentSupervisor,
+  status: LeaveApprovalStatus.waitingSupervisor,
+  progress: ApprovalProgress.waitingSupervisor,
 );

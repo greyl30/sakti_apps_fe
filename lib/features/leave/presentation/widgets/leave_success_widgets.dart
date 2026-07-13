@@ -265,10 +265,12 @@ class LeaveConfirmationDialog extends StatelessWidget {
   const LeaveConfirmationDialog({
     super.key,
     required this.title,
+    this.description,
     required this.onOkPressed,
   });
 
   final String title;
+  final String? description;
   final VoidCallback onOkPressed;
 
   @override
@@ -296,6 +298,19 @@ class LeaveConfirmationDialog extends StatelessWidget {
                 fontWeight: FontWeight.w800,
               ),
             ),
+            if (description != null) ...[
+              const SizedBox(height: 10),
+              Text(
+                description!,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  color: Color(0xFF8A8F98),
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                  height: 1.35,
+                ),
+              ),
+            ],
             const SizedBox(height: 22),
             LeavePrimaryButton(label: 'OK', onPressed: onOkPressed),
           ],

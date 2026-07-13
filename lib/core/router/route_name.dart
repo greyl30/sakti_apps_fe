@@ -20,6 +20,12 @@ class RouteName {
   static const leaveCancel = '/leave/cancel';
   static const leaveCancelSuccess = '/leave/cancel/success';
   static const emergency = '/emergency';
+  static const emergencyDispensation = '/emergency/dispensation';
+  static const emergencyDispensationConfirmation =
+      '/emergency/dispensation/confirmation';
+  static const emergencyDispensationSuccess = '/emergency/dispensation/success';
+  static const emergencyLeave = '/emergency/leave';
+  static const emergencyLeaveConfirmation = '/emergency/leave/confirmation';
   static const notification = '/notification';
   static const profile = '/profile';
   static const history = '/history';
