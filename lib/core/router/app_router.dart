@@ -28,6 +28,7 @@ import '../../features/leave/presentation/pages/leave_page.dart';
 import '../../features/leave/presentation/pages/leave_status_page.dart';
 import '../../features/leave/presentation/pages/leave_success_page.dart';
 import '../../features/notification/presentation/pages/notification_page.dart';
+import '../../features/profile/presentation/pages/change_password_placeholder_page.dart';
 import '../../features/profile/presentation/pages/profile_page.dart';
 import '../../features/splash/presentation/pages/splash_page.dart';
 import 'route_name.dart';
@@ -210,6 +211,10 @@ final appRouter = GoRouter(
     GoRoute(
       path: RouteName.profile,
       builder: (context, state) => const ProfilePage(),
+    ),
+    GoRoute(
+      path: RouteName.changePassword,
+      builder: (context, state) => const ChangePasswordPlaceholderPage(),
     ),
     GoRoute(
       path: RouteName.history,

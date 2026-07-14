@@ -28,5 +28,6 @@ class RouteName {
   static const emergencyLeaveConfirmation = '/emergency/leave/confirmation';
   static const notification = '/notification';
   static const profile = '/profile';
+  static const changePassword = '/profile/change-password';
   static const history = '/history';
 }

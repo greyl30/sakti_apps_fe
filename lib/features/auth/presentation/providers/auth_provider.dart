@@ -87,4 +87,10 @@ class AuthNotifier extends StateNotifier<AuthState> {
       return false;
     }
   }
+
+  void logout() {
+    // TODO(Backend):
+    // Hapus access token dan refresh token sebelum logout.
+    state = const AuthState();
+  }
 }

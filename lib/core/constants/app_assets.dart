@@ -32,4 +32,16 @@ class AppAssets {
   static const iconGps = 'assets/icons/gps.svg';
   static const iconLembur = 'assets/icons/lembur.svg';
   static const iconInfo = 'assets/icons/info.svg';
+  static const iconDivisi = 'assets/icons/divisi.svg';
+  static const iconEmail = 'assets/icons/email.svg';
+  static const iconJabatan = 'assets/icons/jabatan.svg';
+  static const iconReset = 'assets/icons/reset.svg';
+  static const iconTelp = 'assets/icons/telp.svg';
+
+  static const jabatan = iconJabatan;
+  static const divisi = iconDivisi;
+  static const email = iconEmail;
+  static const telp = iconTelp;
+  static const reset = iconReset;
+  static const out = iconOut;
 }
