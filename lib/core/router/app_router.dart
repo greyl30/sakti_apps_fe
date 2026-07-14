@@ -27,6 +27,8 @@ import '../../features/home/presentation/pages/home_page.dart';
 import '../../features/leave/presentation/pages/leave_page.dart';
 import '../../features/leave/presentation/pages/leave_status_page.dart';
 import '../../features/leave/presentation/pages/leave_success_page.dart';
+import '../../features/notification/presentation/models/notification_model.dart';
+import '../../features/notification/presentation/pages/notification_detail_page.dart';
 import '../../features/notification/presentation/pages/notification_page.dart';
 import '../../features/profile/presentation/pages/change_password_placeholder_page.dart';
 import '../../features/profile/presentation/pages/profile_page.dart';
@@ -34,7 +36,7 @@ import '../../features/splash/presentation/pages/splash_page.dart';
 import 'route_name.dart';
 
 final appRouter = GoRouter(
-  initialLocation: RouteName.home,
+  initialLocation: RouteName.splash,
   routes: [
     GoRoute(
       path: RouteName.splash,
@@ -207,6 +209,14 @@ final appRouter = GoRouter(
     GoRoute(
       path: RouteName.notification,
       builder: (context, state) => const NotificationPage(),
+    ),
+    GoRoute(
+      path: RouteName.notificationDetail,
+      builder: (context, state) => NotificationDetailPage(
+        notification: state.extra is NotificationModel
+            ? state.extra! as NotificationModel
+            : dummyEmployeeNotifications.first,
+      ),
     ),
     GoRoute(
       path: RouteName.profile,
