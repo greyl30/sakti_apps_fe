@@ -70,7 +70,7 @@ class EmergencyPage extends StatelessWidget {
                     children: [
                       const _SectionTitle('Riwayat Pengajuan'),
                       GestureDetector(
-                        onTap: () => debugPrint('TODO: Lihat semua riwayat'),
+                        onTap: () => context.push(RouteName.emergencyHistory),
                         child: const Text(
                           'Lihat Semua',
                           style: TextStyle(

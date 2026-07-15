@@ -2,26 +2,26 @@ import 'package:flutter/material.dart';
 
 import '../../../../core/router/route_name.dart';
 import '../../../../core/theme/app_colors.dart';
-import '../../../leave/presentation/widgets/leave_top_bar.dart';
-import '../models/attendance_history_model.dart';
-import '../widgets/history_attendance_card.dart';
-import '../widgets/history_filter_chip.dart';
+import '../../../history/presentation/widgets/history_filter_chip.dart';
+import '../models/leave_history_model.dart';
+import '../widgets/leave_history_card.dart';
+import '../widgets/leave_top_bar.dart';
 
-class HistoryPage extends StatefulWidget {
-  const HistoryPage({super.key});
+class LeaveHistoryPage extends StatefulWidget {
+  const LeaveHistoryPage({super.key});
 
   @override
-  State<HistoryPage> createState() => _HistoryPageState();
+  State<LeaveHistoryPage> createState() => _LeaveHistoryPageState();
 }
 
-class _HistoryPageState extends State<HistoryPage> {
-  AttendanceHistoryStatus? _selectedStatus;
+class _LeaveHistoryPageState extends State<LeaveHistoryPage> {
+  LeaveHistoryStatus? _selectedStatus;
 
   @override
   Widget build(BuildContext context) {
     // TODO(Backend):
-    // Ambil data riwayat presensi dari API.
-    final histories = dummyAttendanceHistories;
+    // Ambil data riwayat pengajuan cuti dari API.
+    final histories = dummyLeaveHistories;
     final filteredHistories = _selectedStatus == null
         ? histories
         : histories
@@ -29,21 +29,21 @@ class _HistoryPageState extends State<HistoryPage> {
               .toList();
 
     // TODO(UI):
-    // Tambahkan Empty State ketika riwayat belum tersedia.
+    // Tambahkan Empty State ketika riwayat pengajuan kosong.
     return Scaffold(
       backgroundColor: AppColors.whiteBackground,
       body: SafeArea(
         bottom: false,
         child: Column(
           children: [
-            // Top AppBar halaman riwayat presensi.
+            // Top AppBar halaman riwayat pengajuan.
             const LeaveTopBar(
-              title: 'Riwayat Presensi',
-              subtitle: 'Riwayat seluruh aktivitas presensi Anda',
-              fallbackRoute: RouteName.home,
+              title: 'Riwayat Pengajuan',
+              subtitle: 'Riwayat seluruh pengajuan cuti Anda',
+              fallbackRoute: RouteName.leave,
             ),
             const SizedBox(height: 22),
-            // Filter status riwayat.
+            // Filter status riwayat pengajuan.
             SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -56,28 +56,18 @@ class _HistoryPageState extends State<HistoryPage> {
                   ),
                   const SizedBox(width: 9),
                   HistoryFilterChip(
-                    label: 'Tepat Waktu',
-                    isSelected:
-                        _selectedStatus == AttendanceHistoryStatus.onTime,
+                    label: 'Disetujui',
+                    isSelected: _selectedStatus == LeaveHistoryStatus.approved,
                     onTap: () => setState(
-                      () => _selectedStatus = AttendanceHistoryStatus.onTime,
+                      () => _selectedStatus = LeaveHistoryStatus.approved,
                     ),
                   ),
                   const SizedBox(width: 9),
                   HistoryFilterChip(
-                    label: 'Terlambat',
-                    isSelected: _selectedStatus == AttendanceHistoryStatus.late,
+                    label: 'Ditolak',
+                    isSelected: _selectedStatus == LeaveHistoryStatus.rejected,
                     onTap: () => setState(
-                      () => _selectedStatus = AttendanceHistoryStatus.late,
-                    ),
-                  ),
-                  const SizedBox(width: 9),
-                  HistoryFilterChip(
-                    label: 'Lembur',
-                    isSelected:
-                        _selectedStatus == AttendanceHistoryStatus.overtime,
-                    onTap: () => setState(
-                      () => _selectedStatus = AttendanceHistoryStatus.overtime,
+                      () => _selectedStatus = LeaveHistoryStatus.rejected,
                     ),
                   ),
                 ],
@@ -92,7 +82,7 @@ class _HistoryPageState extends State<HistoryPage> {
                   final history = filteredHistories[index];
                   return Padding(
                     padding: const EdgeInsets.only(bottom: 14),
-                    child: HistoryAttendanceCard(history: history),
+                    child: LeaveHistoryCard(history: history),
                   );
                 },
               ),

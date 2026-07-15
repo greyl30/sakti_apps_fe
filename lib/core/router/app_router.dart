@@ -13,6 +13,7 @@ import '../../features/darurat/presentation/models/emergency_leave_data.dart';
 import '../../features/darurat/presentation/pages/emergency_dispensation_confirmation_page.dart';
 import '../../features/darurat/presentation/pages/emergency_dispensation_form_page.dart';
 import '../../features/darurat/presentation/pages/emergency_dispensation_success_page.dart';
+import '../../features/darurat/presentation/pages/emergency_history_page.dart';
 import '../../features/darurat/presentation/pages/emergency_leave_confirmation_page.dart';
 import '../../features/darurat/presentation/pages/emergency_leave_form_page.dart';
 import '../../features/darurat/presentation/pages/emergency_page.dart';
@@ -24,6 +25,7 @@ import '../../features/leave/presentation/pages/leave_cancel_page.dart';
 import '../../features/leave/presentation/pages/leave_cancel_success_page.dart';
 import '../../features/leave/presentation/pages/leave_confirmation_page.dart';
 import '../../features/home/presentation/pages/home_page.dart';
+import '../../features/leave/presentation/pages/leave_history_page.dart';
 import '../../features/leave/presentation/pages/leave_page.dart';
 import '../../features/leave/presentation/pages/leave_status_page.dart';
 import '../../features/leave/presentation/pages/leave_success_page.dart';
@@ -36,7 +38,7 @@ import '../../features/splash/presentation/pages/splash_page.dart';
 import 'route_name.dart';
 
 final appRouter = GoRouter(
-  initialLocation: RouteName.splash,
+  initialLocation: RouteName.home,
   routes: [
     GoRoute(
       path: RouteName.splash,
@@ -171,6 +173,10 @@ final appRouter = GoRouter(
       },
     ),
     GoRoute(
+      path: RouteName.leaveHistory,
+      builder: (context, state) => const LeaveHistoryPage(),
+    ),
+    GoRoute(
       path: RouteName.emergency,
       builder: (context, state) => const EmergencyPage(),
     ),
@@ -205,6 +211,10 @@ final appRouter = GoRouter(
             ? state.extra! as EmergencyLeaveData
             : dummyEmergencyLeaveData(),
       ),
+    ),
+    GoRoute(
+      path: RouteName.emergencyHistory,
+      builder: (context, state) => const EmergencyHistoryPage(),
     ),
     GoRoute(
       path: RouteName.notification,

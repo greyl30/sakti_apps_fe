@@ -89,7 +89,7 @@ class LeavePage extends StatelessWidget {
                   _SectionTitle(
                     title: 'Riwayat Pengajuan',
                     actionLabel: 'Lihat semua',
-                    onActionTap: () {},
+                    onActionTap: () => context.push(RouteName.leaveHistory),
                   ),
                   const SizedBox(height: 10),
                   const LeaveListItem(

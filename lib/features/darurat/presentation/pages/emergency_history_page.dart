@@ -2,82 +2,76 @@ import 'package:flutter/material.dart';
 
 import '../../../../core/router/route_name.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../history/presentation/widgets/history_filter_chip.dart';
 import '../../../leave/presentation/widgets/leave_top_bar.dart';
-import '../models/attendance_history_model.dart';
-import '../widgets/history_attendance_card.dart';
-import '../widgets/history_filter_chip.dart';
+import '../models/emergency_history_model.dart';
+import '../widgets/emergency_history_card.dart';
 
-class HistoryPage extends StatefulWidget {
-  const HistoryPage({super.key});
+class EmergencyHistoryPage extends StatefulWidget {
+  const EmergencyHistoryPage({super.key});
 
   @override
-  State<HistoryPage> createState() => _HistoryPageState();
+  State<EmergencyHistoryPage> createState() => _EmergencyHistoryPageState();
 }
 
-class _HistoryPageState extends State<HistoryPage> {
-  AttendanceHistoryStatus? _selectedStatus;
+class _EmergencyHistoryPageState extends State<EmergencyHistoryPage> {
+  EmergencyHistoryType? _selectedType;
 
   @override
   Widget build(BuildContext context) {
     // TODO(Backend):
-    // Ambil data riwayat presensi dari API.
-    final histories = dummyAttendanceHistories;
-    final filteredHistories = _selectedStatus == null
+    // Ambil data riwayat dispensasi dan cuti darurat dari API.
+    final histories = dummyEmergencyHistories;
+    final filteredHistories = _selectedType == null
         ? histories
         : histories
-              .where((history) => history.status == _selectedStatus)
+              .where((history) => history.requestType == _selectedType)
               .toList();
 
     // TODO(UI):
-    // Tambahkan Empty State ketika riwayat belum tersedia.
+    // Tambahkan Empty State ketika riwayat darurat kosong.
     return Scaffold(
       backgroundColor: AppColors.whiteBackground,
       body: SafeArea(
         bottom: false,
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Top AppBar halaman riwayat presensi.
+            // Top AppBar halaman riwayat darurat.
             const LeaveTopBar(
-              title: 'Riwayat Presensi',
-              subtitle: 'Riwayat seluruh aktivitas presensi Anda',
-              fallbackRoute: RouteName.home,
+              title: 'Riwayat Darurat',
+              subtitle: 'Riwayat aktivitas dispensasi dan cuti darurat',
+              fallbackRoute: RouteName.emergency,
             ),
             const SizedBox(height: 22),
-            // Filter status riwayat.
+            // Filter jenis pengajuan, rata kiri sesuai desain.
             SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(horizontal: 24),
               child: Row(
+                mainAxisAlignment: MainAxisAlignment.start,
                 children: [
                   HistoryFilterChip(
                     label: 'Semua',
-                    isSelected: _selectedStatus == null,
-                    onTap: () => setState(() => _selectedStatus = null),
+                    isSelected: _selectedType == null,
+                    onTap: () => setState(() => _selectedType = null),
                   ),
                   const SizedBox(width: 9),
                   HistoryFilterChip(
-                    label: 'Tepat Waktu',
+                    label: 'Dispensasi',
                     isSelected:
-                        _selectedStatus == AttendanceHistoryStatus.onTime,
+                        _selectedType == EmergencyHistoryType.dispensation,
                     onTap: () => setState(
-                      () => _selectedStatus = AttendanceHistoryStatus.onTime,
+                      () => _selectedType = EmergencyHistoryType.dispensation,
                     ),
                   ),
                   const SizedBox(width: 9),
                   HistoryFilterChip(
-                    label: 'Terlambat',
-                    isSelected: _selectedStatus == AttendanceHistoryStatus.late,
-                    onTap: () => setState(
-                      () => _selectedStatus = AttendanceHistoryStatus.late,
-                    ),
-                  ),
-                  const SizedBox(width: 9),
-                  HistoryFilterChip(
-                    label: 'Lembur',
+                    label: 'Cuti Darurat',
                     isSelected:
-                        _selectedStatus == AttendanceHistoryStatus.overtime,
+                        _selectedType == EmergencyHistoryType.emergencyLeave,
                     onTap: () => setState(
-                      () => _selectedStatus = AttendanceHistoryStatus.overtime,
+                      () => _selectedType = EmergencyHistoryType.emergencyLeave,
                     ),
                   ),
                 ],
@@ -92,7 +86,7 @@ class _HistoryPageState extends State<HistoryPage> {
                   final history = filteredHistories[index];
                   return Padding(
                     padding: const EdgeInsets.only(bottom: 14),
-                    child: HistoryAttendanceCard(history: history),
+                    child: EmergencyHistoryCard(history: history),
                   );
                 },
               ),
