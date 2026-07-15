@@ -36,4 +36,6 @@ class RouteName {
   static const managerLeaveApprovals = '/manager/leave-approvals';
   static const managerLeaveApprovalDetail = '/manager/leave-approvals/detail';
   static const managerLeaveRejectReason = '/manager/leave-approvals/reject';
+  static const hrdLeaveFinalizations = '/hrd/leave-finalizations';
+  static const hrdLeaveFinalizationDetail = '/hrd/leave-finalizations/detail';
 }

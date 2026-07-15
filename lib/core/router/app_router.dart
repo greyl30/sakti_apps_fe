@@ -25,7 +25,10 @@ import '../../features/leave/presentation/pages/leave_cancel_page.dart';
 import '../../features/leave/presentation/pages/leave_cancel_success_page.dart';
 import '../../features/leave/presentation/pages/leave_confirmation_page.dart';
 import '../../features/home/presentation/pages/home_page.dart';
+import '../../features/home/presentation/models/hrd_leave_finalization.dart';
 import '../../features/home/presentation/models/manager_leave_approval.dart';
+import '../../features/home/presentation/pages/hrd_leave_finalization_detail_page.dart';
+import '../../features/home/presentation/pages/hrd_leave_finalization_list_page.dart';
 import '../../features/home/presentation/pages/manager_leave_approval_detail_page.dart';
 import '../../features/home/presentation/pages/manager_leave_approval_list_page.dart';
 import '../../features/home/presentation/pages/manager_leave_reject_reason_page.dart';
@@ -266,6 +269,20 @@ final appRouter = GoRouter(
             : managerApprovalStore.value.isNotEmpty
             ? managerApprovalStore.value.first
             : fallbackManagerApproval,
+      ),
+    ),
+    GoRoute(
+      path: RouteName.hrdLeaveFinalizations,
+      builder: (context, state) => const HrdLeaveFinalizationListPage(),
+    ),
+    GoRoute(
+      path: RouteName.hrdLeaveFinalizationDetail,
+      builder: (context, state) => HrdLeaveFinalizationDetailPage(
+        finalization: state.extra is HrdLeaveFinalization
+            ? state.extra! as HrdLeaveFinalization
+            : hrdFinalizationStore.value.isNotEmpty
+            ? hrdFinalizationStore.value.first
+            : fallbackHrdFinalization,
       ),
     ),
   ],

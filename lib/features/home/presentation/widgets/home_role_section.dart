@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
+import '../../../../core/router/route_name.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../models/home_role.dart';
 
@@ -28,7 +30,10 @@ class HomeRoleSection extends StatelessWidget {
       ),
       UserRole.hrd => Padding(
         padding: const EdgeInsets.only(top: 20),
-        child: HrdHomeSection(onSeeAllTap: onSeeAllTap, onItemTap: onItemTap),
+        child: HrdHomeSection(
+          onSeeAllTap: () => context.push(RouteName.hrdLeaveFinalizations),
+          onItemTap: () => context.push(RouteName.hrdLeaveFinalizations),
+        ),
       ),
     };
   }

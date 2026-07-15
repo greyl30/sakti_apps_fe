@@ -2,7 +2,7 @@ enum UserRole { employee, manager, hrd }
 
 // TODO(Backend):
 // Ambil role user dari Supabase/Auth profile.
-const currentRole = UserRole.manager;
+const currentRole = UserRole.hrd;
 
 class HomeApprovalItem {
   const HomeApprovalItem({
