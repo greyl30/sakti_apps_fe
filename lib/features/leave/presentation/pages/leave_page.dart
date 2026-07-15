@@ -34,11 +34,11 @@ class LeavePage extends StatelessWidget {
                   // Card ringkasan sisa cuti
                   GridView.count(
                     crossAxisCount: 2,
-                    crossAxisSpacing: 12,
-                    mainAxisSpacing: 12,
+                    crossAxisSpacing: 15,
+                    mainAxisSpacing: 15,
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
-                    childAspectRatio: 1.82,
+                    childAspectRatio: 2,
                     children: const [
                       LeaveBalanceCard(
                         value: '12',
@@ -66,14 +66,14 @@ class LeavePage extends StatelessWidget {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 22),
+                  const SizedBox(height: 25),
                   // Tombol menuju form ajukan cuti
                   LeaveActionCard(
                     onTap: () => context.push(RouteName.leaveApply),
                   ),
-                  const SizedBox(height: 26),
+                  const SizedBox(height: 30),
                   const _SectionTitle(title: 'Pengajuan'),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 20),
                   LeaveListItem(
                     title: 'Izin',
                     subtitle: '13 - 15 Juli 2026',
@@ -85,13 +85,13 @@ class LeavePage extends StatelessWidget {
                       extra: dummyLeaveWaitingSupervisor,
                     ),
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 28),
                   _SectionTitle(
                     title: 'Riwayat Pengajuan',
                     actionLabel: 'Lihat semua',
                     onActionTap: () => context.push(RouteName.leaveHistory),
                   ),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 20),
                   const LeaveListItem(
                     title: 'Wawancara S2',
                     subtitle: '22 Mei 2026',
@@ -113,7 +113,7 @@ class LeavePage extends StatelessWidget {
                     subtitle: '3 Januari 2026',
                     status: 'Ditolak',
                     statusColor: AppColors.primaryRed,
-                    icon: AppAssets.iconInfo,
+                    icon: AppAssets.iconNo,
                   ),
                 ],
               ),

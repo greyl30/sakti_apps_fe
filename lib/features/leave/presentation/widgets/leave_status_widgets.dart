@@ -46,17 +46,17 @@ class LeaveStatusCard extends StatelessWidget {
                   title,
                   style: const TextStyle(
                     color: AppColors.secondaryBlue,
-                    fontSize: 18,
+                    fontSize: 16,
                     fontWeight: FontWeight.w800,
                     height: 1,
                   ),
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 10),
                 Text(
                   subtitle,
                   style: const TextStyle(
                     color: Color(0xFF6E7480),
-                    fontSize: 11,
+                    fontSize: 12,
                     fontWeight: FontWeight.w500,
                     height: 1,
                   ),
@@ -91,24 +91,9 @@ class LeaveDetailCard extends StatelessWidget {
           value: _formatLongDate(data.endDate),
         ),
         LeaveInfoRow(
-          icon: AppAssets.iconDurasi,
-          label: 'Jumlah Hari',
-          value: '${data.totalDays} hari kerja',
-        ),
-        LeaveInfoRow(
-          icon: AppAssets.iconSisa,
-          label: 'Jenis Cuti',
-          value: data.type,
-        ),
-        LeaveInfoRow(
           icon: AppAssets.iconAlasan,
           label: 'Keterangan',
           value: data.reason,
-        ),
-        LeaveInfoRow(
-          icon: AppAssets.iconPending,
-          label: 'Tanggal Pengajuan',
-          value: _formatLongDate(data.submittedDate),
         ),
       ],
     );
@@ -189,8 +174,8 @@ class LeaveInfoRow extends StatelessWidget {
       child: Row(
         children: [
           Container(
-            width: 32,
-            height: 32,
+            width: 35,
+            height: 35,
             alignment: Alignment.center,
             decoration: BoxDecoration(
               color: const Color(0xFFEAF8FD),

@@ -24,10 +24,10 @@ class ProfileDataCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 14),
+      padding: const EdgeInsets.fromLTRB(20, 16, 16, 14),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(15),
+        borderRadius: BorderRadius.circular(20),
         border: Border.all(color: const Color(0xFFE9EAEE)),
         boxShadow: [
           BoxShadow(
@@ -44,12 +44,12 @@ class ProfileDataCard extends StatelessWidget {
             'Data Diri',
             style: TextStyle(
               color: Colors.black,
-              fontSize: 15,
+              fontSize: 16,
               fontWeight: FontWeight.w800,
               height: 1,
             ),
           ),
-          const SizedBox(height: 14),
+          const SizedBox(height: 18),
           ...items.map((item) => _ProfileDataRow(item: item)),
         ],
       ),
@@ -65,12 +65,12 @@ class _ProfileDataRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.only(bottom: 15),
       child: Row(
         children: [
           Container(
-            width: 34,
-            height: 34,
+            width: 36,
+            height: 36,
             alignment: Alignment.center,
             decoration: BoxDecoration(
               color: const Color(0xFFEAF8FD),
@@ -78,8 +78,8 @@ class _ProfileDataRow extends StatelessWidget {
             ),
             child: SvgPicture.asset(
               item.icon,
-              width: 17,
-              height: 17,
+              width: 16,
+              height: 16,
               colorFilter: const ColorFilter.mode(
                 AppColors.secondaryBlue,
                 BlendMode.srcIn,
@@ -95,19 +95,19 @@ class _ProfileDataRow extends StatelessWidget {
                   item.label,
                   style: const TextStyle(
                     color: Color(0xFF8A8F98),
-                    fontSize: 10,
+                    fontSize: 11,
                     fontWeight: FontWeight.w500,
                     height: 1,
                   ),
                 ),
-                const SizedBox(height: 5),
+                const SizedBox(height: 7),
                 Text(
                   item.value,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
                     color: Colors.black,
-                    fontSize: 12,
+                    fontSize: 13,
                     fontWeight: FontWeight.w800,
                     height: 1.15,
                   ),

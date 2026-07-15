@@ -24,13 +24,13 @@ class ProfileActionCard extends StatelessWidget {
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(16),
         child: Ink(
           height: 70,
           padding: const EdgeInsets.symmetric(horizontal: 14),
           decoration: BoxDecoration(
             color: const Color(0xFFD33B32),
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(16),
             boxShadow: [
               BoxShadow(
                 color: AppColors.primaryRed.withValues(alpha: .18),
@@ -42,17 +42,17 @@ class ProfileActionCard extends StatelessWidget {
           child: Row(
             children: [
               Container(
-                width: 44,
-                height: 44,
+                width: 43,
+                height: 43,
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
                   color: Colors.white,
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(16),
                 ),
                 child: SvgPicture.asset(
                   icon,
-                  width: 23,
-                  height: 23,
+                  width: 22,
+                  height: 22,
                   colorFilter: const ColorFilter.mode(
                     AppColors.primaryRed,
                     BlendMode.srcIn,
@@ -79,7 +79,7 @@ class ProfileActionCard extends StatelessWidget {
                       subtitle,
                       style: const TextStyle(
                         color: Colors.white,
-                        fontSize: 10,
+                        fontSize: 11,
                         fontWeight: FontWeight.w500,
                         height: 1,
                       ),
@@ -89,8 +89,8 @@ class ProfileActionCard extends StatelessWidget {
               ),
               SvgPicture.asset(
                 AppAssets.iconNext,
-                width: 13,
-                height: 13,
+                width: 15,
+                height: 15,
                 colorFilter: const ColorFilter.mode(
                   Colors.white,
                   BlendMode.srcIn,

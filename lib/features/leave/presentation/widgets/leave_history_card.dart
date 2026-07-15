@@ -12,11 +12,11 @@ class LeaveHistoryCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      constraints: const BoxConstraints(minHeight: 74),
-      padding: const EdgeInsets.fromLTRB(18, 17, 14, 16),
+      constraints: const BoxConstraints(minHeight: 88),
+      padding: const EdgeInsets.fromLTRB(25, 17, 20, 16),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(15),
         border: Border.all(color: const Color(0xFFE8E8E8)),
         boxShadow: [
           BoxShadow(
@@ -37,17 +37,17 @@ class LeaveHistoryCard extends StatelessWidget {
                   history.leaveType,
                   style: const TextStyle(
                     color: AppColors.primaryRed,
-                    fontSize: 14,
+                    fontSize: 16,
                     fontWeight: FontWeight.w800,
                     height: 1,
                   ),
                 ),
-                const SizedBox(height: 9),
+                const SizedBox(height: 11),
                 Text(
                   _formatDateRange(history.startDate, history.endDate),
                   style: const TextStyle(
                     color: AppColors.secondaryBlue,
-                    fontSize: 10,
+                    fontSize: 12,
                     fontWeight: FontWeight.w600,
                     height: 1,
                   ),

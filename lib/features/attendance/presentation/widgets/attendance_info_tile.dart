@@ -26,7 +26,7 @@ class AttendanceInfoTile extends StatelessWidget {
           alignment: Alignment.center,
           decoration: BoxDecoration(
             color: const Color(0xFFE7F7FC),
-            borderRadius: BorderRadius.circular(10),
+            borderRadius: BorderRadius.circular(15),
           ),
           child: SvgPicture.asset(
             icon,

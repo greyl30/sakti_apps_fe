@@ -23,7 +23,7 @@ class EmergencySummaryCard extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(18, 18, 18, 4),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(15),
         border: Border.all(color: const Color(0xFFE7E8EC)),
         boxShadow: [
           BoxShadow(
@@ -41,7 +41,7 @@ class EmergencySummaryCard extends StatelessWidget {
             title,
             style: const TextStyle(
               color: Color(0xFF8A8F98),
-              fontSize: 10,
+              fontSize: 12,
               fontWeight: FontWeight.w800,
             ),
           ),

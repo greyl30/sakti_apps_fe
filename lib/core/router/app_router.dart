@@ -1,10 +1,10 @@
 import 'package:go_router/go_router.dart';
 
 import '../../features/attendance/presentation/models/attendance_flow_type.dart';
-import '../../features/attendance/presentation/pages/check_in_confirmation_page.dart';
-import '../../features/attendance/presentation/pages/check_in_loading_page.dart';
-import '../../features/attendance/presentation/pages/check_in_success_page.dart';
-import '../../features/attendance/presentation/pages/check_in_verification_page.dart';
+import '../../features/attendance/presentation/pages/attendance_confirmation_page.dart';
+import '../../features/attendance/presentation/pages/attendance_loading_page.dart';
+import '../../features/attendance/presentation/pages/attendance_success_page.dart';
+import '../../features/attendance/presentation/pages/attendance_verification_page.dart';
 import '../../features/attendance/presentation/pages/attendance_page.dart';
 import '../../features/auth/presentation/pages/forgot_password_page.dart';
 import '../../features/auth/presentation/pages/login_page.dart';

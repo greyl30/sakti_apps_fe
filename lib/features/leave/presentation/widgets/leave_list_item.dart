@@ -25,13 +25,13 @@ class LeaveListItem extends StatelessWidget {
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(15),
         child: Ink(
-          height: 64,
+          height: 73,
           padding: const EdgeInsets.symmetric(horizontal: 14),
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(15),
             border: Border.all(color: const Color(0xFFE8E8E8)),
             boxShadow: [
               BoxShadow(
@@ -44,8 +44,8 @@ class LeaveListItem extends StatelessWidget {
           child: Row(
             children: [
               Container(
-                width: 34,
-                height: 34,
+                width: 37,
+                height: 37,
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
                   color: statusColor.withValues(alpha: .12),
@@ -53,8 +53,8 @@ class LeaveListItem extends StatelessWidget {
                 ),
                 child: SvgPicture.asset(
                   icon,
-                  width: 18,
-                  height: 18,
+                  width: 21,
+                  height: 21,
                   colorFilter: ColorFilter.mode(statusColor, BlendMode.srcIn),
                 ),
               ),
@@ -70,19 +70,19 @@ class LeaveListItem extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
                         color: Colors.black,
-                        fontSize: 12,
+                        fontSize: 13,
                         fontWeight: FontWeight.w800,
                         height: 1,
                       ),
                     ),
-                    const SizedBox(height: 6),
+                    const SizedBox(height: 8),
                     Text(
                       subtitle,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
                         color: Color(0xFF8A8F98),
-                        fontSize: 10,
+                        fontSize: 12,
                         fontWeight: FontWeight.w500,
                         height: 1,
                       ),
@@ -97,7 +97,7 @@ class LeaveListItem extends StatelessWidget {
                 ),
                 decoration: BoxDecoration(
                   color: statusColor.withValues(alpha: .12),
-                  borderRadius: BorderRadius.circular(14),
+                  borderRadius: BorderRadius.circular(15),
                   border: Border.all(color: statusColor.withValues(alpha: .35)),
                 ),
                 child: Text(
@@ -138,7 +138,7 @@ class LeavePrimaryButton extends StatelessWidget {
         style: FilledButton.styleFrom(
           backgroundColor: const Color(0xFFD33B32),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(24),
+            borderRadius: BorderRadius.circular(35),
           ),
         ),
         child: Text(

@@ -34,7 +34,7 @@ class CheckInVerificationPage extends StatelessWidget {
                 children: [
                   // Placeholder preview kamera
                   Container(
-                    height: 258,
+                    height: 280,
                     decoration: BoxDecoration(
                       color: const Color(0xFF101318),
                       borderRadius: BorderRadius.circular(15),
@@ -55,7 +55,7 @@ class CheckInVerificationPage extends StatelessWidget {
                       ],
                     ),
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 25),
                   // Card Tips Verifikasi
                   Container(
                     padding: const EdgeInsets.fromLTRB(18, 16, 18, 16),
@@ -90,7 +90,7 @@ class CheckInVerificationPage extends StatelessWidget {
                                   height: 1,
                                 ),
                               ),
-                              SizedBox(height: 6),
+                              SizedBox(height: 8),
                               Text(
                                 'Pastikan pencahayaan cukup, wajah terlihat jelas, dan lokasi aktif.',
                                 style: TextStyle(

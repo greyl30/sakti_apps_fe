@@ -25,15 +25,15 @@ class ChangePasswordSuccessDialog extends StatelessWidget {
         padding: const EdgeInsets.fromLTRB(24, 28, 24, 22),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(16),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             // Icon sukses ubah password.
             Container(
-              width: 58,
-              height: 58,
+              width: 60,
+              height: 60,
               alignment: Alignment.center,
               decoration: const BoxDecoration(
                 color: Color(0xFFEAF8FD),
@@ -41,26 +41,26 @@ class ChangePasswordSuccessDialog extends StatelessWidget {
               ),
               child: SvgPicture.asset(
                 AppAssets.iconCheck,
-                width: 28,
-                height: 28,
+                width: 36,
+                height: 36,
                 colorFilter: const ColorFilter.mode(
                   AppColors.secondaryBlue,
                   BlendMode.srcIn,
                 ),
               ),
             ),
-            const SizedBox(height: 22),
+            const SizedBox(height: 20),
             Text(
               title,
               textAlign: TextAlign.center,
               style: const TextStyle(
                 color: Colors.black,
-                fontSize: 20,
+                fontSize: 19,
                 fontWeight: FontWeight.w800,
                 height: 1.2,
               ),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 20),
             LeavePrimaryButton(label: 'OK', onPressed: onOkPressed),
           ],
         ),

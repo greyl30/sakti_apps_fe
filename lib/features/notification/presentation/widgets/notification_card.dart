@@ -22,17 +22,17 @@ class NotificationCard extends StatelessWidget {
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(15),
         child: Ink(
           padding: const EdgeInsets.fromLTRB(16, 13, 16, 13),
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(15),
             border: Border.all(color: const Color(0xFFE8E8E8)),
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withValues(alpha: .055),
-                blurRadius: 14,
+                blurRadius: 17,
                 offset: const Offset(0, 5),
               ),
             ],
@@ -43,8 +43,6 @@ class NotificationCard extends StatelessWidget {
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const NotificationIconBadge(),
-                  const SizedBox(width: 10),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -55,17 +53,17 @@ class NotificationCard extends StatelessWidget {
                           overflow: TextOverflow.ellipsis,
                           style: const TextStyle(
                             color: AppColors.primaryRed,
-                            fontSize: 12,
+                            fontSize: 14,
                             fontWeight: FontWeight.w800,
                             height: 1.15,
                           ),
                         ),
-                        const SizedBox(height: 4),
+                        const SizedBox(height: 8),
                         Text(
                           formatNotificationDateTime(notification.createdAt),
                           style: const TextStyle(
                             color: AppColors.secondaryBlue,
-                            fontSize: 8,
+                            fontSize: 10,
                             fontWeight: FontWeight.w700,
                             height: 1,
                           ),
@@ -75,14 +73,14 @@ class NotificationCard extends StatelessWidget {
                   ),
                 ],
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 18),
               Text(
                 notification.message,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
                 style: const TextStyle(
                   color: Colors.black,
-                  fontSize: 10,
+                  fontSize: 12,
                   fontWeight: FontWeight.w500,
                   height: 1.35,
                 ),
@@ -101,8 +99,8 @@ class NotificationIconBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 28,
-      height: 28,
+      width: 20,
+      height: 20,
       alignment: Alignment.center,
       decoration: BoxDecoration(
         color: const Color(0xFFFFE7E7),

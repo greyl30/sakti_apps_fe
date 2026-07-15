@@ -81,30 +81,27 @@ class _LeaveApplyPageState extends State<LeaveApplyPage> {
                 children: [
                   // Card sisa cuti
                   Container(
-                    height: 70,
+                    height: 80,
                     padding: const EdgeInsets.symmetric(horizontal: 18),
                     decoration: BoxDecoration(
                       color: const Color(0xFFD33B32),
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(15),
                     ),
                     child: Row(
                       children: [
                         Container(
-                          width: 42,
-                          height: 42,
+                          width: 48,
+                          height: 48,
                           alignment: Alignment.center,
                           decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: .16),
-                            borderRadius: BorderRadius.circular(10),
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(15),
                           ),
                           child: SvgPicture.asset(
-                            AppAssets.iconCalendar,
-                            width: 22,
-                            height: 22,
-                            colorFilter: const ColorFilter.mode(
-                              Colors.white,
-                              BlendMode.srcIn,
-                            ),
+                            AppAssets.iconSisa,
+                            width: 27,
+                            height: 27,
+                              color: const Color(0xFFD33B32)
                           ),
                         ),
                         const SizedBox(width: 14),
@@ -138,17 +135,17 @@ class _LeaveApplyPageState extends State<LeaveApplyPage> {
                   ),
                   const SizedBox(height: 26),
                   const _FormLabel('Pilih Jenis / Alasan Cuti'),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 15),
                   _LeaveTypeTile(
                     title: 'Cuti Sakit',
-                    icon: AppAssets.iconAlasan,
+                    icon: AppAssets.iconSick,
                     isSelected: _selectedType == 'Cuti Sakit',
                     onTap: () => setState(() => _selectedType = 'Cuti Sakit'),
                   ),
-                  const SizedBox(height: 14),
+                  const SizedBox(height: 17),
                   _LeaveTypeTile(
                     title: 'Izin',
-                    icon: AppAssets.iconPerson,
+                    icon: AppAssets.iconIzin,
                     isSelected: _selectedType == 'Izin',
                     onTap: () => setState(() => _selectedType = 'Izin'),
                   ),
@@ -192,7 +189,7 @@ class _LeaveApplyPageState extends State<LeaveApplyPage> {
                       padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
                       decoration: BoxDecoration(
                         color: const Color(0xFFEAF8FD),
-                        borderRadius: BorderRadius.circular(10),
+                        borderRadius: BorderRadius.circular(15),
                         border: Border.all(color: const Color(0xFFC6E6F0)),
                       ),
                       child: Text(
@@ -234,11 +231,11 @@ class _LeaveApplyPageState extends State<LeaveApplyPage> {
       fillColor: const Color(0xFFFAFAFA),
       contentPadding: const EdgeInsets.all(16),
       enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(15),
         borderSide: const BorderSide(color: Color(0xFFE2E4E8)),
       ),
       focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(15),
         borderSide: const BorderSide(color: AppColors.primaryRed),
       ),
     );
@@ -262,7 +259,7 @@ class _FormLabel extends StatelessWidget {
       label,
       style: const TextStyle(
         color: Colors.black,
-        fontSize: 13,
+        fontSize: 16,
         fontWeight: FontWeight.w800,
         height: 1,
       ),
@@ -289,18 +286,18 @@ class _LeaveTypeTile extends StatelessWidget {
       onTap: onTap,
       borderRadius: BorderRadius.circular(12),
       child: Container(
-        height: 64,
+        height: 70,
         padding: const EdgeInsets.symmetric(horizontal: 14),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(15),
           border: Border.all(color: const Color(0xFFE7E8EC)),
         ),
         child: Row(
           children: [
             Container(
-              width: 34,
-              height: 34,
+              width: 40,
+              height: 40,
               alignment: Alignment.center,
               decoration: BoxDecoration(
                 color: const Color(0xFFFFE2E2),
@@ -308,8 +305,8 @@ class _LeaveTypeTile extends StatelessWidget {
               ),
               child: SvgPicture.asset(
                 icon,
-                width: 17,
-                height: 17,
+                width: 20,
+                height: 20,
                 colorFilter: const ColorFilter.mode(
                   AppColors.primaryRed,
                   BlendMode.srcIn,
@@ -375,13 +372,13 @@ class _DateBox extends StatelessWidget {
         const SizedBox(height: 7),
         InkWell(
           onTap: onTap,
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(15),
           child: Container(
             height: 44,
             padding: const EdgeInsets.symmetric(horizontal: 12),
             decoration: BoxDecoration(
               color: const Color(0xFFEAF8FD),
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(15),
               border: Border.all(color: const Color(0xFFC6E6F0)),
             ),
             child: Row(

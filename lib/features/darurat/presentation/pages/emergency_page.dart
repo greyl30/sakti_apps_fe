@@ -35,7 +35,7 @@ class EmergencyPage extends StatelessWidget {
                   _EmergencyActionCard(
                     title: 'Kirimkan Dispensasi',
                     subtitle: 'Izin 2 hari tanpa mengurangi kuota cuti',
-                    icon: Icons.add_rounded,
+                    icon: AppAssets.iconAdd,
                     onTap: () => context.push(RouteName.emergencyDispensation),
                   ),
                   const SizedBox(height: 14),
@@ -43,7 +43,7 @@ class EmergencyPage extends StatelessWidget {
                   _EmergencyActionCard(
                     title: 'Ajukan Cuti Darurat',
                     subtitle: 'Cuti mendadak lebih dari 2 hari',
-                    icon: Icons.medical_services_outlined,
+                    icon: AppAssets.iconAdd,
                     onTap: () => context.push(RouteName.emergencyLeave),
                   ),
                   const SizedBox(height: 28),
@@ -119,7 +119,7 @@ class _EmergencyActionCard extends StatelessWidget {
 
   final String title;
   final String subtitle;
-  final IconData icon;
+  final String icon;
   final VoidCallback onTap;
 
   @override
@@ -128,7 +128,7 @@ class _EmergencyActionCard extends StatelessWidget {
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(15),
         child: Ink(
           height: 76,
           padding: const EdgeInsets.symmetric(horizontal: 15),
@@ -153,7 +153,11 @@ class _EmergencyActionCard extends StatelessWidget {
                   color: Colors.white,
                   shape: BoxShape.circle,
                 ),
-                child: Icon(icon, color: AppColors.primaryRed, size: 24),
+                child: SvgPicture.asset(
+                  icon,
+                  width: 24,
+                  height: 24,
+                )
               ),
               const SizedBox(width: 14),
               Expanded(
@@ -179,7 +183,7 @@ class _EmergencyActionCard extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
                         color: Colors.white,
-                        fontSize: 10,
+                        fontSize: 11,
                         fontWeight: FontWeight.w500,
                         height: 1,
                       ),
@@ -215,7 +219,7 @@ class _SectionTitle extends StatelessWidget {
       label,
       style: const TextStyle(
         color: Colors.black,
-        fontSize: 15,
+        fontSize: 22,
         fontWeight: FontWeight.w800,
       ),
     );

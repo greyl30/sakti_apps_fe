@@ -31,14 +31,14 @@ class ProfileConfirmationDialog extends StatelessWidget {
         padding: const EdgeInsets.fromLTRB(24, 28, 24, 22),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(16),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Container(
-              width: 58,
-              height: 58,
+              width: 64,
+              height: 64,
               alignment: Alignment.center,
               decoration: const BoxDecoration(
                 color: Color(0xFFFFE7E7),
@@ -54,18 +54,18 @@ class ProfileConfirmationDialog extends StatelessWidget {
                 ),
               ),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 25),
             Text(
               title,
               textAlign: TextAlign.center,
               style: const TextStyle(
                 color: Colors.black,
-                fontSize: 20,
+                fontSize: 19,
                 fontWeight: FontWeight.w800,
                 height: 1.25,
               ),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 25),
             Row(
               children: [
                 Expanded(
@@ -106,7 +106,7 @@ class _DialogButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 44,
+      height: 45,
       child: FilledButton(
         onPressed: onPressed,
         style: FilledButton.styleFrom(
@@ -115,7 +115,7 @@ class _DialogButton extends StatelessWidget {
               : const Color(0xFFFFE7E7),
           foregroundColor: isPrimary ? Colors.white : AppColors.primaryRed,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(35),
             side: BorderSide(
               color: isPrimary
                   ? const Color(0xFFD33B32)
@@ -126,7 +126,7 @@ class _DialogButton extends StatelessWidget {
         child: Text(
           label,
           style: const TextStyle(
-            fontSize: 14,
+            fontSize: 16,
             fontWeight: FontWeight.w800,
             height: 1,
           ),

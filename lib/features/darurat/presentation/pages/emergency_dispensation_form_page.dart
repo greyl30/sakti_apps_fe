@@ -119,7 +119,7 @@ class _EmergencyDispensationFormPageState
                     padding: const EdgeInsets.fromLTRB(14, 13, 14, 13),
                     decoration: BoxDecoration(
                       color: const Color(0xFFEAF8FD),
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(15),
                       border: Border.all(color: const Color(0xFFC6E6F0)),
                     ),
                     child: Row(
@@ -127,16 +127,16 @@ class _EmergencyDispensationFormPageState
                       children: [
                         SvgPicture.asset(
                           AppAssets.iconInfo,
-                          width: 20,
-                          height: 20,
+                          width: 30,
+                          height: 30,
                         ),
                         const SizedBox(width: 10),
                         const Expanded(
                           child: Text(
-                            'Dispensasi ini tidak akan mengurangi jatah cuti tahunan Anda.',
+                            'Dispensasi ini tidak akan mengurangi jatah cuti tahunan Anda. Namun tetap akan tercatat oleh sistem dan disimpan di riwayat kehadiran.',
                             style: TextStyle(
                               color: Color(0xFF5F6972),
-                              fontSize: 11,
+                              fontSize: 10,
                               fontWeight: FontWeight.w500,
                               height: 1.35,
                             ),
@@ -173,11 +173,11 @@ class _EmergencyDispensationFormPageState
       fillColor: const Color(0xFFFAFAFA),
       contentPadding: const EdgeInsets.all(16),
       enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(15),
         borderSide: const BorderSide(color: Color(0xFFE2E4E8)),
       ),
       focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(15),
         borderSide: const BorderSide(color: AppColors.primaryRed),
       ),
     );
@@ -195,7 +195,7 @@ class _FormLabel extends StatelessWidget {
       label,
       style: const TextStyle(
         color: Colors.black,
-        fontSize: 13,
+        fontSize: 16,
         fontWeight: FontWeight.w800,
         height: 1,
       ),
@@ -223,11 +223,11 @@ class _DateBox extends StatelessWidget {
           label,
           style: const TextStyle(
             color: Color(0xFF8A8F98),
-            fontSize: 9,
+            fontSize: 11,
             fontWeight: FontWeight.w700,
           ),
         ),
-        const SizedBox(height: 7),
+        const SizedBox(height: 9),
         InkWell(
           onTap: onTap,
           borderRadius: BorderRadius.circular(10),
@@ -236,15 +236,15 @@ class _DateBox extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 12),
             decoration: BoxDecoration(
               color: const Color(0xFFEAF8FD),
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(15),
               border: Border.all(color: const Color(0xFFC6E6F0)),
             ),
             child: Row(
               children: [
                 SvgPicture.asset(
                   AppAssets.iconCalendar,
-                  width: 15,
-                  height: 15,
+                  width: 18,
+                  height: 18,
                   colorFilter: const ColorFilter.mode(
                     AppColors.secondaryBlue,
                     BlendMode.srcIn,

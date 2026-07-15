@@ -74,7 +74,7 @@ class ProfilePage extends ConsumerWidget {
                   const SizedBox(height: 16),
                   // Menu logout.
                   ProfileActionCard(
-                    icon: AppAssets.out,
+                    icon: AppAssets.iconLogout,
                     title: 'Keluar',
                     subtitle: 'Keluar dari akun Anda',
                     onTap: () => _showLogoutDialog(context, ref),

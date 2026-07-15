@@ -35,7 +35,7 @@ class NotificationPage extends StatelessWidget {
                 itemBuilder: (context, index) {
                   final notification = notifications[index];
                   return Padding(
-                    padding: const EdgeInsets.only(bottom: 12),
+                    padding: const EdgeInsets.only(bottom: 20),
                     child: NotificationCard(
                       notification: notification,
                       onTap: () => context.push(

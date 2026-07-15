@@ -35,6 +35,7 @@ class _LeaveHistoryPageState extends State<LeaveHistoryPage> {
       body: SafeArea(
         bottom: false,
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Top AppBar halaman riwayat pengajuan.
             const LeaveTopBar(
@@ -48,6 +49,7 @@ class _LeaveHistoryPageState extends State<LeaveHistoryPage> {
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(horizontal: 24),
               child: Row(
+                mainAxisAlignment: MainAxisAlignment.start,
                 children: [
                   HistoryFilterChip(
                     label: 'Semua',
@@ -59,7 +61,7 @@ class _LeaveHistoryPageState extends State<LeaveHistoryPage> {
                     label: 'Disetujui',
                     isSelected: _selectedStatus == LeaveHistoryStatus.approved,
                     onTap: () => setState(
-                      () => _selectedStatus = LeaveHistoryStatus.approved,
+                          () => _selectedStatus = LeaveHistoryStatus.approved,
                     ),
                   ),
                   const SizedBox(width: 9),
@@ -67,12 +69,13 @@ class _LeaveHistoryPageState extends State<LeaveHistoryPage> {
                     label: 'Ditolak',
                     isSelected: _selectedStatus == LeaveHistoryStatus.rejected,
                     onTap: () => setState(
-                      () => _selectedStatus = LeaveHistoryStatus.rejected,
+                          () => _selectedStatus = LeaveHistoryStatus.rejected,
                     ),
                   ),
                 ],
               ),
             ),
+
             const SizedBox(height: 18),
             Expanded(
               child: ListView.builder(
@@ -81,7 +84,7 @@ class _LeaveHistoryPageState extends State<LeaveHistoryPage> {
                 itemBuilder: (context, index) {
                   final history = filteredHistories[index];
                   return Padding(
-                    padding: const EdgeInsets.only(bottom: 14),
+                    padding: const EdgeInsets.only(bottom: 15),
                     child: LeaveHistoryCard(history: history),
                   );
                 },

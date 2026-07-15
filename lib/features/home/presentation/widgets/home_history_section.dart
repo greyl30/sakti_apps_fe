@@ -110,7 +110,7 @@ class _HistoryCard extends StatelessWidget {
               const SizedBox(width: 12),
               Expanded(
                 child: _HistoryTime(
-                  icon: AppAssets.iconOut,
+                  icon: AppAssets.iconLogout,
                   iconBackground: const Color(0xFFFFF1F0),
                   iconColor: AppColors.primaryRed,
                   label: 'Presensi Keluar',

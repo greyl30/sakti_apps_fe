@@ -68,7 +68,7 @@ class EmergencyLeaveConfirmationPage extends StatelessWidget {
                     padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
                     decoration: BoxDecoration(
                       color: const Color(0xFFEAF8FD),
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(15),
                       border: Border.all(color: const Color(0xFFC6E6F0)),
                     ),
                     child: const Row(
@@ -81,10 +81,10 @@ class EmergencyLeaveConfirmationPage extends StatelessWidget {
                         SizedBox(width: 12),
                         Expanded(
                           child: Text(
-                            'Setelah diklik, pengajuan akan dikirim ke atasan Anda untuk mendapat persetujuan.',
+                            'Setelah diklik, pengajuan akan dikirim ke atasan Anda untuk mendapat persetujuan. Anda akan menerima notifikasi setelah ada keputusan.',
                             style: TextStyle(
                               color: Color(0xFF5F6972),
-                              fontSize: 11,
+                              fontSize: 10,
                               fontWeight: FontWeight.w500,
                               height: 1.35,
                             ),
@@ -121,7 +121,7 @@ class _EmergencyLeaveSummaryCard extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(18, 18, 18, 4),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(15),
         border: Border.all(color: const Color(0xFFE7E8EC)),
         boxShadow: [
           BoxShadow(
@@ -138,7 +138,7 @@ class _EmergencyLeaveSummaryCard extends StatelessWidget {
             'RINGKASAN PENGAJUAN CUTI DARURAT',
             style: TextStyle(
               color: Color(0xFF8A8F98),
-              fontSize: 10,
+              fontSize: 12,
               fontWeight: FontWeight.w800,
               height: 1,
             ),

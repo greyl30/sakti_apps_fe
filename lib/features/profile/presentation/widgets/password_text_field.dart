@@ -27,7 +27,7 @@ class PasswordTextField extends StatelessWidget {
           label,
           style: const TextStyle(
             color: Colors.black,
-            fontSize: 13,
+            fontSize: 16,
             fontWeight: FontWeight.w800,
             height: 1,
           ),
@@ -52,7 +52,7 @@ class PasswordTextField extends StatelessWidget {
                 obscureText
                     ? Icons.visibility_off_rounded
                     : Icons.visibility_rounded,
-                size: 21,
+                size: 20,
                 color: Colors.black.withValues(alpha: 0.46),
               ),
             ),
@@ -70,7 +70,7 @@ class PasswordTextField extends StatelessWidget {
 
   OutlineInputBorder _border(Color color) {
     return OutlineInputBorder(
-      borderRadius: BorderRadius.circular(28),
+      borderRadius: BorderRadius.circular(35),
       borderSide: BorderSide(color: color),
     );
   }

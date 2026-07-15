@@ -33,7 +33,7 @@ class LeaveBalanceCard extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       decoration: BoxDecoration(
         color: background,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(15),
         border: Border.all(color: border),
       ),
       child: Column(
@@ -43,12 +43,12 @@ class LeaveBalanceCard extends StatelessWidget {
             value,
             style: TextStyle(
               color: color,
-              fontSize: 20,
+              fontSize: 25,
               fontWeight: FontWeight.w800,
               height: 1,
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 12),
           Text(
             title,
             maxLines: 1,
@@ -56,12 +56,12 @@ class LeaveBalanceCard extends StatelessWidget {
             textAlign: TextAlign.center,
             style: TextStyle(
               color: color,
-              fontSize: 10,
+              fontSize: 11,
               fontWeight: FontWeight.w700,
               height: 1,
             ),
           ),
-          const SizedBox(height: 3),
+          const SizedBox(height: 0),
           Text(
             subtitle,
             maxLines: 1,

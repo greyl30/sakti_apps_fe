@@ -85,7 +85,7 @@ class AttendancePage extends StatelessWidget {
                   _AttendanceOptionCard(
                     title: 'Presensi Keluar',
                     subtitle: 'Klik untuk mulai',
-                    icon: AppAssets.iconOut,
+                    icon: AppAssets.iconLogout,
                     backgroundColor: const Color(0xFFEFFAFF),
                     borderColor: const Color(0xFFB7DCE9),
                     iconBackgroundColor: const Color(0xFFC3E5F0),
@@ -234,11 +234,11 @@ class _AttendanceOptionCard extends StatelessWidget {
         onTap: onTap,
         borderRadius: BorderRadius.circular(12),
         child: Ink(
-          height: 114,
+          height: 100,
           padding: const EdgeInsets.symmetric(horizontal: 24),
           decoration: BoxDecoration(
             color: isEnabled ? backgroundColor : const Color(0xFFF3F4F6),
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(15),
             border: Border.all(
               color: isEnabled ? borderColor : const Color(0xFFDADDE2),
             ),
@@ -246,8 +246,8 @@ class _AttendanceOptionCard extends StatelessWidget {
           child: Row(
             children: [
               Container(
-                width: 64,
-                height: 64,
+                width: 55,
+                height: 55,
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
                   color: isEnabled ? iconBackgroundColor : AppColors.gray,
@@ -255,15 +255,15 @@ class _AttendanceOptionCard extends StatelessWidget {
                 ),
                 child: SvgPicture.asset(
                   icon,
-                  width: 30,
-                  height: 30,
+                  width: 25,
+                  height: 25,
                   colorFilter: ColorFilter.mode(
                     isEnabled ? foregroundColor : Colors.white,
                     BlendMode.srcIn,
                   ),
                 ),
               ),
-              const SizedBox(width: 22),
+              const SizedBox(width: 20),
               Expanded(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -277,7 +277,7 @@ class _AttendanceOptionCard extends StatelessWidget {
                         color: isEnabled
                             ? foregroundColor
                             : const Color(0xFFB7BBC2),
-                        fontSize: 12,
+                        fontSize: 13,
                         fontWeight: FontWeight.w600,
                         height: 1,
                       ),
@@ -291,7 +291,7 @@ class _AttendanceOptionCard extends StatelessWidget {
                         color: isEnabled
                             ? foregroundColor
                             : const Color(0xFF8F949C),
-                        fontSize: 22,
+                        fontSize: 21,
                         fontWeight: FontWeight.w700,
                         height: 1,
                       ),

@@ -87,7 +87,7 @@ class HomeAttendanceCard extends StatelessWidget {
                     Expanded(
                       child: _AttendanceActionButton(
                         label: 'Presensi Keluar',
-                        icon: AppAssets.iconOut,
+                        icon: AppAssets.iconLogout,
                         isEnabled: !isHoliday && canCheckOut,
                         onTap: onCheckOutTap,
                       ),

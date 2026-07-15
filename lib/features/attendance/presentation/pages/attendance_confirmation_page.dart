@@ -80,13 +80,13 @@ class CheckInConfirmationPage extends StatelessWidget {
                     isLate: flowType.isCheckIn && isLate,
                     timeLabel: flowType.isCheckIn ? '09:10' : '16:30',
                     description: flowType.isCheckIn && isLate
-                        ? 'Presensi akan dicatat sebagai Terlambat'
+                        ? 'Presensi akan dicatat sebagai TERLAMBAT'
                         : flowType.isCheckIn
-                        ? 'Presensi akan dicatat sebagai Tepat Waktu'
+                        ? 'Presensi akan dicatat sebagai TEPAT WAKTU'
                         : 'Presensi keluar akan dicatat',
                   ),
                   if (flowType.isCheckIn && isLate) ...[
-                    const SizedBox(height: 18),
+                    const SizedBox(height: 25),
                     // Form alasan keterlambatan
                     const Text(
                       'Isi Alasan Keterlambatan (wajib)',
@@ -97,7 +97,7 @@ class CheckInConfirmationPage extends StatelessWidget {
                         height: 1,
                       ),
                     ),
-                    const SizedBox(height: 10),
+                    const SizedBox(height: 15),
                     TextField(
                       minLines: 3,
                       maxLines: 3,
@@ -174,7 +174,7 @@ class CheckInConfirmationPage extends StatelessWidget {
               value: '08:00 WIB',
             ),
             AttendanceInfoTile(
-              icon: AppAssets.iconOut,
+              icon: AppAssets.iconLogout,
               label: 'Jam Keluar',
               value: '17:05 WIB',
             ),
@@ -250,14 +250,14 @@ class _StatusCard extends StatelessWidget {
       child: Row(
         children: [
           Container(
-            width: 30,
-            height: 30,
+            width: 33,
+            height: 33,
             alignment: Alignment.center,
             decoration: BoxDecoration(color: color, shape: BoxShape.circle),
             child: SvgPicture.asset(
               AppAssets.iconCheck,
-              width: 19,
-              height: 19,
+              width: 20,
+              height: 20,
               colorFilter: const ColorFilter.mode(
                 Colors.white,
                 BlendMode.srcIn,
@@ -328,7 +328,7 @@ class _OvertimeDialog extends StatelessWidget {
           padding: const EdgeInsets.fromLTRB(24, 24, 24, 24),
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(14),
+            borderRadius: BorderRadius.circular(20),
           ),
           child: Column(
             children: [
@@ -395,7 +395,7 @@ class _OvertimeButton extends StatelessWidget {
               : const Color(0xFFFFE3E3),
           foregroundColor: isPrimary ? Colors.white : AppColors.primaryRed,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(35),
             side: BorderSide(
               color: isPrimary
                   ? const Color(0xFFD33B32)

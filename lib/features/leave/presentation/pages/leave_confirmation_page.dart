@@ -41,14 +41,14 @@ class LeaveConfirmationPage extends StatelessWidget {
           padding: const EdgeInsets.fromLTRB(24, 28, 24, 22),
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(14),
+            borderRadius: BorderRadius.circular(15),
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               Container(
-                width: 58,
-                height: 58,
+                width: 55,
+                height: 55,
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
                   color: const Color(0xFFEAF8FD),
@@ -56,8 +56,8 @@ class LeaveConfirmationPage extends StatelessWidget {
                 ),
                 child: SvgPicture.asset(
                   AppAssets.iconCheck,
-                  width: 28,
-                  height: 28,
+                  width: 30,
+                  height: 30,
                   colorFilter: const ColorFilter.mode(
                     AppColors.secondaryBlue,
                     BlendMode.srcIn,
@@ -140,7 +140,7 @@ class LeaveConfirmationPage extends StatelessWidget {
                     padding: const EdgeInsets.fromLTRB(18, 18, 18, 18),
                     decoration: BoxDecoration(
                       color: Colors.white,
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(15),
                       border: Border.all(color: const Color(0xFFE7E8EC)),
                       boxShadow: [
                         BoxShadow(
@@ -157,7 +157,7 @@ class LeaveConfirmationPage extends StatelessWidget {
                           'RINGKASAN PENGAJUAN CUTI',
                           style: TextStyle(
                             color: Color(0xFF8A8F98),
-                            fontSize: 10,
+                            fontSize: 12,
                             fontWeight: FontWeight.w800,
                           ),
                         ),
@@ -199,15 +199,15 @@ class LeaveConfirmationPage extends StatelessWidget {
                     padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
                     decoration: BoxDecoration(
                       color: const Color(0xFFEAF8FD),
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(15),
                       border: Border.all(color: const Color(0xFFC6E6F0)),
                     ),
                     child: Row(
                       children: [
                         SvgPicture.asset(
                           AppAssets.iconInfo,
-                          width: 22,
-                          height: 22,
+                          width: 30,
+                          height: 30,
                         ),
                         const SizedBox(width: 12),
                         const Expanded(
@@ -217,7 +217,7 @@ class LeaveConfirmationPage extends StatelessWidget {
                               color: Color(0xFF5F6972),
                               fontSize: 11,
                               fontWeight: FontWeight.w500,
-                              height: 1.35,
+                              height: 1.5,
                             ),
                           ),
                         ),
@@ -275,8 +275,8 @@ class _SummaryRow extends StatelessWidget {
     return Row(
       children: [
         Container(
-          width: 32,
-          height: 32,
+          width: 36,
+          height: 36,
           alignment: Alignment.center,
           decoration: BoxDecoration(
             color: const Color(0xFFEAF8FD),
@@ -284,8 +284,8 @@ class _SummaryRow extends StatelessWidget {
           ),
           child: SvgPicture.asset(
             icon,
-            width: 16,
-            height: 16,
+            width: 20,
+            height: 20,
             colorFilter: const ColorFilter.mode(
               AppColors.secondaryBlue,
               BlendMode.srcIn,
@@ -301,7 +301,7 @@ class _SummaryRow extends StatelessWidget {
                 label,
                 style: const TextStyle(
                   color: Color(0xFF8A8F98),
-                  fontSize: 10,
+                  fontSize: 11,
                   fontWeight: FontWeight.w500,
                 ),
               ),
@@ -310,7 +310,7 @@ class _SummaryRow extends StatelessWidget {
                 value,
                 style: const TextStyle(
                   color: Colors.black,
-                  fontSize: 12,
+                  fontSize: 13,
                   fontWeight: FontWeight.w800,
                 ),
               ),

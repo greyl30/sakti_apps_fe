@@ -13,6 +13,7 @@ class AppAssets {
   static const iconPengingat = 'assets/icons/pengingat.svg';
   static const iconPerson = 'assets/icons/person.svg';
   static const iconBack = 'assets/icons/back.svg';
+  static const iconBel = 'assets/icons/bel.svg';
   static const iconBelbulat = 'assets/icons/belbulat.svg';
   static const iconCheck = 'assets/icons/check.svg';
   static const iconLokasi = 'assets/icons/lokasi.svg';
@@ -37,6 +38,12 @@ class AppAssets {
   static const iconJabatan = 'assets/icons/jabatan.svg';
   static const iconReset = 'assets/icons/reset.svg';
   static const iconTelp = 'assets/icons/telp.svg';
+  static const iconNo = 'assets/icons/no.svg';
+  static const iconProses = 'assets/icons/proses.svg';
+  static const iconSick = 'assets/icons/sick.svg';
+  static const iconIzin = 'assets/icons/izin.svg';
+  static const iconAdd = 'assets/icons/add.svg';
+  static const iconLogout = 'assets/icons/logout.svg';
 
   static const jabatan = iconJabatan;
   static const divisi = iconDivisi;
@@ -44,4 +51,5 @@ class AppAssets {
   static const telp = iconTelp;
   static const reset = iconReset;
   static const out = iconOut;
+  static const bel = iconBel;
 }
