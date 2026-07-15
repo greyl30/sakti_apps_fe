@@ -9,9 +9,11 @@ import '../../../attendance/presentation/models/attendance_ui_state.dart';
 import '../../../attendance/presentation/widgets/attendance_status_dialog.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../../../core/constants/app_assets.dart';
+import '../models/home_role.dart';
 import '../widgets/home_attendance_card.dart';
 import '../widgets/home_header.dart';
 import '../widgets/home_history_section.dart';
+import '../widgets/home_role_section.dart';
 import '../widgets/home_reminder_section.dart';
 
 class HomePage extends ConsumerWidget {
@@ -75,6 +77,11 @@ class HomePage extends ConsumerWidget {
                       isHoliday: attendanceState.isHoliday,
                       hasClockIn: attendanceState.hasClockIn,
                     ),
+                  ),
+                  HomeRoleSection(
+                    role: currentRole,
+                    onSeeAllTap: () => debugPrint('TODO: Lihat semua approval'),
+                    onItemTap: () => debugPrint('TODO: Buka detail approval'),
                   ),
                   const SizedBox(height: 20),
                   HomeHistorySection(
