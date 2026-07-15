@@ -80,8 +80,10 @@ class HomePage extends ConsumerWidget {
                   ),
                   HomeRoleSection(
                     role: currentRole,
-                    onSeeAllTap: () => debugPrint('TODO: Lihat semua approval'),
-                    onItemTap: () => debugPrint('TODO: Buka detail approval'),
+                    onSeeAllTap: () =>
+                        context.push(RouteName.managerLeaveApprovals),
+                    onItemTap: () =>
+                        context.push(RouteName.managerLeaveApprovals),
                   ),
                   const SizedBox(height: 20),
                   HomeHistorySection(

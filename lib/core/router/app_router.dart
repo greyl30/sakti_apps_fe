@@ -25,6 +25,10 @@ import '../../features/leave/presentation/pages/leave_cancel_page.dart';
 import '../../features/leave/presentation/pages/leave_cancel_success_page.dart';
 import '../../features/leave/presentation/pages/leave_confirmation_page.dart';
 import '../../features/home/presentation/pages/home_page.dart';
+import '../../features/home/presentation/models/manager_leave_approval.dart';
+import '../../features/home/presentation/pages/manager_leave_approval_detail_page.dart';
+import '../../features/home/presentation/pages/manager_leave_approval_list_page.dart';
+import '../../features/home/presentation/pages/manager_leave_reject_reason_page.dart';
 import '../../features/leave/presentation/pages/leave_history_page.dart';
 import '../../features/leave/presentation/pages/leave_page.dart';
 import '../../features/leave/presentation/pages/leave_status_page.dart';
@@ -239,6 +243,30 @@ final appRouter = GoRouter(
     GoRoute(
       path: RouteName.history,
       builder: (context, state) => const HistoryPage(),
+    ),
+    GoRoute(
+      path: RouteName.managerLeaveApprovals,
+      builder: (context, state) => const ManagerLeaveApprovalListPage(),
+    ),
+    GoRoute(
+      path: RouteName.managerLeaveApprovalDetail,
+      builder: (context, state) => ManagerLeaveApprovalDetailPage(
+        approval: state.extra is ManagerLeaveApproval
+            ? state.extra! as ManagerLeaveApproval
+            : managerApprovalStore.value.isNotEmpty
+            ? managerApprovalStore.value.first
+            : fallbackManagerApproval,
+      ),
+    ),
+    GoRoute(
+      path: RouteName.managerLeaveRejectReason,
+      builder: (context, state) => ManagerLeaveRejectReasonPage(
+        approval: state.extra is ManagerLeaveApproval
+            ? state.extra! as ManagerLeaveApproval
+            : managerApprovalStore.value.isNotEmpty
+            ? managerApprovalStore.value.first
+            : fallbackManagerApproval,
+      ),
     ),
   ],
 );

@@ -33,4 +33,7 @@ class RouteName {
   static const profile = '/profile';
   static const changePassword = '/profile/change-password';
   static const history = '/history';
+  static const managerLeaveApprovals = '/manager/leave-approvals';
+  static const managerLeaveApprovalDetail = '/manager/leave-approvals/detail';
+  static const managerLeaveRejectReason = '/manager/leave-approvals/reject';
 }
