@@ -1,5 +1,7 @@
 import 'package:go_router/go_router.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../supabase/supabase_client.dart';
 import '../../features/attendance/presentation/models/attendance_flow_type.dart';
 import '../../features/attendance/presentation/pages/attendance_confirmation_page.dart';
 import '../../features/attendance/presentation/pages/attendance_loading_page.dart';
@@ -8,6 +10,7 @@ import '../../features/attendance/presentation/pages/attendance_verification_pag
 import '../../features/attendance/presentation/pages/attendance_page.dart';
 import '../../features/auth/presentation/pages/forgot_password_page.dart';
 import '../../features/auth/presentation/pages/login_page.dart';
+import '../../features/auth/presentation/providers/auth_provider.dart';
 import '../../features/darurat/presentation/models/emergency_dispensation_data.dart';
 import '../../features/darurat/presentation/models/emergency_leave_data.dart';
 import '../../features/darurat/presentation/pages/emergency_dispensation_confirmation_page.dart';
@@ -44,8 +47,54 @@ import '../../features/profile/presentation/pages/profile_page.dart';
 import '../../features/splash/presentation/pages/splash_page.dart';
 import 'route_name.dart';
 
+const _publicRoutes = {
+  RouteName.splash,
+  RouteName.login,
+  RouteName.forgotPassword,
+};
+
+const _authEntryRoutes = {RouteName.login, RouteName.forgotPassword};
+
+const _roleProtectedRoutes = <String, Set<String>>{
+  RouteName.managerLeaveApprovals: {'atasan'},
+  RouteName.managerLeaveApprovalDetail: {'atasan'},
+  RouteName.managerLeaveRejectReason: {'atasan'},
+  RouteName.hrdLeaveFinalizations: {'hrd'},
+  RouteName.hrdLeaveFinalizationDetail: {'hrd'},
+};
+
 final appRouter = GoRouter(
   initialLocation: RouteName.splash,
+  redirect: (context, state) {
+    final location = state.uri.path;
+    final hasSession = AppSupabaseClient.client.auth.currentSession != null;
+    final authState = ProviderScope.containerOf(
+      context,
+      listen: false,
+    ).read(authProvider);
+    final userRole = _normalizeRole(authState.user?.peran);
+    final isPublicRoute = _publicRoutes.contains(location);
+    final isAuthEntryRoute = _authEntryRoutes.contains(location);
+    final allowedRoles = _allowedRolesFor(location);
+
+    if (!hasSession && !isPublicRoute) {
+      return RouteName.login;
+    }
+
+    if (hasSession && authState.user == null && location != RouteName.splash) {
+      return RouteName.splash;
+    }
+
+    if (hasSession && isAuthEntryRoute) {
+      return RouteName.home;
+    }
+
+    if (allowedRoles != null && !allowedRoles.contains(userRole)) {
+      return RouteName.home;
+    }
+
+    return null;
+  },
   routes: [
     GoRoute(
       path: RouteName.splash,
@@ -287,3 +336,15 @@ final appRouter = GoRouter(
     ),
   ],
 );
+
+Set<String>? _allowedRolesFor(String location) {
+  for (final entry in _roleProtectedRoutes.entries) {
+    if (location == entry.key || location.startsWith('${entry.key}/')) {
+      return entry.value;
+    }
+  }
+
+  return null;
+}
+
+String _normalizeRole(String? role) => role?.trim().toLowerCase() ?? '';
