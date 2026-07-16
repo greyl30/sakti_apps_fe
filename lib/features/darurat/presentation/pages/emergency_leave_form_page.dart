@@ -103,7 +103,7 @@ class _EmergencyLeaveFormPageState extends State<EmergencyLeaveFormPage> {
                             width: 22,
                             height: 22,
                             colorFilter: const ColorFilter.mode(
-                              const Color(0xFFD33B32),
+                              Color(0xFFD33B32),
                               BlendMode.srcIn,
                             ),
                           ),

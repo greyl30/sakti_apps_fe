@@ -101,7 +101,10 @@ class _LeaveApplyPageState extends State<LeaveApplyPage> {
                             AppAssets.iconSisa,
                             width: 27,
                             height: 27,
-                              color: const Color(0xFFD33B32)
+                            colorFilter: const ColorFilter.mode(
+                              Color(0xFFD33B32),
+                              BlendMode.srcIn,
+                            ),
                           ),
                         ),
                         const SizedBox(width: 14),

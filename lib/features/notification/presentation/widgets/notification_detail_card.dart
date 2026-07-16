@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../models/notification_model.dart';
-import 'notification_card.dart';
 import 'notification_formatters.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../../../../core/constants/app_assets.dart';
@@ -84,11 +83,7 @@ class NotificationDetailCard extends StatelessWidget {
           ),
           const SizedBox(height: 14),
 
-          Divider(
-            color: Color(0xFFE5E5E5),
-            thickness: 1,
-            height: 1,
-          ),
+          const Divider(color: Color(0xFFE5E5E5), thickness: 1, height: 1),
 
           const SizedBox(height: 14),
 

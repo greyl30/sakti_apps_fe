@@ -23,6 +23,7 @@ class HomePage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     // Data profil user login dari auth provider.
     final user = ref.watch(authProvider).user;
+    final role = userRoleFromPeran(user?.peran);
     final positionParts = [
       user?.levelJabatan ?? user?.peran,
       user?.divisi ?? user?.unit,
@@ -38,7 +39,7 @@ class HomePage extends ConsumerWidget {
           padding: EdgeInsets.zero,
           children: [
             HomeHeader(
-              userName: user?.namaLengkap ?? 'Pengguna',
+              userName: _displayValue(user?.namaLengkap),
               positionLabel: positionParts.isEmpty
                   ? '-'
                   : positionParts.join(' | '),
@@ -79,7 +80,7 @@ class HomePage extends ConsumerWidget {
                     ),
                   ),
                   HomeRoleSection(
-                    role: currentRole,
+                    role: role,
                     onSeeAllTap: () =>
                         context.push(RouteName.managerLeaveApprovals),
                     onItemTap: () =>
@@ -151,5 +152,11 @@ class HomePage extends ConsumerWidget {
         onPressed: () => Navigator.of(dialogContext).pop(),
       ),
     );
+  }
+
+  String _displayValue(String? value) {
+    final trimmed = value?.trim();
+    if (trimmed == null || trimmed.isEmpty) return '-';
+    return trimmed;
   }
 }

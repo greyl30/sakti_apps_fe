@@ -1,7 +1,8 @@
 import 'package:dio/dio.dart';
+import 'package:supabase_flutter/supabase_flutter.dart' as supabase;
 
+import '../../../../core/supabase/supabase_client.dart';
 import '../models/login_request.dart';
-import '../models/login_response.dart';
 
 // Remote data source untuk memanggil endpoint auth
 class AuthRemoteDataSource {
@@ -9,18 +10,28 @@ class AuthRemoteDataSource {
 
   final Dio _dio;
 
-  // Memanggil endpoint login
-  Future<LoginResponse> login(LoginRequest request) async {
-    final response = await _dio.post<Map<String, dynamic>>(
-      '/api/auth/login',
-      data: request.toJson(),
+  // Login menggunakan Supabase Auth, lalu mengambil profile karyawan.
+  Future<Map<String, dynamic>> login(LoginRequest request) async {
+    final client = AppSupabaseClient.client;
+    final response = await client.auth.signInWithPassword(
+      email: request.email,
+      password: request.password,
     );
 
-    return LoginResponse.fromJson(response.data ?? <String, dynamic>{});
+    final uid = response.user?.id ?? client.auth.currentUser?.id;
+    if (uid == null) {
+      throw const supabase.AuthException('Invalid login credentials');
+    }
+
+    final data = await client.from('karyawan').select().eq('id', uid).single();
+
+    return Map<String, dynamic>.from(data);
   }
 
   // Memanggil endpoint lupa password
   Future<void> forgotPassword(String email) async {
+    // TODO(Supabase):
+    // Migrasikan forgot password ke Supabase Auth pada sprint berikutnya.
     await _dio.post<Map<String, dynamic>>(
       '/api/auth/forgot-password',
       data: {'email': email},

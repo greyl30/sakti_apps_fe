@@ -2,7 +2,9 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:dio/dio.dart';
+import 'package:supabase_flutter/supabase_flutter.dart' as supabase;
 
+import '../../../../core/supabase/supabase_client.dart';
 import '../../../../core/storage/secure_storage_service.dart';
 import '../datasources/auth_remote_data_source.dart';
 import '../models/login_request.dart';
@@ -20,24 +22,31 @@ class AuthRepository {
     required String password,
   }) async {
     try {
-      final response = await _remoteDataSource.login(
+      final userJson = await _remoteDataSource.login(
         LoginRequest(email: email, password: password),
       );
 
-      final loginData = response.data;
-      if (!response.success || loginData == null) {
-        throw const AuthException('Email atau password salah');
+      final user = UserModel.fromJson(userJson);
+      final accessToken =
+          AppSupabaseClient.client.auth.currentSession?.accessToken;
+
+      if (accessToken != null) {
+        // Menyimpan access token ke secure storage
+        await SecureStorageService.saveToken(accessToken);
       }
 
-      // Menyimpan access token ke secure storage
-      await SecureStorageService.saveToken(loginData.accessToken);
-
       // Menyimpan data user ke secure storage untuk dipakai ulang
-      await SecureStorageService.saveUser(jsonEncode(loginData.user.toJson()));
+      await SecureStorageService.saveUser(jsonEncode(user.toJson()));
 
-      return loginData.user;
+      return user;
+    } on supabase.AuthException catch (error) {
+      throw AuthException(_mapSupabaseAuthError(error));
+    } on SocketException {
+      throw const AuthException('Tidak dapat terhubung ke server.');
     } on DioException catch (error) {
       throw AuthException(_mapDioError(error));
+    } catch (error) {
+      throw AuthException(_mapLoginError(error));
     }
   }
 
@@ -69,6 +78,43 @@ class AuthRepository {
     }
 
     return 'Email atau password salah';
+  }
+
+  String _mapSupabaseAuthError(supabase.AuthException error) {
+    final message = error.message.toLowerCase();
+    if (message.contains('invalid login') ||
+        message.contains('invalid credentials') ||
+        message.contains('invalid_credentials')) {
+      return 'Email atau password salah';
+    }
+
+    if (message.contains('network') ||
+        message.contains('socket') ||
+        message.contains('connection')) {
+      return 'Tidak dapat terhubung ke server.';
+    }
+
+    return 'Terjadi kesalahan saat login. Silakan coba lagi.';
+  }
+
+  String _mapLoginError(Object error) {
+    final message = error.toString().toLowerCase();
+    final type = error.runtimeType.toString().toLowerCase();
+
+    if (message.contains('invalid login') ||
+        message.contains('invalid credentials') ||
+        message.contains('invalid_credentials')) {
+      return 'Email atau password salah';
+    }
+
+    if (message.contains('network') ||
+        message.contains('socket') ||
+        message.contains('connection') ||
+        type.contains('clientexception')) {
+      return 'Tidak dapat terhubung ke server.';
+    }
+
+    return 'Terjadi kesalahan saat login. Silakan coba lagi.';
   }
 }
 

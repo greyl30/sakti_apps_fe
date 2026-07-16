@@ -34,6 +34,7 @@ class UserModel {
   @JsonKey(name: 'foto_url')
   final String? fotoUrl;
 
+  @JsonKey(name: 'role')
   final String? peran;
 
   @JsonKey(name: 'level_jabatan')

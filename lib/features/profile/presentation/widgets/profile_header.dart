@@ -7,10 +7,16 @@ import '../../../../core/router/route_name.dart';
 import '../../../../core/theme/app_colors.dart';
 
 class ProfileHeader extends StatelessWidget {
-  const ProfileHeader({super.key, required this.name, required this.status});
+  const ProfileHeader({
+    super.key,
+    required this.name,
+    required this.status,
+    this.photoUrl,
+  });
 
   final String name;
   final String status;
+  final String? photoUrl;
 
   @override
   Widget build(BuildContext context) {
@@ -76,7 +82,9 @@ class ProfileHeader extends StatelessWidget {
                 Container(
                   width: 120,
                   height: 120,
-                  padding: const EdgeInsets.all(20),
+                  padding: _hasPhoto
+                      ? EdgeInsets.zero
+                      : const EdgeInsets.all(20),
                   decoration: BoxDecoration(
                     color: const Color(0xFFEAF8FD),
                     shape: BoxShape.circle,
@@ -89,13 +97,17 @@ class ProfileHeader extends StatelessWidget {
                       ),
                     ],
                   ),
-                  child: SvgPicture.asset(
-                    AppAssets.iconPerson,
-                    colorFilter: const ColorFilter.mode(
-                      AppColors.secondaryBlue,
-                      BlendMode.srcIn,
-                    ),
-                  ),
+                  child: _hasPhoto
+                      ? ClipOval(
+                          child: Image.network(
+                            photoUrl!.trim(),
+                            width: 120,
+                            height: 120,
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, _, _) => _ProfileFallbackIcon(),
+                          ),
+                        )
+                      : const _ProfileFallbackIcon(),
                 ),
                 const SizedBox(height: 20),
                 Text(
@@ -133,6 +145,26 @@ class ProfileHeader extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  bool get _hasPhoto {
+    final trimmed = photoUrl?.trim();
+    return trimmed != null && trimmed.isNotEmpty;
+  }
+}
+
+class _ProfileFallbackIcon extends StatelessWidget {
+  const _ProfileFallbackIcon();
+
+  @override
+  Widget build(BuildContext context) {
+    return SvgPicture.asset(
+      AppAssets.iconPerson,
+      colorFilter: const ColorFilter.mode(
+        AppColors.secondaryBlue,
+        BlendMode.srcIn,
       ),
     );
   }

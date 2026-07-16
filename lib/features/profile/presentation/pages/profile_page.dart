@@ -16,14 +16,7 @@ class ProfilePage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // TODO(Backend):
-    // Ambil data profile karyawan dari API.
-    const employeeName = 'Wijaya Kusuma';
-    const employeeStatus = 'Karyawan Aktif';
-    const position = 'Staff IT & Infrastruktur';
-    const division = 'Divisi Teknologi Informasi';
-    const email = 'wijaya.kusuma@kopgetel.co.id';
-    const phone = '+62 812-3456-7890';
+    final user = ref.watch(authProvider).user;
 
     return Scaffold(
       backgroundColor: AppColors.whiteBackground,
@@ -33,33 +26,42 @@ class ProfilePage extends ConsumerWidget {
           padding: EdgeInsets.zero,
           children: [
             // Header profile dengan foto overlap seperti desain.
-            const ProfileHeader(name: employeeName, status: employeeStatus),
+            ProfileHeader(
+              name: _displayValue(user?.namaLengkap),
+              status: _displayValue(user?.statusKaryawan),
+              photoUrl: user?.fotoUrl,
+            ),
             Padding(
               padding: const EdgeInsets.fromLTRB(18, 22, 18, 32),
               child: Column(
                 children: [
                   // Card data diri karyawan.
-                  const ProfileDataCard(
+                  ProfileDataCard(
                     items: [
                       ProfileDataItem(
                         icon: AppAssets.jabatan,
                         label: 'Jabatan',
-                        value: position,
+                        value: _displayValue(user?.levelJabatan),
                       ),
                       ProfileDataItem(
                         icon: AppAssets.divisi,
                         label: 'Divisi',
-                        value: division,
+                        value: _displayValue(user?.divisi),
+                      ),
+                      ProfileDataItem(
+                        icon: AppAssets.divisi,
+                        label: 'Unit',
+                        value: _displayValue(user?.unit),
                       ),
                       ProfileDataItem(
                         icon: AppAssets.email,
                         label: 'Email',
-                        value: email,
+                        value: _displayValue(user?.email),
                       ),
                       ProfileDataItem(
                         icon: AppAssets.telp,
                         label: 'No. HP',
-                        value: phone,
+                        value: _displayValue(user?.nomorTelepon),
                       ),
                     ],
                   ),
@@ -99,11 +101,19 @@ class ProfilePage extends ConsumerWidget {
         cancelText: 'Tidak',
         onConfirm: () {
           Navigator.of(dialogContext).pop();
+          // TODO(Backend):
+          // Hapus access token dan refresh token sebelum logout.
           ref.read(authProvider.notifier).logout();
           context.go(RouteName.login);
         },
         onCancel: () => Navigator.of(dialogContext).pop(),
       ),
     );
+  }
+
+  String _displayValue(String? value) {
+    final trimmed = value?.trim();
+    if (trimmed == null || trimmed.isEmpty) return '-';
+    return trimmed;
   }
 }

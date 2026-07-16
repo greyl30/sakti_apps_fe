@@ -1,8 +1,18 @@
 enum UserRole { employee, manager, hrd }
 
 // TODO(Backend):
-// Ambil role user dari Supabase/Auth profile.
-const currentRole = UserRole.employee;
+// Role nantinya selalu berasal dari AuthState.user yang diisi data Supabase.
+UserRole userRoleFromPeran(String? peran) {
+  switch (peran?.trim().toLowerCase()) {
+    case 'atasan':
+      return UserRole.manager;
+    case 'hrd':
+      return UserRole.hrd;
+    case 'karyawan':
+    default:
+      return UserRole.employee;
+  }
+}
 
 class HomeApprovalItem {
   const HomeApprovalItem({

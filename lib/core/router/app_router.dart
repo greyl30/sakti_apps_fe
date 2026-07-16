@@ -45,7 +45,7 @@ import '../../features/splash/presentation/pages/splash_page.dart';
 import 'route_name.dart';
 
 final appRouter = GoRouter(
-  initialLocation: RouteName.home,
+  initialLocation: RouteName.splash,
   routes: [
     GoRoute(
       path: RouteName.splash,
