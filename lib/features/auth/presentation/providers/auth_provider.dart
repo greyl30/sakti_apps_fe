@@ -71,6 +71,20 @@ class AuthNotifier extends StateNotifier<AuthState> {
     }
   }
 
+  // Restore session Supabase dari Splash saat aplikasi dibuka.
+  Future<bool> restoreSession() async {
+    state = state.copyWith(isLoading: true, clearMessage: true);
+
+    final user = await _repository.restoreSession();
+    if (user == null) {
+      state = const AuthState();
+      return false;
+    }
+
+    state = state.copyWith(isLoading: false, user: user);
+    return true;
+  }
+
   // Mengirim permintaan lupa password ke repository
   Future<bool> forgotPassword(String email) async {
     state = state.copyWith(isLoading: true, clearMessage: true);
@@ -88,9 +102,10 @@ class AuthNotifier extends StateNotifier<AuthState> {
     }
   }
 
-  void logout() {
+  Future<void> logout() async {
     // TODO(Backend):
     // Hapus access token dan refresh token sebelum logout.
+    await _repository.logout();
     state = const AuthState();
   }
 }

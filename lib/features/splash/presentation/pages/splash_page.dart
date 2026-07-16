@@ -1,22 +1,24 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/constants/app_assets.dart';
 import '../../../../core/router/route_name.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../auth/presentation/providers/auth_provider.dart';
 import '../widgets/splash_bottom_button.dart';
 import '../widgets/splash_content.dart';
 import '../widgets/splash_indicator.dart';
 
-class SplashPage extends StatefulWidget {
+class SplashPage extends ConsumerStatefulWidget {
   const SplashPage({super.key});
 
   @override
-  State<SplashPage> createState() => _SplashPageState();
+  ConsumerState<SplashPage> createState() => _SplashPageState();
 }
 
-class _SplashPageState extends State<SplashPage> {
+class _SplashPageState extends ConsumerState<SplashPage> {
   final PageController _pageController = PageController();
 
   int _currentPage = 0;
@@ -43,9 +45,24 @@ class _SplashPageState extends State<SplashPage> {
   ];
 
   @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _restoreSession();
+    });
+  }
+
+  @override
   void dispose() {
     _pageController.dispose();
     super.dispose();
+  }
+
+  Future<void> _restoreSession() async {
+    final hasSession = await ref.read(authProvider.notifier).restoreSession();
+    if (!mounted) return;
+
+    context.go(hasSession ? RouteName.home : RouteName.login);
   }
 
   void _goToLogin() {

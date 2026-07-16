@@ -28,6 +28,17 @@ class AuthRemoteDataSource {
     return Map<String, dynamic>.from(data);
   }
 
+  // Mengambil profile karyawan berdasarkan user id Supabase Auth.
+  Future<Map<String, dynamic>> getKaryawanById(String id) async {
+    final data = await AppSupabaseClient.client
+        .from('karyawan')
+        .select()
+        .eq('id', id)
+        .single();
+
+    return Map<String, dynamic>.from(data);
+  }
+
   // Memanggil endpoint lupa password
   Future<void> forgotPassword(String email) async {
     // TODO(Supabase):

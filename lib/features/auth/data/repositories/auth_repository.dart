@@ -50,6 +50,46 @@ class AuthRepository {
     }
   }
 
+  // Restore session Supabase yang masih aktif saat aplikasi dibuka ulang.
+  Future<UserModel?> restoreSession() async {
+    final client = AppSupabaseClient.client;
+    final session = client.auth.currentSession;
+
+    if (session == null) return null;
+
+    try {
+      final userJson = await _remoteDataSource.getKaryawanById(session.user.id);
+      final user = UserModel.fromJson(userJson);
+
+      // Menyimpan access token session aktif ke secure storage
+      await SecureStorageService.saveToken(session.accessToken);
+
+      // Menyimpan data user hasil restore agar state aplikasi konsisten
+      await SecureStorageService.saveUser(jsonEncode(user.toJson()));
+
+      return user;
+    } catch (_) {
+      try {
+        await client.auth.signOut();
+      } catch (_) {
+        // Session invalid tetap dilanjutkan dengan clear local storage.
+      }
+      await SecureStorageService.logout();
+      return null;
+    }
+  }
+
+  // Logout Supabase dan hapus seluruh data session lokal.
+  Future<void> logout() async {
+    try {
+      await AppSupabaseClient.client.auth.signOut();
+    } catch (_) {
+      // Jika signOut gagal karena network, user tetap logout dari device.
+    } finally {
+      await SecureStorageService.logout();
+    }
+  }
+
   // Request link reset password ke backend
   Future<void> forgotPassword(String email) async {
     try {

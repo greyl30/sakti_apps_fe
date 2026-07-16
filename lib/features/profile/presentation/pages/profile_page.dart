@@ -99,11 +99,12 @@ class ProfilePage extends ConsumerWidget {
         title: 'Apakah Anda yakin ingin keluar dari aplikasi ini?',
         confirmText: 'Ya',
         cancelText: 'Tidak',
-        onConfirm: () {
+        onConfirm: () async {
           Navigator.of(dialogContext).pop();
           // TODO(Backend):
           // Hapus access token dan refresh token sebelum logout.
-          ref.read(authProvider.notifier).logout();
+          await ref.read(authProvider.notifier).logout();
+          if (!context.mounted) return;
           context.go(RouteName.login);
         },
         onCancel: () => Navigator.of(dialogContext).pop(),
