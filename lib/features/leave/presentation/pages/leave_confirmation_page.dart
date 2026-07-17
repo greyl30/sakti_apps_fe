@@ -17,6 +17,7 @@ class LeaveConfirmationPage extends StatelessWidget {
   final LeaveFormData data;
 
   void _showSuccessDialog(BuildContext context) {
+    final isDispensation = _isDispensation(data.type);
     final statusData = LeaveRequestStatusData(
       type: data.type,
       reason: data.reason,
@@ -25,9 +26,17 @@ class LeaveConfirmationPage extends StatelessWidget {
       submittedDate: DateTime(2026, 7, 10),
       supervisorName: 'Hendru Kusuma',
       hrdName: 'HRD',
-      stage: LeaveApprovalStage.currentSupervisor,
-      status: LeaveApprovalStatus.waitingSupervisor,
-      progress: ApprovalProgress.waitingSupervisor,
+      stage: isDispensation
+          ? LeaveApprovalStage.currentHRD
+          : LeaveApprovalStage.currentSupervisor,
+      status: isDispensation
+          ? LeaveApprovalStatus.approved
+          : LeaveApprovalStatus.waitingSupervisor,
+      progress: isDispensation
+          ? ApprovalProgress.approved
+          : ApprovalProgress.waitingSupervisor,
+      supervisorApprovalDate: isDispensation ? DateTime(2026, 7, 10) : null,
+      hrdApprovalDate: isDispensation ? DateTime(2026, 7, 10) : null,
     );
 
     // Popup berhasil mengirim pengajuan cuti.
@@ -65,10 +74,12 @@ class LeaveConfirmationPage extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 24),
-              const Text(
-                'Pengajuan Cuti Terkirim',
+              Text(
+                isDispensation
+                    ? 'Pengajuan Dispensasi Berhasil'
+                    : 'Pengajuan Cuti Terkirim',
                 textAlign: TextAlign.center,
-                style: TextStyle(
+                style: const TextStyle(
                   color: Colors.black,
                   fontSize: 20,
                   fontWeight: FontWeight.w800,
@@ -76,10 +87,12 @@ class LeaveConfirmationPage extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 10),
-              const Text(
-                'Pengajuan cuti Anda telah berhasil dikirim dan sedang menunggu proses persetujuan.',
+              Text(
+                isDispensation
+                    ? 'Dispensasi telah tercatat dalam sistem. Notifikasi telah dikirim kepada Atasan dan HRD.'
+                    : 'Pengajuan cuti Anda telah berhasil dikirim dan sedang menunggu proses persetujuan.',
                 textAlign: TextAlign.center,
-                style: TextStyle(
+                style: const TextStyle(
                   color: Color(0xFF8A8F98),
                   fontSize: 13,
                   fontWeight: FontWeight.w500,
@@ -93,7 +106,12 @@ class LeaveConfirmationPage extends StatelessWidget {
                 child: FilledButton(
                   onPressed: () {
                     Navigator.of(dialogContext).pop();
-                    context.go(RouteName.leaveStatus, extra: statusData);
+                    context.go(
+                      isDispensation
+                          ? RouteName.leaveSuccess
+                          : RouteName.leaveStatus,
+                      extra: statusData,
+                    );
                   },
                   style: FilledButton.styleFrom(
                     backgroundColor: const Color(0xFFD33B32),
@@ -120,6 +138,8 @@ class LeaveConfirmationPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDispensation = _isDispensation(data.type);
+
     return Scaffold(
       backgroundColor: AppColors.whiteBackground,
       body: SafeArea(
@@ -127,9 +147,13 @@ class LeaveConfirmationPage extends StatelessWidget {
         child: Column(
           children: [
             // Top AppBar halaman konfirmasi pengajuan
-            const LeaveTopBar(
-              title: 'Konfirmasi Pengajuan',
-              subtitle: 'Konfirmasi pengajuan cuti Anda',
+            LeaveTopBar(
+              title: isDispensation
+                  ? 'Konfirmasi Pengajuan Dispensasi'
+                  : 'Konfirmasi Pengajuan',
+              subtitle: isDispensation
+                  ? 'Konfirmasi pengajuan dispensasi Anda'
+                  : 'Konfirmasi pengajuan cuti Anda',
             ),
             Expanded(
               child: ListView(
@@ -153,9 +177,11 @@ class LeaveConfirmationPage extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
-                          'RINGKASAN PENGAJUAN CUTI',
-                          style: TextStyle(
+                        Text(
+                          isDispensation
+                              ? 'RINGKASAN PENGAJUAN DISPENSASI'
+                              : 'RINGKASAN PENGAJUAN CUTI',
+                          style: const TextStyle(
                             color: Color(0xFF8A8F98),
                             fontSize: 12,
                             fontWeight: FontWeight.w800,
@@ -180,12 +206,14 @@ class LeaveConfirmationPage extends StatelessWidget {
                           value: '${data.totalDays} hari kerja',
                         ),
                         const SizedBox(height: 14),
-                        _SummaryRow(
-                          icon: AppAssets.iconSisa,
-                          label: 'Sisa Cuti',
-                          value: '${13 - data.totalDays} hari',
-                        ),
-                        const SizedBox(height: 14),
+                        if (!isDispensation) ...[
+                          _SummaryRow(
+                            icon: AppAssets.iconSisa,
+                            label: 'Sisa Cuti',
+                            value: '${13 - data.totalDays} hari',
+                          ),
+                          const SizedBox(height: 14),
+                        ],
                         _SummaryRow(
                           icon: AppAssets.iconAlasan,
                           label: 'Alasan',
@@ -210,10 +238,12 @@ class LeaveConfirmationPage extends StatelessWidget {
                           height: 30,
                         ),
                         const SizedBox(width: 12),
-                        const Expanded(
+                        Expanded(
                           child: Text(
-                            'Setelah diklik, pengajuan akan dikirim ke atasan Anda untuk mendapat persetujuan.',
-                            style: TextStyle(
+                            isDispensation
+                                ? 'Setelah diklik, dispensasi akan langsung tercatat dalam sistem serta notifikasi akan dikirim kepada Atasan dan HRD.'
+                                : 'Setelah diklik, pengajuan akan dikirim ke atasan Anda untuk mendapat persetujuan.',
+                            style: const TextStyle(
                               color: Color(0xFF5F6972),
                               fontSize: 11,
                               fontWeight: FontWeight.w500,
@@ -227,7 +257,7 @@ class LeaveConfirmationPage extends StatelessWidget {
                   const SizedBox(height: 24),
                   // Tombol ajukan cuti
                   LeavePrimaryButton(
-                    label: 'Ajukan Cuti',
+                    label: isDispensation ? 'Ajukan Dispensasi' : 'Ajukan Cuti',
                     onPressed: () => _showSuccessDialog(context),
                   ),
                 ],
@@ -256,6 +286,10 @@ class LeaveConfirmationPage extends StatelessWidget {
       'Desember',
     ];
     return '${date.day} ${months[date.month - 1]} ${date.year}';
+  }
+
+  bool _isDispensation(String type) {
+    return type.trim().toLowerCase() == 'dispensasi';
   }
 }
 

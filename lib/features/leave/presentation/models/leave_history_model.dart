@@ -41,14 +41,14 @@ final dummyLeaveHistories = [
   ),
   LeaveHistoryModel(
     id: 'leave-history-004',
-    leaveType: 'Cuti Sakit',
+    leaveType: 'Sakit',
     startDate: DateTime(2025, 12, 20),
     endDate: DateTime(2025, 12, 23),
     status: LeaveHistoryStatus.approved,
   ),
   LeaveHistoryModel(
     id: 'leave-history-005',
-    leaveType: 'Cuti Darurat',
+    leaveType: 'Dispensasi',
     startDate: DateTime(2025, 12, 8),
     endDate: DateTime(2025, 12, 11),
     status: LeaveHistoryStatus.approved,

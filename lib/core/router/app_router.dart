@@ -11,15 +11,6 @@ import '../../features/attendance/presentation/pages/attendance_page.dart';
 import '../../features/auth/presentation/pages/forgot_password_page.dart';
 import '../../features/auth/presentation/pages/login_page.dart';
 import '../../features/auth/presentation/providers/auth_provider.dart';
-import '../../features/darurat/presentation/models/emergency_dispensation_data.dart';
-import '../../features/darurat/presentation/models/emergency_leave_data.dart';
-import '../../features/darurat/presentation/pages/emergency_dispensation_confirmation_page.dart';
-import '../../features/darurat/presentation/pages/emergency_dispensation_form_page.dart';
-import '../../features/darurat/presentation/pages/emergency_dispensation_success_page.dart';
-import '../../features/darurat/presentation/pages/emergency_history_page.dart';
-import '../../features/darurat/presentation/pages/emergency_leave_confirmation_page.dart';
-import '../../features/darurat/presentation/pages/emergency_leave_form_page.dart';
-import '../../features/darurat/presentation/pages/emergency_page.dart';
 import '../../features/history/presentation/pages/history_page.dart';
 import '../../features/leave/presentation/models/leave_form_data.dart';
 import '../../features/leave/presentation/models/leave_request_status.dart';
@@ -231,46 +222,6 @@ final appRouter = GoRouter(
     GoRoute(
       path: RouteName.leaveHistory,
       builder: (context, state) => const LeaveHistoryPage(),
-    ),
-    GoRoute(
-      path: RouteName.emergency,
-      builder: (context, state) => const EmergencyPage(),
-    ),
-    GoRoute(
-      path: RouteName.emergencyDispensation,
-      builder: (context, state) => const EmergencyDispensationFormPage(),
-    ),
-    GoRoute(
-      path: RouteName.emergencyDispensationConfirmation,
-      builder: (context, state) => EmergencyDispensationConfirmationPage(
-        data: state.extra is EmergencyDispensationData
-            ? state.extra! as EmergencyDispensationData
-            : dummyEmergencyDispensationData(),
-      ),
-    ),
-    GoRoute(
-      path: RouteName.emergencyDispensationSuccess,
-      builder: (context, state) => EmergencyDispensationSuccessPage(
-        data: state.extra is EmergencyDispensationData
-            ? state.extra! as EmergencyDispensationData
-            : dummyEmergencyDispensationData(),
-      ),
-    ),
-    GoRoute(
-      path: RouteName.emergencyLeave,
-      builder: (context, state) => const EmergencyLeaveFormPage(),
-    ),
-    GoRoute(
-      path: RouteName.emergencyLeaveConfirmation,
-      builder: (context, state) => EmergencyLeaveConfirmationPage(
-        data: state.extra is EmergencyLeaveData
-            ? state.extra! as EmergencyLeaveData
-            : dummyEmergencyLeaveData(),
-      ),
-    ),
-    GoRoute(
-      path: RouteName.emergencyHistory,
-      builder: (context, state) => const EmergencyHistoryPage(),
     ),
     GoRoute(
       path: RouteName.notification,

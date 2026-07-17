@@ -16,6 +16,8 @@ class LeaveSuccessPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDispensation = data.type.trim().toLowerCase() == 'dispensasi';
+
     return Scaffold(
       backgroundColor: AppColors.whiteBackground,
       body: SafeArea(
@@ -26,24 +28,30 @@ class LeaveSuccessPage extends StatelessWidget {
             Align(
               alignment: Alignment.centerLeft,
               child: InkWell(
-                onTap: () => context.go(RouteName.leaveStatus, extra: data),
+                onTap: () => context.go(
+                  isDispensation ? RouteName.leave : RouteName.leaveStatus,
+                  extra: isDispensation ? null : data,
+                ),
                 customBorder: const CircleBorder(),
                 child: SvgPicture.asset(AppAssets.back2, width: 40, height: 40),
               ),
             ),
             const SizedBox(height: 20),
-            const LeaveSuccessHeader(
-              title: 'Pengajuan Cuti Berhasil!',
-              description:
-                  'Cuti Anda telah disetujui dan tercatat dalam sistem',
+            LeaveSuccessHeader(
+              title: isDispensation
+                  ? 'Pengajuan Dispensasi Berhasil!'
+                  : 'Pengajuan Cuti Berhasil!',
+              description: isDispensation
+                  ? 'Dispensasi Anda telah tercatat dalam sistem.'
+                  : 'Cuti Anda telah disetujui dan tercatat dalam sistem',
               badge: 'DISETUJUI',
             ),
             const SizedBox(height: 28),
             // Ringkasan data pengajuan cuti.
-            LeaveSummaryCard(data: data),
+            LeaveSummaryCard(data: data, showRemainingLeave: !isDispensation),
             const SizedBox(height: 28),
             LeavePrimaryButton(
-              label: 'Unduh Surat Cuti',
+              label: 'Unduh Surat',
               onPressed: () {
                 // Backend nantinya akan mengirim file PDF surat cuti.
                 ScaffoldMessenger.of(context).showSnackBar(
@@ -56,10 +64,17 @@ class LeaveSuccessPage extends StatelessWidget {
               },
             ),
             const SizedBox(height: 16),
-            LeaveSecondaryButton(
-              label: 'Batalkan Cuti',
-              onPressed: () => context.push(RouteName.leaveCancel, extra: data),
-            ),
+            if (isDispensation)
+              LeaveSecondaryButton(
+                label: 'Kembali ke Beranda',
+                onPressed: () => context.go(RouteName.home),
+              )
+            else
+              LeaveSecondaryButton(
+                label: 'Batalkan Cuti',
+                onPressed: () =>
+                    context.push(RouteName.leaveCancel, extra: data),
+              ),
           ],
         ),
       ),

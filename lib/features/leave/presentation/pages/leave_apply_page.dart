@@ -18,7 +18,7 @@ class LeaveApplyPage extends StatefulWidget {
 }
 
 class _LeaveApplyPageState extends State<LeaveApplyPage> {
-  String _selectedType = 'Cuti Sakit';
+  String _selectedType = 'Sakit';
   final _reasonController = TextEditingController();
   DateTimeRange? _dateRange;
 
@@ -140,17 +140,24 @@ class _LeaveApplyPageState extends State<LeaveApplyPage> {
                   const _FormLabel('Pilih Jenis / Alasan Cuti'),
                   const SizedBox(height: 15),
                   _LeaveTypeTile(
-                    title: 'Cuti Sakit',
-                    icon: AppAssets.iconSick,
-                    isSelected: _selectedType == 'Cuti Sakit',
-                    onTap: () => setState(() => _selectedType = 'Cuti Sakit'),
-                  ),
-                  const SizedBox(height: 17),
-                  _LeaveTypeTile(
                     title: 'Izin',
                     icon: AppAssets.iconIzin,
                     isSelected: _selectedType == 'Izin',
                     onTap: () => setState(() => _selectedType = 'Izin'),
+                  ),
+                  const SizedBox(height: 17),
+                  _LeaveTypeTile(
+                    title: 'Sakit',
+                    icon: AppAssets.iconSick,
+                    isSelected: _selectedType == 'Sakit',
+                    onTap: () => setState(() => _selectedType = 'Sakit'),
+                  ),
+                  const SizedBox(height: 17),
+                  _LeaveTypeTile(
+                    title: 'Dispensasi',
+                    icon: AppAssets.iconIzin,
+                    isSelected: _selectedType == 'Dispensasi',
+                    onTap: () => setState(() => _selectedType = 'Dispensasi'),
                   ),
                   const SizedBox(height: 26),
                   const _FormLabel('Keterangan (opsional)'),

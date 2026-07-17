@@ -96,10 +96,16 @@ class LeaveSuccessHeader extends StatelessWidget {
 }
 
 class LeaveSummaryCard extends StatelessWidget {
-  const LeaveSummaryCard({super.key, required this.data, this.cancelReason});
+  const LeaveSummaryCard({
+    super.key,
+    required this.data,
+    this.cancelReason,
+    this.showRemainingLeave = true,
+  });
 
   final LeaveRequestStatusData data;
   final String? cancelReason;
+  final bool showRemainingLeave;
 
   @override
   Widget build(BuildContext context) {
@@ -134,11 +140,12 @@ class LeaveSummaryCard extends StatelessWidget {
             label: 'Durasi',
             value: '${data.totalDays} hari kerja',
           ),
-          LeaveSummaryRow(
-            icon: AppAssets.iconSisa,
-            label: 'Sisa Cuti',
-            value: '6 hari',
-          ),
+          if (showRemainingLeave)
+            LeaveSummaryRow(
+              icon: AppAssets.iconSisa,
+              label: 'Sisa Cuti',
+              value: '6 hari',
+            ),
           LeaveSummaryRow(
             icon: AppAssets.iconAlasan,
             label: 'Alasan',

@@ -6,7 +6,7 @@ import '../constants/app_assets.dart';
 import '../router/route_name.dart';
 
 /// Bottom navigation utama karyawan.
-/// Hanya digunakan pada halaman Beranda, Presensi, Cuti, dan Darurat.
+/// Hanya digunakan pada halaman Beranda, Presensi, dan Cuti.
 class AppBottomNavigation extends StatelessWidget {
   const AppBottomNavigation({super.key, required this.currentIndex});
 
@@ -16,7 +16,6 @@ class AppBottomNavigation extends StatelessWidget {
     RouteName.home,
     RouteName.attendance,
     RouteName.leave,
-    RouteName.emergency,
   ];
 
   @override
@@ -25,7 +24,6 @@ class AppBottomNavigation extends StatelessWidget {
       _BottomNavigationItem(AppAssets.iconHome, 'Beranda'),
       _BottomNavigationItem(AppAssets.iconAbsen, 'Presensi'),
       _BottomNavigationItem(AppAssets.iconCuti, 'Cuti'),
-      _BottomNavigationItem(AppAssets.iconDarurat, 'Darurat'),
     ];
 
     return SafeArea(
