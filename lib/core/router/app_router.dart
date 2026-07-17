@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../supabase/supabase_client.dart';
 import '../../features/attendance/presentation/models/attendance_flow_type.dart';
-import '../../features/attendance/presentation/pages/attendance_confirmation_page.dart';
 import '../../features/attendance/presentation/pages/attendance_loading_page.dart';
 import '../../features/attendance/presentation/pages/attendance_success_page.dart';
 import '../../features/attendance/presentation/pages/attendance_verification_page.dart';
@@ -118,11 +117,6 @@ final appRouter = GoRouter(
           const CheckInLoadingPage(flowType: AttendanceFlowType.checkIn),
     ),
     GoRoute(
-      path: RouteName.checkInConfirmation,
-      builder: (context, state) =>
-          const CheckInConfirmationPage(flowType: AttendanceFlowType.checkIn),
-    ),
-    GoRoute(
       path: RouteName.checkInSuccess,
       builder: (context, state) =>
           const CheckInSuccessPage(flowType: AttendanceFlowType.checkIn),
@@ -136,11 +130,6 @@ final appRouter = GoRouter(
       path: RouteName.checkOutLoading,
       builder: (context, state) =>
           const CheckInLoadingPage(flowType: AttendanceFlowType.checkOut),
-    ),
-    GoRoute(
-      path: RouteName.checkOutConfirmation,
-      builder: (context, state) =>
-          const CheckInConfirmationPage(flowType: AttendanceFlowType.checkOut),
     ),
     GoRoute(
       path: RouteName.checkOutSuccess,

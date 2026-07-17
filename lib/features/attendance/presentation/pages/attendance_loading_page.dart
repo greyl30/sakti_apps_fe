@@ -23,13 +23,13 @@ class _CheckInLoadingPageState extends State<CheckInLoadingPage> {
   void initState() {
     super.initState();
 
-    // Loading verifikasi sementara sebelum masuk halaman konfirmasi.
+    // Loading verifikasi sementara sebelum masuk halaman berhasil.
     Timer(const Duration(seconds: 2), () {
       if (!mounted) return;
       context.go(
         widget.flowType.isCheckIn
-            ? RouteName.checkInConfirmation
-            : RouteName.checkOutConfirmation,
+            ? RouteName.checkInSuccess
+            : RouteName.checkOutSuccess,
       );
     });
   }
