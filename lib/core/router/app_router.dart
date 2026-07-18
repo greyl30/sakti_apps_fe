@@ -128,8 +128,10 @@ final appRouter = GoRouter(
     ),
     GoRoute(
       path: RouteName.checkOutLoading,
-      builder: (context, state) =>
-          const CheckInLoadingPage(flowType: AttendanceFlowType.checkOut),
+      builder: (context, state) => CheckInLoadingPage(
+        flowType: AttendanceFlowType.checkOut,
+        isOvertime: state.extra == true,
+      ),
     ),
     GoRoute(
       path: RouteName.checkOutSuccess,

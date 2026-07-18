@@ -1,19 +1,259 @@
+import 'dart:io';
+
+import 'package:camera/camera.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
+import 'package:image/image.dart' as img;
+import 'package:permission_handler/permission_handler.dart';
 
 import '../../../../core/constants/app_assets.dart';
+import '../../../../core/network/api_client.dart';
 import '../../../../core/router/route_name.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/app_bottom_navigation.dart';
+import '../../data/datasources/attendance_remote_data_source.dart';
+import '../../data/models/attendance_submit_response.dart';
+import '../../data/repositories/attendance_repository.dart';
 import '../models/attendance_flow_type.dart';
 import '../widgets/attendance_flow_app_bar.dart';
 import '../widgets/attendance_primary_button.dart';
 
-class CheckInVerificationPage extends StatelessWidget {
+class CheckInVerificationPage extends StatefulWidget {
   const CheckInVerificationPage({super.key, required this.flowType});
 
   final AttendanceFlowType flowType;
+
+  @override
+  State<CheckInVerificationPage> createState() =>
+      _CheckInVerificationPageState();
+}
+
+class _CheckInVerificationPageState extends State<CheckInVerificationPage>
+    with WidgetsBindingObserver {
+  static const _placeholderLatitude = -7.942777;
+  static const _placeholderLongitude = 112.64111;
+
+  final AttendanceRepository _attendanceRepository = AttendanceRepository(
+    AttendanceRemoteDataSource(ApiClient.dio),
+  );
+
+  CameraController? _cameraController;
+  File? _capturedPhoto;
+  File? _resizedPhoto;
+  String? _uploadedImageUrl;
+  AttendanceSubmitResponse? _attendanceResponse;
+  bool _isInitializingCamera = true;
+  bool _isTakingPicture = false;
+  String? _cameraError;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    _initializeFrontCamera();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _disposeCamera();
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    final controller = _cameraController;
+    if (controller == null || !controller.value.isInitialized) return;
+
+    if (state == AppLifecycleState.inactive ||
+        state == AppLifecycleState.paused) {
+      _disposeCamera();
+      return;
+    }
+
+    if (state == AppLifecycleState.resumed) {
+      _initializeFrontCamera();
+    }
+  }
+
+  Future<void> _initializeFrontCamera() async {
+    setState(() {
+      _isInitializingCamera = true;
+      _cameraError = null;
+    });
+
+    final permission = await Permission.camera.request();
+    if (!permission.isGranted) {
+      if (!mounted) return;
+      setState(() {
+        _isInitializingCamera = false;
+        _cameraError = permission.isPermanentlyDenied
+            ? 'Izin kamera ditolak permanen. Aktifkan kamera dari pengaturan aplikasi.'
+            : 'Izin kamera diperlukan untuk verifikasi presensi.';
+      });
+      return;
+    }
+
+    try {
+      final cameras = await availableCameras();
+      CameraDescription? frontCamera;
+      for (final camera in cameras) {
+        if (camera.lensDirection == CameraLensDirection.front) {
+          frontCamera = camera;
+          break;
+        }
+      }
+
+      if (frontCamera == null) {
+        throw CameraException(
+          'front_camera_unavailable',
+          'Kamera depan tidak tersedia.',
+        );
+      }
+
+      await _disposeCamera();
+      final controller = CameraController(
+        frontCamera,
+        ResolutionPreset.medium,
+        enableAudio: false,
+        imageFormatGroup: ImageFormatGroup.jpeg,
+      );
+
+      await controller.initialize();
+      if (!mounted) {
+        await controller.dispose();
+        return;
+      }
+
+      setState(() {
+        _cameraController = controller;
+        _isInitializingCamera = false;
+      });
+    } on CameraException catch (error) {
+      if (!mounted) return;
+      setState(() {
+        _isInitializingCamera = false;
+        _cameraError = error.description ?? 'Kamera tidak dapat digunakan.';
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _isInitializingCamera = false;
+        _cameraError = 'Kamera tidak dapat digunakan.';
+      });
+    }
+  }
+
+  Future<void> _disposeCamera() async {
+    final controller = _cameraController;
+    _cameraController = null;
+    await controller?.dispose();
+  }
+
+  Future<void> _capturePhotoAndContinue() async {
+    final controller = _cameraController;
+    if (_isTakingPicture) return;
+
+    if (controller == null || !controller.value.isInitialized) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Kamera belum siap. Coba lagi.')),
+      );
+      return;
+    }
+
+    try {
+      setState(() => _isTakingPicture = true);
+      final photo = await controller.takePicture();
+      final capturedPhoto = File(photo.path);
+      final resizedPhoto = await _resizeAttendancePhoto(capturedPhoto);
+      final resizedPhotoSize = await resizedPhoto.length();
+      final uploadedImageUrl = await _attendanceRepository.uploadImage(
+        resizedPhoto,
+      );
+      final attendanceResponse = widget.flowType.isCheckIn
+          ? await _attendanceRepository.checkIn(
+              selfieUrl: uploadedImageUrl,
+              latitude: _placeholderLatitude,
+              longitude: _placeholderLongitude,
+              lateReason: '',
+            )
+          : await _submitCheckOut(uploadedImageUrl);
+
+      if (!mounted) return;
+      setState(() {
+        _capturedPhoto = capturedPhoto;
+        _resizedPhoto = resizedPhoto;
+        _uploadedImageUrl = uploadedImageUrl;
+        _attendanceResponse = attendanceResponse;
+        _isTakingPicture = false;
+      });
+
+      // Response presensi disimpan sementara untuk kebutuhan UI/data step berikutnya.
+      debugPrint('Captured attendance photo: ${_capturedPhoto!.path}');
+      debugPrint(
+        'Resized attendance photo: ${_resizedPhoto!.path} '
+        '($resizedPhotoSize bytes)',
+      );
+      debugPrint('Uploaded attendance image URL: $_uploadedImageUrl');
+      debugPrint('Attendance response data: ${_attendanceResponse!.data}');
+      context.push(
+        widget.flowType.isCheckIn
+            ? RouteName.checkInLoading
+            : RouteName.checkOutLoading,
+        extra: attendanceResponse.isOvertime,
+      );
+    } on CameraException catch (error) {
+      if (!mounted) return;
+      setState(() => _isTakingPicture = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(error.description ?? 'Gagal mengambil foto.')),
+      );
+    } on AttendanceUploadException catch (error) {
+      if (!mounted) return;
+      setState(() => _isTakingPicture = false);
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(error.message)));
+    } on AttendanceSubmitException catch (error) {
+      if (!mounted) return;
+      setState(() => _isTakingPicture = false);
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(error.message)));
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _isTakingPicture = false);
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Gagal mengambil foto.')));
+    }
+  }
+
+  Future<AttendanceSubmitResponse> _submitCheckOut(String selfieUrl) async {
+    final overtime = await _resolveOvertimeConfirmation();
+
+    return _attendanceRepository.checkOut(
+      selfieUrl: selfieUrl,
+      latitude: _placeholderLatitude,
+      longitude: _placeholderLongitude,
+      overtime: overtime,
+    );
+  }
+
+  Future<bool> _resolveOvertimeConfirmation() async {
+    final now = DateTime.now();
+    if (now.hour < 17) return false;
+
+    final result = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) => const _OvertimeConfirmationDialog(),
+    );
+
+    return result ?? false;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -26,13 +266,13 @@ class CheckInVerificationPage extends StatelessWidget {
             // AppBar halaman verifikasi
             AttendanceFlowAppBar(
               title: 'Presensi',
-              subtitle: flowType.verificationSubtitle,
+              subtitle: widget.flowType.verificationSubtitle,
             ),
             Expanded(
               child: ListView(
                 padding: const EdgeInsets.fromLTRB(24, 24, 24, 28),
                 children: [
-                  // Placeholder preview kamera
+                  // Preview kamera depan
                   Container(
                     height: 280,
                     decoration: BoxDecoration(
@@ -41,11 +281,12 @@ class CheckInVerificationPage extends StatelessWidget {
                     ),
                     child: Stack(
                       children: [
-                        Center(
-                          child: Container(
-                            width: 78,
-                            height: 100,
-                            color: Colors.white.withValues(alpha: .04),
+                        Positioned.fill(
+                          child: _CameraPreviewArea(
+                            controller: _cameraController,
+                            isInitializing: _isInitializingCamera,
+                            errorMessage: _cameraError,
+                            onRetry: _initializeFrontCamera,
                           ),
                         ),
                         const _CameraCorner(alignment: Alignment.topLeft),
@@ -109,12 +350,10 @@ class CheckInVerificationPage extends StatelessWidget {
                   const SizedBox(height: 22),
                   // Tombol mulai verifikasi
                   AttendancePrimaryButton(
-                    label: 'Mulai Verifikasi',
-                    onPressed: () => context.push(
-                      flowType.isCheckIn
-                          ? RouteName.checkInLoading
-                          : RouteName.checkOutLoading,
-                    ),
+                    label: _isTakingPicture
+                        ? 'Mengambil Foto...'
+                        : 'Mulai Verifikasi',
+                    onPressed: _capturePhotoAndContinue,
                   ),
                 ],
               ),
@@ -123,6 +362,258 @@ class CheckInVerificationPage extends StatelessWidget {
         ),
       ),
       bottomNavigationBar: const AppBottomNavigation(currentIndex: 1),
+    );
+  }
+}
+
+Future<File> _resizeAttendancePhoto(File sourceFile) async {
+  final sourceBytes = await sourceFile.readAsBytes();
+  final resizedBytes = await compute(_resizeAttendancePhotoBytes, sourceBytes);
+  final resizedFile = File(_resizedPhotoPath(sourceFile.path));
+
+  await resizedFile.writeAsBytes(resizedBytes, flush: true);
+  return resizedFile;
+}
+
+Uint8List _resizeAttendancePhotoBytes(Uint8List sourceBytes) {
+  const targetMaxBytes = 1024 * 1024;
+  const qualitySteps = [85, 75, 65, 55, 45];
+  const maxDimensions = [1280, 1080, 900, 720, 640];
+
+  final decoded = img.decodeImage(sourceBytes);
+  if (decoded == null) {
+    throw const FormatException('Format foto tidak dapat diproses.');
+  }
+
+  final orientedImage = img.bakeOrientation(decoded);
+  Uint8List bestBytes = Uint8List.fromList(
+    img.encodeJpg(orientedImage, quality: 85),
+  );
+
+  for (final maxDimension in maxDimensions) {
+    final resizedImage = _resizeKeepingAspectRatio(orientedImage, maxDimension);
+
+    for (final quality in qualitySteps) {
+      final encoded = Uint8List.fromList(
+        img.encodeJpg(resizedImage, quality: quality),
+      );
+      bestBytes = encoded;
+
+      if (encoded.lengthInBytes < targetMaxBytes) {
+        return encoded;
+      }
+    }
+  }
+
+  return bestBytes;
+}
+
+img.Image _resizeKeepingAspectRatio(img.Image source, int maxDimension) {
+  final width = source.width;
+  final height = source.height;
+
+  if (width <= maxDimension && height <= maxDimension) {
+    return source;
+  }
+
+  if (width >= height) {
+    return img.copyResize(source, width: maxDimension);
+  }
+
+  return img.copyResize(source, height: maxDimension);
+}
+
+String _resizedPhotoPath(String sourcePath) {
+  final extensionIndex = sourcePath.lastIndexOf('.');
+  if (extensionIndex == -1) return '${sourcePath}_resized.jpg';
+  return '${sourcePath.substring(0, extensionIndex)}_resized.jpg';
+}
+
+class _OvertimeConfirmationDialog extends StatelessWidget {
+  const _OvertimeConfirmationDialog();
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      insetPadding: const EdgeInsets.symmetric(horizontal: 32),
+      backgroundColor: Colors.transparent,
+      child: Container(
+        padding: const EdgeInsets.fromLTRB(22, 24, 22, 20),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(14),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text(
+              'Apakah Anda sedang lembur?',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: Colors.black,
+                fontSize: 18,
+                fontWeight: FontWeight.w800,
+                height: 1.25,
+              ),
+            ),
+            const SizedBox(height: 20),
+            Row(
+              children: [
+                Expanded(
+                  child: _OvertimeDialogButton(
+                    label: 'Tidak',
+                    isPrimary: false,
+                    onPressed: () => Navigator.of(context).pop(false),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _OvertimeDialogButton(
+                    label: 'Ya',
+                    isPrimary: true,
+                    onPressed: () => Navigator.of(context).pop(true),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _OvertimeDialogButton extends StatelessWidget {
+  const _OvertimeDialogButton({
+    required this.label,
+    required this.isPrimary,
+    required this.onPressed,
+  });
+
+  final String label;
+  final bool isPrimary;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 44,
+      child: FilledButton(
+        onPressed: onPressed,
+        style: FilledButton.styleFrom(
+          backgroundColor: isPrimary
+              ? AppColors.primaryRed
+              : const Color(0xFFFFE7E7),
+          foregroundColor: isPrimary ? Colors.white : AppColors.primaryRed,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(22),
+            side: BorderSide(
+              color: isPrimary ? AppColors.primaryRed : const Color(0xFFF0B8B8),
+            ),
+          ),
+        ),
+        child: Text(
+          label,
+          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800),
+        ),
+      ),
+    );
+  }
+}
+
+class _CameraPreviewArea extends StatelessWidget {
+  const _CameraPreviewArea({
+    required this.controller,
+    required this.isInitializing,
+    required this.errorMessage,
+    required this.onRetry,
+  });
+
+  final CameraController? controller;
+  final bool isInitializing;
+  final String? errorMessage;
+  final VoidCallback onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    final activeController = controller;
+
+    if (errorMessage != null) {
+      return _CameraMessage(
+        message: errorMessage!,
+        actionLabel: 'Coba Lagi',
+        onActionPressed: onRetry,
+      );
+    }
+
+    if (isInitializing ||
+        activeController == null ||
+        !activeController.value.isInitialized) {
+      return const Center(
+        child: CircularProgressIndicator(color: Colors.white, strokeWidth: 3),
+      );
+    }
+
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(15),
+      child: FittedBox(
+        fit: BoxFit.cover,
+        child: SizedBox(
+          width: activeController.value.previewSize?.height ?? 280,
+          height: activeController.value.previewSize?.width ?? 280,
+          child: CameraPreview(activeController),
+        ),
+      ),
+    );
+  }
+}
+
+class _CameraMessage extends StatelessWidget {
+  const _CameraMessage({
+    required this.message,
+    this.actionLabel,
+    this.onActionPressed,
+  });
+
+  final String message;
+  final String? actionLabel;
+  final VoidCallback? onActionPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              message,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                height: 1.35,
+              ),
+            ),
+            if (actionLabel != null && onActionPressed != null) ...[
+              const SizedBox(height: 12),
+              TextButton(
+                onPressed: onActionPressed,
+                style: TextButton.styleFrom(foregroundColor: Colors.white),
+                child: Text(
+                  actionLabel!,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
     );
   }
 }

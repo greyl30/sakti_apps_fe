@@ -10,9 +10,14 @@ import '../models/attendance_flow_type.dart';
 import '../widgets/attendance_flow_app_bar.dart';
 
 class CheckInLoadingPage extends StatefulWidget {
-  const CheckInLoadingPage({super.key, required this.flowType});
+  const CheckInLoadingPage({
+    super.key,
+    required this.flowType,
+    this.isOvertime = false,
+  });
 
   final AttendanceFlowType flowType;
+  final bool isOvertime;
 
   @override
   State<CheckInLoadingPage> createState() => _CheckInLoadingPageState();
@@ -30,6 +35,7 @@ class _CheckInLoadingPageState extends State<CheckInLoadingPage> {
         widget.flowType.isCheckIn
             ? RouteName.checkInSuccess
             : RouteName.checkOutSuccess,
+        extra: widget.isOvertime,
       );
     });
   }
