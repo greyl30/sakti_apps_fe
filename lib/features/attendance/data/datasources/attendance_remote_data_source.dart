@@ -26,6 +26,15 @@ class AttendanceRemoteDataSource {
     return response.data ?? <String, dynamic>{};
   }
 
+  // Mengambil konfigurasi jam kerja dari backend.
+  Future<Map<String, dynamic>> getWorkConfig() async {
+    final response = await _dio.get<Map<String, dynamic>>(
+      '/api/attendance/work-config',
+    );
+
+    return response.data ?? <String, dynamic>{};
+  }
+
   // Submit presensi masuk menggunakan URL selfie hasil upload.
   Future<Map<String, dynamic>> checkIn({
     required String selfieUrl,

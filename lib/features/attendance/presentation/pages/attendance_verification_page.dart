@@ -15,6 +15,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/app_bottom_navigation.dart';
 import '../../data/datasources/attendance_remote_data_source.dart';
 import '../../data/models/attendance_submit_response.dart';
+import '../../data/models/attendance_work_config.dart';
 import '../../data/repositories/attendance_repository.dart';
 import '../models/attendance_flow_type.dart';
 import '../widgets/attendance_flow_app_bar.dart';
@@ -152,6 +153,16 @@ class _CheckInVerificationPageState extends State<CheckInVerificationPage>
     await controller?.dispose();
   }
 
+  void _resetCaptureState() {
+    setState(() {
+      _capturedPhoto = null;
+      _resizedPhoto = null;
+      _uploadedImageUrl = null;
+      _attendanceResponse = null;
+      _isTakingPicture = false;
+    });
+  }
+
   Future<void> _capturePhotoAndContinue() async {
     final controller = _cameraController;
     if (_isTakingPicture) return;
@@ -167,6 +178,9 @@ class _CheckInVerificationPageState extends State<CheckInVerificationPage>
       setState(() => _isTakingPicture = true);
       final photo = await controller.takePicture();
       final capturedPhoto = File(photo.path);
+      if (!mounted) return;
+      setState(() => _capturedPhoto = capturedPhoto);
+
       final resizedPhoto = await _resizeAttendancePhoto(capturedPhoto);
       final resizedPhotoSize = await resizedPhoto.length();
       final uploadedImageUrl = await _attendanceRepository.uploadImage(
@@ -183,7 +197,6 @@ class _CheckInVerificationPageState extends State<CheckInVerificationPage>
 
       if (!mounted) return;
       setState(() {
-        _capturedPhoto = capturedPhoto;
         _resizedPhoto = resizedPhoto;
         _uploadedImageUrl = uploadedImageUrl;
         _attendanceResponse = attendanceResponse;
@@ -206,25 +219,25 @@ class _CheckInVerificationPageState extends State<CheckInVerificationPage>
       );
     } on CameraException catch (error) {
       if (!mounted) return;
-      setState(() => _isTakingPicture = false);
+      _resetCaptureState();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(error.description ?? 'Gagal mengambil foto.')),
       );
     } on AttendanceUploadException catch (error) {
       if (!mounted) return;
-      setState(() => _isTakingPicture = false);
+      _resetCaptureState();
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text(error.message)));
     } on AttendanceSubmitException catch (error) {
       if (!mounted) return;
-      setState(() => _isTakingPicture = false);
+      _resetCaptureState();
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text(error.message)));
     } catch (_) {
       if (!mounted) return;
-      setState(() => _isTakingPicture = false);
+      _resetCaptureState();
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(const SnackBar(content: Text('Gagal mengambil foto.')));
@@ -243,8 +256,22 @@ class _CheckInVerificationPageState extends State<CheckInVerificationPage>
   }
 
   Future<bool> _resolveOvertimeConfirmation() async {
+    AttendanceWorkConfig workConfig;
+
+    try {
+      workConfig = await _attendanceRepository.getWorkConfig();
+    } on AttendanceWorkConfigException catch (error) {
+      if (!mounted) return false;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(error.message)));
+      return false;
+    }
+
     final now = DateTime.now();
-    if (now.hour < 17) return false;
+    final clockOutTime = workConfig.clockOutDateTime(now);
+    if (now.isBefore(clockOutTime)) return false;
+    if (!mounted) return false;
 
     final result = await showDialog<bool>(
       context: context,
@@ -274,7 +301,7 @@ class _CheckInVerificationPageState extends State<CheckInVerificationPage>
                 children: [
                   // Preview kamera depan
                   Container(
-                    height: 280,
+                    height: 350,
                     decoration: BoxDecoration(
                       color: const Color(0xFF101318),
                       borderRadius: BorderRadius.circular(15),
@@ -284,7 +311,9 @@ class _CheckInVerificationPageState extends State<CheckInVerificationPage>
                         Positioned.fill(
                           child: _CameraPreviewArea(
                             controller: _cameraController,
+                            capturedPhoto: _capturedPhoto,
                             isInitializing: _isInitializingCamera,
+                            isProcessing: _isTakingPicture,
                             errorMessage: _cameraError,
                             onRetry: _initializeFrontCamera,
                           ),
@@ -524,19 +553,45 @@ class _OvertimeDialogButton extends StatelessWidget {
 class _CameraPreviewArea extends StatelessWidget {
   const _CameraPreviewArea({
     required this.controller,
+    required this.capturedPhoto,
     required this.isInitializing,
+    required this.isProcessing,
     required this.errorMessage,
     required this.onRetry,
   });
 
   final CameraController? controller;
+  final File? capturedPhoto;
   final bool isInitializing;
+  final bool isProcessing;
   final String? errorMessage;
   final VoidCallback onRetry;
 
   @override
   Widget build(BuildContext context) {
     final activeController = controller;
+    final previewPhoto = capturedPhoto;
+
+    if (previewPhoto != null) {
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(15),
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            // Preview hasil capture dibuat mirror agar konsisten dengan live kamera depan.
+            Transform.flip(
+              flipX: true,
+              child: Image.file(previewPhoto, fit: BoxFit.cover),
+            ),
+            if (isProcessing)
+              const Align(
+                alignment: Alignment.bottomCenter,
+                child: _CaptureSuccessFeedback(),
+              ),
+          ],
+        ),
+      );
+    }
 
     if (errorMessage != null) {
       return _CameraMessage(
@@ -563,6 +618,49 @@ class _CameraPreviewArea extends StatelessWidget {
           height: activeController.value.previewSize?.width ?? 280,
           child: CameraPreview(activeController),
         ),
+      ),
+    );
+  }
+}
+
+class _CaptureSuccessFeedback extends StatelessWidget {
+  const _CaptureSuccessFeedback();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.fromLTRB(18, 0, 18, 18),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      decoration: BoxDecoration(
+        color: Colors.black.withValues(alpha: 0.62),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: const Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            '✓ Foto berhasil diambil',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 13,
+              fontWeight: FontWeight.w800,
+              height: 1.2,
+            ),
+          ),
+          SizedBox(height: 6),
+          Text(
+            'Memproses verifikasi...',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: Color(0xFFE8EEF2),
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
+              height: 1.25,
+            ),
+          ),
+        ],
       ),
     );
   }

@@ -4,6 +4,7 @@ import 'package:dio/dio.dart';
 
 import '../datasources/attendance_remote_data_source.dart';
 import '../models/attendance_submit_response.dart';
+import '../models/attendance_work_config.dart';
 
 // Repository untuk kebutuhan data presensi.
 class AttendanceRepository {
@@ -38,6 +39,41 @@ class AttendanceRepository {
       throw const AttendanceUploadException('Tidak dapat terhubung ke server.');
     } catch (_) {
       throw const AttendanceUploadException('Gagal mengunggah foto presensi.');
+    }
+  }
+
+  // Mengambil konfigurasi jam kerja untuk menentukan flow lembur.
+  Future<AttendanceWorkConfig> getWorkConfig() async {
+    try {
+      final data = await _remoteDataSource.getWorkConfig();
+      final isSuccess = data['success'] == true;
+      final rawConfig = data['data'];
+
+      if (isSuccess && rawConfig is Map<String, dynamic>) {
+        return AttendanceWorkConfig.fromJson(rawConfig);
+      }
+
+      throw const AttendanceWorkConfigException(
+        'Konfigurasi jam kerja tidak tersedia.',
+      );
+    } on AttendanceWorkConfigException {
+      rethrow;
+    } on DioException catch (error) {
+      throw AttendanceWorkConfigException(
+        _mapDioError(
+          error,
+          timeoutMessage: 'Request konfigurasi jam kerja melebihi batas waktu.',
+          fallbackMessage: 'Gagal mengambil konfigurasi jam kerja.',
+        ),
+      );
+    } on SocketException {
+      throw const AttendanceWorkConfigException(
+        'Tidak dapat terhubung ke server.',
+      );
+    } catch (_) {
+      throw const AttendanceWorkConfigException(
+        'Gagal mengambil konfigurasi jam kerja.',
+      );
     }
   }
 
@@ -151,6 +187,12 @@ class AttendanceUploadException implements Exception {
 
 class AttendanceSubmitException implements Exception {
   const AttendanceSubmitException(this.message);
+
+  final String message;
+}
+
+class AttendanceWorkConfigException implements Exception {
+  const AttendanceWorkConfigException(this.message);
 
   final String message;
 }
