@@ -2,6 +2,7 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../supabase/supabase_client.dart';
+import '../../features/attendance/data/models/attendance_submit_response.dart';
 import '../../features/attendance/presentation/models/attendance_flow_type.dart';
 import '../../features/attendance/presentation/pages/attendance_loading_page.dart';
 import '../../features/attendance/presentation/pages/attendance_success_page.dart';
@@ -113,13 +114,23 @@ final appRouter = GoRouter(
     ),
     GoRoute(
       path: RouteName.checkInLoading,
-      builder: (context, state) =>
-          const CheckInLoadingPage(flowType: AttendanceFlowType.checkIn),
+      builder: (context, state) => CheckInLoadingPage(
+        flowType: AttendanceFlowType.checkIn,
+        response: state.extra is AttendanceSubmitResponse
+            ? state.extra! as AttendanceSubmitResponse
+            : null,
+        isOvertime: state.extra == true,
+      ),
     ),
     GoRoute(
       path: RouteName.checkInSuccess,
-      builder: (context, state) =>
-          const CheckInSuccessPage(flowType: AttendanceFlowType.checkIn),
+      builder: (context, state) => CheckInSuccessPage(
+        flowType: AttendanceFlowType.checkIn,
+        response: state.extra is AttendanceSubmitResponse
+            ? state.extra! as AttendanceSubmitResponse
+            : null,
+        isOvertime: state.extra == true,
+      ),
     ),
     GoRoute(
       path: RouteName.checkOutVerification,
@@ -130,6 +141,9 @@ final appRouter = GoRouter(
       path: RouteName.checkOutLoading,
       builder: (context, state) => CheckInLoadingPage(
         flowType: AttendanceFlowType.checkOut,
+        response: state.extra is AttendanceSubmitResponse
+            ? state.extra! as AttendanceSubmitResponse
+            : null,
         isOvertime: state.extra == true,
       ),
     ),
@@ -137,6 +151,9 @@ final appRouter = GoRouter(
       path: RouteName.checkOutSuccess,
       builder: (context, state) => CheckInSuccessPage(
         flowType: AttendanceFlowType.checkOut,
+        response: state.extra is AttendanceSubmitResponse
+            ? state.extra! as AttendanceSubmitResponse
+            : null,
         isOvertime: state.extra == true,
       ),
     ),

@@ -4,6 +4,7 @@ import 'package:camera/camera.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image/image.dart' as img;
 import 'package:permission_handler/permission_handler.dart';
@@ -33,9 +34,6 @@ class CheckInVerificationPage extends StatefulWidget {
 
 class _CheckInVerificationPageState extends State<CheckInVerificationPage>
     with WidgetsBindingObserver {
-  static const _placeholderLatitude = -7.942777;
-  static const _placeholderLongitude = 112.64111;
-
   final AttendanceRepository _attendanceRepository = AttendanceRepository(
     AttendanceRemoteDataSource(ApiClient.dio),
   );
@@ -45,15 +43,18 @@ class _CheckInVerificationPageState extends State<CheckInVerificationPage>
   File? _resizedPhoto;
   String? _uploadedImageUrl;
   AttendanceSubmitResponse? _attendanceResponse;
+  double? _actualLatitude;
+  double? _actualLongitude;
   bool _isInitializingCamera = true;
   bool _isTakingPicture = false;
+  bool _isPreparingVerification = false;
   String? _cameraError;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    _initializeFrontCamera();
+    _initializeVerificationFlow();
   }
 
   @override
@@ -65,9 +66,6 @@ class _CheckInVerificationPageState extends State<CheckInVerificationPage>
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    final controller = _cameraController;
-    if (controller == null || !controller.value.isInitialized) return;
-
     if (state == AppLifecycleState.inactive ||
         state == AppLifecycleState.paused) {
       _disposeCamera();
@@ -75,11 +73,41 @@ class _CheckInVerificationPageState extends State<CheckInVerificationPage>
     }
 
     if (state == AppLifecycleState.resumed) {
-      _initializeFrontCamera();
+      _initializeVerificationFlow();
+    }
+  }
+
+  Future<void> _initializeVerificationFlow() async {
+    if (_isTakingPicture || _isPreparingVerification) return;
+
+    _isPreparingVerification = true;
+    try {
+      setState(() {
+        _isInitializingCamera = true;
+        _cameraError = null;
+      });
+
+      final hasCurrentLocation = await _prepareCurrentLocation();
+      if (!mounted) return;
+
+      if (!hasCurrentLocation) {
+        setState(() => _isInitializingCamera = false);
+        return;
+      }
+
+      await _initializeFrontCamera();
+    } finally {
+      _isPreparingVerification = false;
     }
   }
 
   Future<void> _initializeFrontCamera() async {
+    final activeController = _cameraController;
+    if (activeController != null && activeController.value.isInitialized) {
+      setState(() => _isInitializingCamera = false);
+      return;
+    }
+
     setState(() {
       _isInitializingCamera = true;
       _cameraError = null;
@@ -176,6 +204,17 @@ class _CheckInVerificationPageState extends State<CheckInVerificationPage>
 
     try {
       setState(() => _isTakingPicture = true);
+
+      if (_actualLatitude == null || _actualLongitude == null) {
+        _showLocationError(
+          'Lokasi belum siap. Tunggu sebentar lalu coba lagi.',
+        );
+        _resetCaptureState();
+        return;
+      }
+      final attendanceLatitude = _actualLatitude!;
+      final attendanceLongitude = _actualLongitude!;
+
       final photo = await controller.takePicture();
       final capturedPhoto = File(photo.path);
       if (!mounted) return;
@@ -186,14 +225,22 @@ class _CheckInVerificationPageState extends State<CheckInVerificationPage>
       final uploadedImageUrl = await _attendanceRepository.uploadImage(
         resizedPhoto,
       );
+      _logAttendanceLocation(
+        latitude: attendanceLatitude,
+        longitude: attendanceLongitude,
+      );
       final attendanceResponse = widget.flowType.isCheckIn
           ? await _attendanceRepository.checkIn(
               selfieUrl: uploadedImageUrl,
-              latitude: _placeholderLatitude,
-              longitude: _placeholderLongitude,
+              latitude: attendanceLatitude,
+              longitude: attendanceLongitude,
               lateReason: '',
             )
-          : await _submitCheckOut(uploadedImageUrl);
+          : await _submitCheckOut(
+              uploadedImageUrl,
+              latitude: attendanceLatitude,
+              longitude: attendanceLongitude,
+            );
 
       if (!mounted) return;
       setState(() {
@@ -215,7 +262,7 @@ class _CheckInVerificationPageState extends State<CheckInVerificationPage>
         widget.flowType.isCheckIn
             ? RouteName.checkInLoading
             : RouteName.checkOutLoading,
-        extra: attendanceResponse.isOvertime,
+        extra: attendanceResponse,
       );
     } on CameraException catch (error) {
       if (!mounted) return;
@@ -244,13 +291,87 @@ class _CheckInVerificationPageState extends State<CheckInVerificationPage>
     }
   }
 
-  Future<AttendanceSubmitResponse> _submitCheckOut(String selfieUrl) async {
+  void _logAttendanceLocation({
+    required double latitude,
+    required double longitude,
+  }) {
+    debugPrint(
+      'Attendance request location: latitude=$latitude, longitude=$longitude',
+    );
+  }
+
+  Future<bool> _prepareCurrentLocation() async {
+    final serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      if (!mounted) return false;
+      _showLocationError(
+        'Layanan lokasi/GPS belum aktif. Aktifkan lokasi untuk melanjutkan presensi.',
+      );
+      return false;
+    }
+
+    var permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+    }
+
+    if (permission == LocationPermission.denied) {
+      if (!mounted) return false;
+      _showLocationError('Izin lokasi diperlukan untuk verifikasi presensi.');
+      return false;
+    }
+
+    if (permission == LocationPermission.deniedForever) {
+      if (!mounted) return false;
+      _showLocationError(
+        'Izin lokasi ditolak permanen. Aktifkan izin lokasi dari pengaturan aplikasi.',
+      );
+      return false;
+    }
+
+    try {
+      final position = await Geolocator.getCurrentPosition(
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.high,
+          timeLimit: Duration(seconds: 12),
+        ),
+      );
+
+      if (!mounted) return false;
+      // TODO(Backend):
+      // Koordinat aktual ini akan digunakan pada request presensi di step berikutnya.
+      setState(() {
+        _actualLatitude = position.latitude;
+        _actualLongitude = position.longitude;
+      });
+      return true;
+    } catch (_) {
+      if (!mounted) return false;
+      _showLocationError(
+        'Lokasi gagal didapatkan. Pastikan GPS aktif lalu coba lagi.',
+      );
+      return false;
+    }
+  }
+
+  void _showLocationError(String message) {
+    setState(() => _cameraError = message);
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
+  }
+
+  Future<AttendanceSubmitResponse> _submitCheckOut(
+    String selfieUrl, {
+    required double latitude,
+    required double longitude,
+  }) async {
     final overtime = await _resolveOvertimeConfirmation();
 
     return _attendanceRepository.checkOut(
       selfieUrl: selfieUrl,
-      latitude: _placeholderLatitude,
-      longitude: _placeholderLongitude,
+      latitude: latitude,
+      longitude: longitude,
       overtime: overtime,
     );
   }
@@ -315,7 +436,7 @@ class _CheckInVerificationPageState extends State<CheckInVerificationPage>
                             isInitializing: _isInitializingCamera,
                             isProcessing: _isTakingPicture,
                             errorMessage: _cameraError,
-                            onRetry: _initializeFrontCamera,
+                            onRetry: _initializeVerificationFlow,
                           ),
                         ),
                         const _CameraCorner(alignment: Alignment.topLeft),

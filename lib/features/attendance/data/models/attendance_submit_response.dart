@@ -22,4 +22,22 @@ class AttendanceSubmitResponse {
   }
 
   bool get isOvertime => data['lembur'] == true;
+
+  bool get isOutsideRadius => data['is_outside_radius'] == true;
+
+  num? get distanceMeter {
+    final value = data['distance_meter'];
+    return value is num ? value : num.tryParse(value?.toString() ?? '');
+  }
+
+  String? get locationStatus {
+    final value = data['location_status'];
+    if (value is! String || value.trim().isEmpty) return null;
+    return value;
+  }
+
+  num? get officeRadius {
+    final value = data['office_radius'];
+    return value is num ? value : num.tryParse(value?.toString() ?? '');
+  }
 }

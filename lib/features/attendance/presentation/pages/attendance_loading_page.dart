@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/router/route_name.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/app_bottom_navigation.dart';
+import '../../data/models/attendance_submit_response.dart';
 import '../models/attendance_flow_type.dart';
 import '../widgets/attendance_flow_app_bar.dart';
 
@@ -14,10 +15,12 @@ class CheckInLoadingPage extends StatefulWidget {
     super.key,
     required this.flowType,
     this.isOvertime = false,
+    this.response,
   });
 
   final AttendanceFlowType flowType;
   final bool isOvertime;
+  final AttendanceSubmitResponse? response;
 
   @override
   State<CheckInLoadingPage> createState() => _CheckInLoadingPageState();
@@ -35,7 +38,7 @@ class _CheckInLoadingPageState extends State<CheckInLoadingPage> {
         widget.flowType.isCheckIn
             ? RouteName.checkInSuccess
             : RouteName.checkOutSuccess,
-        extra: widget.isOvertime,
+        extra: widget.response ?? widget.isOvertime,
       );
     });
   }
