@@ -34,7 +34,7 @@ class HistoryAttendanceCard extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(
-                  _attendanceTypeLabel(history.attendanceType),
+                  'Riwayat Presensi',
                   style: const TextStyle(
                     color: AppColors.primaryRed,
                     fontSize: 14,
@@ -44,7 +44,9 @@ class HistoryAttendanceCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 9),
                 Text(
-                  '${_formatDate(history.date)} | ${history.time} WIB',
+                  '${_formatDate(history.date)} | Masuk '
+                  '${history.clockInLabel} WIB'
+                  ' | Keluar ${history.clockOutLabel} WIB',
                   style: const TextStyle(
                     color: AppColors.secondaryBlue,
                     fontSize: 10,
@@ -61,13 +63,6 @@ class HistoryAttendanceCard extends StatelessWidget {
       ),
     );
   }
-}
-
-String _attendanceTypeLabel(AttendanceHistoryType type) {
-  return switch (type) {
-    AttendanceHistoryType.clockIn => 'Presensi Masuk',
-    AttendanceHistoryType.clockOut => 'Presensi Keluar',
-  };
 }
 
 String _formatDate(DateTime date) {

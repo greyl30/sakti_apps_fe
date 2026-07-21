@@ -30,16 +30,29 @@ class _CheckInLoadingPageState extends State<CheckInLoadingPage> {
   @override
   void initState() {
     super.initState();
+    debugPrint(
+      'AttendanceLoadingPage start: '
+      'flow=${widget.flowType}, hasResponse=${widget.response != null}, '
+      'extraData=${widget.response?.data}',
+    );
 
     // Loading verifikasi sementara sebelum masuk halaman berhasil.
     Timer(const Duration(seconds: 2), () {
       if (!mounted) return;
-      context.go(
-        widget.flowType.isCheckIn
-            ? RouteName.checkInSuccess
-            : RouteName.checkOutSuccess,
-        extra: widget.response ?? widget.isOvertime,
+      final successRoute = widget.flowType.isCheckIn
+          ? RouteName.checkInSuccess
+          : RouteName.checkOutSuccess;
+      debugPrint(
+        'AttendanceLoadingPage navigate to success: '
+        'route=$successRoute, hasResponse=${widget.response != null}',
       );
+      try {
+        context.go(successRoute, extra: widget.response ?? widget.isOvertime);
+        debugPrint('AttendanceLoadingPage success navigation dispatched.');
+      } catch (error, stackTrace) {
+        debugPrint('AttendanceLoadingPage success navigation failed: $error');
+        debugPrintStack(stackTrace: stackTrace);
+      }
     });
   }
 

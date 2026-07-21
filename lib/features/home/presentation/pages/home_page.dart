@@ -1,10 +1,14 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/network/api_client.dart';
 import '../../../../core/router/route_name.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/app_bottom_navigation.dart';
+import '../../../attendance/data/datasources/attendance_remote_data_source.dart';
+import '../../../attendance/data/repositories/attendance_repository.dart';
 import '../../../attendance/presentation/models/attendance_ui_state.dart';
 import '../../../attendance/presentation/widgets/attendance_status_dialog.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
@@ -18,6 +22,9 @@ import '../widgets/home_reminder_section.dart';
 
 class HomePage extends ConsumerWidget {
   const HomePage({super.key});
+
+  static final AttendanceRepository _attendanceRepository =
+      AttendanceRepository(AttendanceRemoteDataSource(ApiClient.dio));
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -53,12 +60,14 @@ class HomePage extends ConsumerWidget {
                 children: [
                   HomeAttendanceCard(
                     isHoliday: attendanceState.isHoliday,
+                    canCheckIn: kDebugMode || !attendanceState.hasClockIn,
                     canCheckOut:
                         !attendanceState.isHoliday &&
-                        attendanceState.hasClockIn,
+                        (kDebugMode || attendanceState.hasClockIn),
                     onCheckInTap: () => _handleCheckInTap(
                       context,
                       isHoliday: attendanceState.isHoliday,
+                      hasClockIn: attendanceState.hasClockIn,
                     ),
                     onCheckOutTap: () => _handleCheckOutTap(
                       context,
@@ -72,6 +81,7 @@ class HomePage extends ConsumerWidget {
                     onCheckInReminderTap: () => _handleCheckInTap(
                       context,
                       isHoliday: attendanceState.isHoliday,
+                      hasClockIn: attendanceState.hasClockIn,
                     ),
                     onCheckOutReminderTap: () => _handleCheckOutTap(
                       context,
@@ -100,16 +110,7 @@ class HomePage extends ConsumerWidget {
     );
   }
 
-  void _handleCheckInTap(BuildContext context, {required bool isHoliday}) {
-    if (isHoliday) {
-      _showHolidayDialog(context);
-      return;
-    }
-
-    context.push(RouteName.checkInVerification);
-  }
-
-  void _handleCheckOutTap(
+  void _handleCheckInTap(
     BuildContext context, {
     required bool isHoliday,
     required bool hasClockIn,
@@ -119,12 +120,51 @@ class HomePage extends ConsumerWidget {
       return;
     }
 
-    if (!hasClockIn) {
+    if (!kDebugMode && hasClockIn) return;
+
+    context.push(RouteName.checkInVerification);
+  }
+
+  void _handleCheckOutTap(
+    BuildContext context, {
+    required bool isHoliday,
+    required bool hasClockIn,
+  }) async {
+    if (isHoliday) {
+      _showHolidayDialog(context);
+      return;
+    }
+
+    if (!kDebugMode && !hasClockIn) {
       _showCheckOutUnavailableDialog(context);
       return;
     }
 
+    if (!kDebugMode) {
+      final canCheckOut = await _canCheckOutByWorkConfig(context);
+      if (!context.mounted) return;
+      if (!canCheckOut) return;
+    }
+
     context.push(RouteName.checkOutVerification);
+  }
+
+  Future<bool> _canCheckOutByWorkConfig(BuildContext context) async {
+    try {
+      final config = await _attendanceRepository.getWorkConfig();
+      if (!context.mounted) return false;
+      final now = DateTime.now();
+      if (now.isBefore(config.minimumClockOutDateTime(now))) {
+        _showCheckOutUnavailableDialog(context);
+        return false;
+      }
+
+      return true;
+    } catch (_) {
+      if (!context.mounted) return false;
+      _showCheckOutUnavailableDialog(context);
+      return false;
+    }
   }
 
   void _showHolidayDialog(BuildContext context) {

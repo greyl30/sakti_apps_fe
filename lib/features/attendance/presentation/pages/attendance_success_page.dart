@@ -24,13 +24,13 @@ class CheckInSuccessPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isAttendanceOvertime = response?.isOvertime ?? isOvertime;
-    final timeValue = isAttendanceOvertime ? '20:30 WIB' : flowType.successTime;
-    final totalWorkTime = isAttendanceOvertime
-        ? '12 jam 30 menit'
-        : '9 jam 5 menit';
+    final timeValue = _resolveRecordedTime(response, flowType);
+    final dateValue = _formatAttendanceDate(response?.attendanceDate);
+    final totalWorkTime = _formatWorkDuration(response);
     final isInsideRadius = response != null && !response!.isOutsideRadius;
     final distanceText = _formatAttendanceDistance(response?.distanceMeter);
+    final hasWarning =
+        response != null && (response!.isLate || response!.isOutsideRadius);
 
     return Scaffold(
       backgroundColor: AppColors.whiteBackground,
@@ -149,10 +149,10 @@ class CheckInSuccessPage extends StatelessWidget {
                               ),
                             ),
                             const SizedBox(height: 22),
-                            const _SuccessInfoRow(
+                            _SuccessInfoRow(
                               icon: AppAssets.iconCalendar,
                               label: 'Tanggal',
-                              value: 'Senin, 23 Juni 2025',
+                              value: dateValue,
                             ),
                             if (isInsideRadius) ...[
                               const SizedBox(height: 16),
@@ -175,15 +175,15 @@ class CheckInSuccessPage extends StatelessWidget {
                               _SuccessInfoRow(
                                 icon: AppAssets.iconDurasi,
                                 label: 'Total Waktu',
-                                value: totalWorkTime,
+                                value: totalWorkTime ?? '-',
                               ),
                             ],
                           ],
                         ),
                       ),
                       const SizedBox(height: 30),
-                      if (response != null && response!.isOutsideRadius) ...[
-                        _LocationValidationCard(response: response!),
+                      if (hasWarning) ...[
+                        _AttendanceWarningCard(response: response!),
                         const SizedBox(height: 30),
                       ],
                       // Tombol kembali ke beranda
@@ -204,6 +204,107 @@ class CheckInSuccessPage extends StatelessWidget {
   }
 }
 
+String _resolveRecordedTime(
+  AttendanceSubmitResponse? response,
+  AttendanceFlowType flowType,
+) {
+  final rawTime = flowType.isCheckIn
+      ? response?.clockInTime
+      : response?.clockOutTime ?? response?.clockInTime;
+
+  return _formatAttendanceTime(rawTime) ?? '-';
+}
+
+String _formatAttendanceDate(String? value) {
+  final parsedDate = _parseAttendanceDate(value);
+  if (parsedDate == null) return '-';
+
+  const days = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'];
+  const months = [
+    'Januari',
+    'Februari',
+    'Maret',
+    'April',
+    'Mei',
+    'Juni',
+    'Juli',
+    'Agustus',
+    'September',
+    'Oktober',
+    'November',
+    'Desember',
+  ];
+
+  return '${days[parsedDate.weekday - 1]}, ${parsedDate.day} '
+      '${months[parsedDate.month - 1]} ${parsedDate.year}';
+}
+
+String? _formatAttendanceTime(String? value) {
+  final parsedTime = _parseAttendanceTime(value);
+  if (parsedTime == null) return null;
+
+  final hour = parsedTime.hour.toString().padLeft(2, '0');
+  final minute = parsedTime.minute.toString().padLeft(2, '0');
+  return '$hour:$minute WIB';
+}
+
+String? _formatWorkDuration(AttendanceSubmitResponse? response) {
+  final attendanceDate = _parseAttendanceDate(response?.attendanceDate);
+  final clockIn = _parseAttendanceTime(response?.clockInTime);
+  final clockOut = _parseAttendanceTime(response?.clockOutTime);
+  if (attendanceDate == null || clockIn == null || clockOut == null) {
+    return null;
+  }
+
+  final start = DateTime(
+    attendanceDate.year,
+    attendanceDate.month,
+    attendanceDate.day,
+    clockIn.hour,
+    clockIn.minute,
+    clockIn.second,
+  );
+  var end = DateTime(
+    attendanceDate.year,
+    attendanceDate.month,
+    attendanceDate.day,
+    clockOut.hour,
+    clockOut.minute,
+    clockOut.second,
+  );
+  if (end.isBefore(start)) {
+    end = end.add(const Duration(days: 1));
+  }
+
+  final duration = end.difference(start);
+  final hours = duration.inHours;
+  final minutes = duration.inMinutes.remainder(60);
+
+  if (hours <= 0) return '$minutes menit';
+  if (minutes == 0) return '$hours jam';
+  return '$hours jam $minutes menit';
+}
+
+DateTime? _parseAttendanceDate(String? value) {
+  if (value == null || value.trim().isEmpty) return null;
+  return DateTime.tryParse(value);
+}
+
+DateTime? _parseAttendanceTime(String? value) {
+  if (value == null || value.trim().isEmpty) return null;
+
+  final parsedDateTime = DateTime.tryParse(value);
+  if (parsedDateTime != null) return parsedDateTime;
+
+  final parts = value.split(':');
+  final hour = int.tryParse(parts.elementAtOrNull(0) ?? '');
+  final minute = int.tryParse(parts.elementAtOrNull(1) ?? '');
+  final second = int.tryParse(parts.elementAtOrNull(2) ?? '') ?? 0;
+  if (hour == null || minute == null) return null;
+
+  return DateTime(0, 1, 1, hour, minute, second);
+}
+
 String? _formatAttendanceDistance(num? value) {
   if (value == null) return null;
   if (value >= 1000) {
@@ -214,132 +315,71 @@ String? _formatAttendanceDistance(num? value) {
   return '${value.round()} meter';
 }
 
-class _LocationValidationCard extends StatelessWidget {
-  const _LocationValidationCard({required this.response});
+class _AttendanceWarningCard extends StatelessWidget {
+  const _AttendanceWarningCard({required this.response});
 
   final AttendanceSubmitResponse response;
 
   @override
   Widget build(BuildContext context) {
-    final isOutsideRadius = response.isOutsideRadius;
-    final distanceText = _formatDistance(response.distanceMeter);
-    final radiusText = _formatDistance(response.officeRadius);
-    final statusText = _formatLocationStatus(response.locationStatus);
-
-    final backgroundColor = isOutsideRadius
-        ? const Color(0xFFFFF4E5)
-        : const Color(0xFFEAF8FD);
-    final borderColor = isOutsideRadius
-        ? const Color(0xFFFFD29B)
-        : const Color(0xFFC6E6F0);
-    final titleColor = isOutsideRadius
-        ? const Color(0xFFD17A00)
-        : const Color(0xFF4C9CB2);
-    final bodyColor = isOutsideRadius
-        ? const Color(0xFF7A4A12)
-        : const Color(0xFF5F6972);
+    final warningLabels = [
+      if (response.isLate) 'Terlambat',
+      if (response.isOutsideRadius) 'Di luar radius kantor',
+    ];
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
       decoration: BoxDecoration(
-        color: backgroundColor,
+        color: const Color(0xFFFFF4E5),
         borderRadius: BorderRadius.circular(15),
-        border: Border.all(color: borderColor),
+        border: Border.all(color: const Color(0xFFFFD29B)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            isOutsideRadius
-                ? 'Lokasi di luar radius kantor'
-                : 'Lokasi di dalam radius kantor',
-            style: TextStyle(
-              color: titleColor,
-              fontSize: 13,
-              fontWeight: FontWeight.w800,
-              height: 1.2,
-            ),
-          ),
-          const SizedBox(height: 7),
-          Text(
-            isOutsideRadius
-                ? 'Presensi tetap tercatat. Sistem mendeteksi Anda berada di luar radius kantor.'
-                : 'Presensi tercatat dari lokasi yang berada dalam radius kantor.',
-            style: TextStyle(
-              color: bodyColor,
-              fontSize: 11,
-              fontWeight: FontWeight.w500,
-              height: 1.35,
-            ),
-          ),
-          if (statusText != null ||
-              distanceText != null ||
-              radiusText != null) ...[
-            const SizedBox(height: 10),
-            if (statusText != null) ...[
-              _LocationInfoText(
-                label: 'Status lokasi',
-                value: statusText,
-                color: titleColor,
-              ),
-              const SizedBox(height: 6),
-            ],
-            if (distanceText != null)
-              _LocationInfoText(
-                label: 'Jarak dari kantor',
-                value: distanceText,
-                color: titleColor,
-              ),
-            if (radiusText != null) ...[
-              const SizedBox(height: 6),
-              _LocationInfoText(
-                label: 'Radius kantor',
-                value: radiusText,
-                color: titleColor,
-              ),
-            ],
+          for (var index = 0; index < warningLabels.length; index++) ...[
+            _WarningStatusRow(label: warningLabels[index]),
+            if (index != warningLabels.length - 1) const SizedBox(height: 8),
           ],
         ],
       ),
     );
   }
-
-  static String? _formatDistance(num? value) {
-    return _formatAttendanceDistance(value);
-  }
-
-  static String? _formatLocationStatus(String? value) {
-    if (value == null) return null;
-    return value
-        .split('_')
-        .where((part) => part.isNotEmpty)
-        .map((part) => '${part[0].toUpperCase()}${part.substring(1)}')
-        .join(' ');
-  }
 }
 
-class _LocationInfoText extends StatelessWidget {
-  const _LocationInfoText({
-    required this.label,
-    required this.value,
-    required this.color,
-  });
+class _WarningStatusRow extends StatelessWidget {
+  const _WarningStatusRow({required this.label});
 
   final String label;
-  final String value;
-  final Color color;
 
   @override
   Widget build(BuildContext context) {
-    return Text(
-      '$label: $value',
-      style: TextStyle(
-        color: color,
-        fontSize: 11,
-        fontWeight: FontWeight.w700,
-        height: 1.2,
-      ),
+    return Row(
+      children: [
+        const SizedBox(
+          width: 7,
+          height: 7,
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              color: Color(0xFFD17A00),
+              shape: BoxShape.circle,
+            ),
+          ),
+        ),
+        const SizedBox(width: 9),
+        Expanded(
+          child: Text(
+            'Status: $label',
+            style: const TextStyle(
+              color: Color(0xFF7A4A12),
+              fontSize: 12,
+              fontWeight: FontWeight.w800,
+              height: 1.25,
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

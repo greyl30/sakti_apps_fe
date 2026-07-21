@@ -1,23 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 import '../../../../core/constants/app_assets.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../history/presentation/models/attendance_history_model.dart';
+import '../../../history/presentation/providers/attendance_history_provider.dart';
 
-/// Widget riwayat
-/// Menampilkan tiga data presensi dummy terakhir.
-class HomeHistorySection extends StatelessWidget {
+/// Widget riwayat presensi terbaru dari backend.
+class HomeHistorySection extends ConsumerWidget {
   const HomeHistorySection({super.key, required this.onSeeAllTap});
 
   final VoidCallback onSeeAllTap;
 
   @override
-  Widget build(BuildContext context) {
-    final histories = [
-      _HistoryItem('Jumat, 5 Juli 2025', '08:00', '17:03'),
-      _HistoryItem('Kamis, 4 Juli 2025', '07:48', '17:15'),
-      _HistoryItem('Rabu, 3 Juli 2025', '07:55', '16:58'),
-    ];
+  Widget build(BuildContext context, WidgetRef ref) {
+    final historiesAsync = ref.watch(attendanceHistoriesProvider);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -50,11 +48,41 @@ class HomeHistorySection extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 10),
-        ...histories.map(
-          (history) => Padding(
-            padding: const EdgeInsets.only(bottom: 12),
-            child: _HistoryCard(history: history),
+        historiesAsync.when(
+          loading: () => const Padding(
+            padding: EdgeInsets.symmetric(vertical: 18),
+            child: Center(
+              child: CircularProgressIndicator(
+                color: AppColors.primaryRed,
+                strokeWidth: 3,
+              ),
+            ),
           ),
+          error: (error, stackTrace) =>
+              _HistoryMessage(message: error.toString()),
+          data: (histories) {
+            debugPrint(
+              '[AttendanceHistory] home section received count: '
+              '${histories.length}',
+            );
+            final latestHistories = histories.take(3).toList();
+            if (latestHistories.isEmpty) {
+              return const _HistoryMessage(
+                message: 'Belum ada riwayat presensi',
+              );
+            }
+
+            return Column(
+              children: latestHistories
+                  .map(
+                    (history) => Padding(
+                      padding: const EdgeInsets.only(bottom: 12),
+                      child: _HistoryCard(history: history),
+                    ),
+                  )
+                  .toList(),
+            );
+          },
         ),
       ],
     );
@@ -64,7 +92,7 @@ class HomeHistorySection extends StatelessWidget {
 class _HistoryCard extends StatelessWidget {
   const _HistoryCard({required this.history});
 
-  final _HistoryItem history;
+  final AttendanceHistoryModel history;
 
   @override
   Widget build(BuildContext context) {
@@ -88,7 +116,7 @@ class _HistoryCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            history.date,
+            _formatDate(history.date),
             style: const TextStyle(
               fontSize: 13,
               fontWeight: FontWeight.w700,
@@ -104,7 +132,7 @@ class _HistoryCard extends StatelessWidget {
                   iconBackground: const Color(0xFFEAFBFF),
                   iconColor: AppColors.secondaryBlue,
                   label: 'Presensi Masuk',
-                  time: history.checkIn,
+                  time: history.clockInLabel,
                 ),
               ),
               const SizedBox(width: 12),
@@ -114,7 +142,7 @@ class _HistoryCard extends StatelessWidget {
                   iconBackground: const Color(0xFFFFF1F0),
                   iconColor: AppColors.primaryRed,
                   label: 'Presensi Keluar',
-                  time: history.checkOut,
+                  time: history.clockOutLabel,
                 ),
               ),
             ],
@@ -174,7 +202,7 @@ class _HistoryTime extends StatelessWidget {
               ),
               const SizedBox(height: 2),
               Text(
-                time,
+                time == '-' ? '-' : '$time WIB',
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: const TextStyle(
@@ -191,10 +219,47 @@ class _HistoryTime extends StatelessWidget {
   }
 }
 
-class _HistoryItem {
-  const _HistoryItem(this.date, this.checkIn, this.checkOut);
+class _HistoryMessage extends StatelessWidget {
+  const _HistoryMessage({required this.message});
 
-  final String date;
-  final String checkIn;
-  final String checkOut;
+  final String message;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 18),
+      child: Center(
+        child: Text(
+          message,
+          textAlign: TextAlign.center,
+          style: const TextStyle(
+            color: Color(0xFF8A8F98),
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+String _formatDate(DateTime date) {
+  const days = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'];
+  const months = [
+    'Januari',
+    'Februari',
+    'Maret',
+    'April',
+    'Mei',
+    'Juni',
+    'Juli',
+    'Agustus',
+    'September',
+    'Oktober',
+    'November',
+    'Desember',
+  ];
+
+  return '${days[date.weekday - 1]}, ${date.day} '
+      '${months[date.month - 1]} ${date.year}';
 }

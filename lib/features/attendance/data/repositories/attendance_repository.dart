@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 
 import '../datasources/attendance_remote_data_source.dart';
 import '../models/attendance_submit_response.dart';
@@ -105,7 +106,9 @@ class AttendanceRepository {
       );
     } on SocketException {
       throw const AttendanceSubmitException('Tidak dapat terhubung ke server.');
-    } catch (_) {
+    } catch (error, stackTrace) {
+      debugPrint('Attendance check-in unexpected error: $error');
+      debugPrintStack(stackTrace: stackTrace);
       throw const AttendanceSubmitException('Gagal mengirim presensi masuk.');
     }
   }
@@ -138,13 +141,20 @@ class AttendanceRepository {
       );
     } on SocketException {
       throw const AttendanceSubmitException('Tidak dapat terhubung ke server.');
-    } catch (_) {
+    } catch (error, stackTrace) {
+      debugPrint('Attendance check-out unexpected error: $error');
+      debugPrintStack(stackTrace: stackTrace);
       throw const AttendanceSubmitException('Gagal mengirim presensi keluar.');
     }
   }
 
   AttendanceSubmitResponse _mapSubmitResponse(Map<String, dynamic> data) {
+    debugPrint('AttendanceSubmitResponse parse start: $data');
     final response = AttendanceSubmitResponse.fromJson(data);
+    debugPrint(
+      'AttendanceSubmitResponse parse success: '
+      'success=${response.success}, data=${response.data}',
+    );
     if (response.success) return response;
 
     throw AttendanceSubmitException(

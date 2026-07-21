@@ -12,12 +12,14 @@ class HomeAttendanceCard extends StatelessWidget {
   const HomeAttendanceCard({
     super.key,
     required this.isHoliday,
+    required this.canCheckIn,
     required this.canCheckOut,
     required this.onCheckInTap,
     required this.onCheckOutTap,
   });
 
   final bool isHoliday;
+  final bool canCheckIn;
   final bool canCheckOut;
   final VoidCallback onCheckInTap;
   final VoidCallback onCheckOutTap;
@@ -79,7 +81,7 @@ class HomeAttendanceCard extends StatelessWidget {
                       child: _AttendanceActionButton(
                         label: 'Presensi Masuk',
                         icon: AppAssets.iconIn,
-                        isEnabled: !isHoliday,
+                        isEnabled: !isHoliday && canCheckIn,
                         onTap: onCheckInTap,
                       ),
                     ),
@@ -222,7 +224,7 @@ class _AttendanceActionButton extends StatelessWidget {
     return SizedBox(
       height: 46,
       child: FilledButton(
-        onPressed: onTap,
+        onPressed: isEnabled ? onTap : null,
         style: FilledButton.styleFrom(
           backgroundColor: backgroundColor,
           foregroundColor: foregroundColor,

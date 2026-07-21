@@ -23,6 +23,32 @@ class AttendanceSubmitResponse {
 
   bool get isOvertime => data['lembur'] == true;
 
+  String? get attendanceStatus {
+    final value = data['status'];
+    if (value is! String || value.trim().isEmpty) return null;
+    return value;
+  }
+
+  bool get isLate => attendanceStatus?.toLowerCase() == 'terlambat';
+
+  String? get attendanceDate {
+    final value = data['tanggal'];
+    if (value is! String || value.trim().isEmpty) return null;
+    return value;
+  }
+
+  String? get clockInTime {
+    final value = data['jam_masuk'];
+    if (value is! String || value.trim().isEmpty) return null;
+    return value;
+  }
+
+  String? get clockOutTime {
+    final value = data['jam_keluar'];
+    if (value is! String || value.trim().isEmpty) return null;
+    return value;
+  }
+
   bool get isOutsideRadius => data['is_outside_radius'] == true;
 
   num? get distanceMeter {

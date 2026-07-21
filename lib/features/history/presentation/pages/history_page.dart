@@ -1,35 +1,34 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/router/route_name.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../leave/presentation/widgets/leave_top_bar.dart';
 import '../models/attendance_history_model.dart';
+import '../providers/attendance_history_provider.dart';
 import '../widgets/history_attendance_card.dart';
 import '../widgets/history_filter_chip.dart';
 
-class HistoryPage extends StatefulWidget {
+class HistoryPage extends ConsumerStatefulWidget {
   const HistoryPage({super.key});
 
   @override
-  State<HistoryPage> createState() => _HistoryPageState();
+  ConsumerState<HistoryPage> createState() => _HistoryPageState();
 }
 
-class _HistoryPageState extends State<HistoryPage> {
+class _HistoryPageState extends ConsumerState<HistoryPage> {
   AttendanceHistoryStatus? _selectedStatus;
 
   @override
-  Widget build(BuildContext context) {
-    // TODO(Backend):
-    // Ambil data riwayat presensi dari API.
-    final histories = dummyAttendanceHistories;
-    final filteredHistories = _selectedStatus == null
-        ? histories
-        : histories
-              .where((history) => history.status == _selectedStatus)
-              .toList();
+  void initState() {
+    super.initState();
+    Future.microtask(() => ref.invalidate(attendanceHistoriesProvider));
+  }
 
-    // TODO(UI):
-    // Tambahkan Empty State ketika riwayat belum tersedia.
+  @override
+  Widget build(BuildContext context) {
+    final historiesAsync = ref.watch(attendanceHistoriesProvider);
+
     return Scaffold(
       backgroundColor: AppColors.whiteBackground,
       body: SafeArea(
@@ -85,19 +84,75 @@ class _HistoryPageState extends State<HistoryPage> {
             ),
             const SizedBox(height: 18),
             Expanded(
-              child: ListView.builder(
-                padding: const EdgeInsets.fromLTRB(24, 0, 24, 28),
-                itemCount: filteredHistories.length,
-                itemBuilder: (context, index) {
-                  final history = filteredHistories[index];
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 14),
-                    child: HistoryAttendanceCard(history: history),
+              child: historiesAsync.when(
+                loading: () => const Center(
+                  child: CircularProgressIndicator(color: AppColors.primaryRed),
+                ),
+                error: (error, stackTrace) =>
+                    _HistoryMessage(message: error.toString()),
+                data: (histories) {
+                  debugPrint(
+                    '[AttendanceHistory] history page received count: '
+                    '${histories.length}',
+                  );
+                  final filteredHistories = _selectedStatus == null
+                      ? histories
+                      : histories
+                            .where(
+                              (history) => history.status == _selectedStatus,
+                            )
+                            .toList();
+
+                  if (filteredHistories.isEmpty) {
+                    return const _HistoryMessage(
+                      message: 'Belum ada riwayat presensi',
+                    );
+                  }
+
+                  return RefreshIndicator(
+                    color: AppColors.primaryRed,
+                    onRefresh: () =>
+                        ref.refresh(attendanceHistoriesProvider.future),
+                    child: ListView.builder(
+                      padding: const EdgeInsets.fromLTRB(24, 0, 24, 28),
+                      itemCount: filteredHistories.length,
+                      itemBuilder: (context, index) {
+                        final history = filteredHistories[index];
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 14),
+                          child: HistoryAttendanceCard(history: history),
+                        );
+                      },
+                    ),
                   );
                 },
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _HistoryMessage extends StatelessWidget {
+  const _HistoryMessage({required this.message});
+
+  final String message;
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 24),
+        child: Text(
+          message,
+          textAlign: TextAlign.center,
+          style: const TextStyle(
+            color: Color(0xFF8A8F98),
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+          ),
         ),
       ),
     );

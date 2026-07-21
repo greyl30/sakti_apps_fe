@@ -26,8 +26,16 @@ class AttendanceWorkConfig {
   }
 
   DateTime clockOutDateTime(DateTime referenceDate) {
-    final parts = clockOutTime.split(':');
-    final hour = int.tryParse(parts.elementAtOrNull(0) ?? '') ?? 17;
+    return _timeOfDayDateTime(clockOutTime, referenceDate);
+  }
+
+  DateTime minimumClockOutDateTime(DateTime referenceDate) {
+    return _timeOfDayDateTime(minimumClockOutTime, referenceDate);
+  }
+
+  DateTime _timeOfDayDateTime(String value, DateTime referenceDate) {
+    final parts = value.split(':');
+    final hour = int.tryParse(parts.elementAtOrNull(0) ?? '') ?? 0;
     final minute = int.tryParse(parts.elementAtOrNull(1) ?? '') ?? 0;
     final second = int.tryParse(parts.elementAtOrNull(2) ?? '') ?? 0;
 

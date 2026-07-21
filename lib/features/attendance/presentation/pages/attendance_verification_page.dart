@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:camera/camera.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:go_router/go_router.dart';
@@ -18,6 +19,7 @@ import '../../data/datasources/attendance_remote_data_source.dart';
 import '../../data/models/attendance_submit_response.dart';
 import '../../data/models/attendance_work_config.dart';
 import '../../data/repositories/attendance_repository.dart';
+import '../../../history/presentation/providers/attendance_history_provider.dart';
 import '../models/attendance_flow_type.dart';
 import '../widgets/attendance_flow_app_bar.dart';
 import '../widgets/attendance_primary_button.dart';
@@ -205,23 +207,28 @@ class _CheckInVerificationPageState extends State<CheckInVerificationPage>
     try {
       setState(() => _isTakingPicture = true);
 
-      if (_actualLatitude == null || _actualLongitude == null) {
-        _showLocationError(
-          'Lokasi belum siap. Tunggu sebentar lalu coba lagi.',
-        );
+      final photo = await controller.takePicture();
+      final capturedPhoto = File(photo.path);
+      if (!mounted) return;
+      setState(() => _capturedPhoto = capturedPhoto);
+
+      // Tampilkan preview secepat mungkin sebelum proses resize/GPS/upload berjalan.
+      await WidgetsBinding.instance.endOfFrame;
+      if (!mounted) return;
+
+      final resizedPhoto = await _resizeAttendancePhoto(capturedPhoto);
+      final resizedPhotoSize = await resizedPhoto.length();
+      final hasFreshLocation = await _prepareCurrentLocation();
+      if (!hasFreshLocation ||
+          _actualLatitude == null ||
+          _actualLongitude == null) {
+        if (!mounted) return;
         _resetCaptureState();
         return;
       }
       final attendanceLatitude = _actualLatitude!;
       final attendanceLongitude = _actualLongitude!;
 
-      final photo = await controller.takePicture();
-      final capturedPhoto = File(photo.path);
-      if (!mounted) return;
-      setState(() => _capturedPhoto = capturedPhoto);
-
-      final resizedPhoto = await _resizeAttendancePhoto(capturedPhoto);
-      final resizedPhotoSize = await resizedPhoto.length();
       final uploadedImageUrl = await _attendanceRepository.uploadImage(
         resizedPhoto,
       );
@@ -258,12 +265,25 @@ class _CheckInVerificationPageState extends State<CheckInVerificationPage>
       );
       debugPrint('Uploaded attendance image URL: $_uploadedImageUrl');
       debugPrint('Attendance response data: ${_attendanceResponse!.data}');
-      context.push(
-        widget.flowType.isCheckIn
-            ? RouteName.checkInLoading
-            : RouteName.checkOutLoading,
-        extra: attendanceResponse,
+      ProviderScope.containerOf(
+        context,
+        listen: false,
+      ).invalidate(attendanceHistoriesProvider);
+      final loadingRoute = widget.flowType.isCheckIn
+          ? RouteName.checkInLoading
+          : RouteName.checkOutLoading;
+      debugPrint(
+        'Attendance navigation to loading start: '
+        'route=$loadingRoute, extra=${attendanceResponse.data}',
       );
+      try {
+        context.push(loadingRoute, extra: attendanceResponse);
+        debugPrint('Attendance navigation to loading dispatched.');
+      } catch (error, stackTrace) {
+        debugPrint('Attendance navigation to loading failed: $error');
+        debugPrintStack(stackTrace: stackTrace);
+        rethrow;
+      }
     } on CameraException catch (error) {
       if (!mounted) return;
       _resetCaptureState();
@@ -282,8 +302,10 @@ class _CheckInVerificationPageState extends State<CheckInVerificationPage>
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text(error.message)));
-    } catch (_) {
+    } catch (error, stackTrace) {
       if (!mounted) return;
+      debugPrint('Attendance verification unexpected error: $error');
+      debugPrintStack(stackTrace: stackTrace);
       _resetCaptureState();
       ScaffoldMessenger.of(
         context,
@@ -296,7 +318,8 @@ class _CheckInVerificationPageState extends State<CheckInVerificationPage>
     required double longitude,
   }) {
     debugPrint(
-      'Attendance request location: latitude=$latitude, longitude=$longitude',
+      'Attendance request location (${DateTime.now().toIso8601String()}): '
+      'latitude=$latitude, longitude=$longitude',
     );
   }
 
@@ -330,16 +353,11 @@ class _CheckInVerificationPageState extends State<CheckInVerificationPage>
     }
 
     try {
-      final position = await Geolocator.getCurrentPosition(
-        locationSettings: const LocationSettings(
-          accuracy: LocationAccuracy.high,
-          timeLimit: Duration(seconds: 12),
-        ),
-      );
+      final position = await _getFreshCurrentPosition();
 
       if (!mounted) return false;
       // TODO(Backend):
-      // Koordinat aktual ini akan digunakan pada request presensi di step berikutnya.
+      // Koordinat aktual ini dikirim ke request presensi dan akan divalidasi backend.
       setState(() {
         _actualLatitude = position.latitude;
         _actualLongitude = position.longitude;
@@ -352,6 +370,18 @@ class _CheckInVerificationPageState extends State<CheckInVerificationPage>
       );
       return false;
     }
+  }
+
+  Future<Position> _getFreshCurrentPosition() {
+    const locationSettings = LocationSettings(
+      accuracy: LocationAccuracy.best,
+      distanceFilter: 0,
+      timeLimit: Duration(seconds: 15),
+    );
+
+    return Geolocator.getPositionStream(
+      locationSettings: locationSettings,
+    ).first.timeout(const Duration(seconds: 15));
   }
 
   void _showLocationError(String message) {
