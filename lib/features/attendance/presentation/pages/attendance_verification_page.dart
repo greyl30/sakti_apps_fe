@@ -258,6 +258,7 @@ class _CheckInVerificationPageState extends State<CheckInVerificationPage>
       });
 
       // Response presensi disimpan sementara untuk kebutuhan UI/data step berikutnya.
+      debugPrint('Attendance response received, preparing success flow.');
       debugPrint('Captured attendance photo: ${_capturedPhoto!.path}');
       debugPrint(
         'Resized attendance photo: ${_resizedPhoto!.path} '
@@ -265,10 +266,16 @@ class _CheckInVerificationPageState extends State<CheckInVerificationPage>
       );
       debugPrint('Uploaded attendance image URL: $_uploadedImageUrl');
       debugPrint('Attendance response data: ${_attendanceResponse!.data}');
-      ProviderScope.containerOf(
-        context,
-        listen: false,
-      ).invalidate(attendanceHistoriesProvider);
+      try {
+        ProviderScope.containerOf(
+          context,
+          listen: false,
+        ).invalidate(attendanceHistoriesProvider);
+        debugPrint('Attendance history refresh invalidated.');
+      } catch (error, stackTrace) {
+        debugPrint('Attendance history refresh invalidate failed: $error');
+        debugPrintStack(stackTrace: stackTrace);
+      }
       final loadingRoute = widget.flowType.isCheckIn
           ? RouteName.checkInLoading
           : RouteName.checkOutLoading;
