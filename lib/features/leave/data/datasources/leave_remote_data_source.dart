@@ -8,6 +8,13 @@ class LeaveRemoteDataSource {
 
   final Dio _dio;
 
+  // Mengambil saldo cuti user login dari backend.
+  Future<Map<String, dynamic>> getLeaveBalance() async {
+    final response = await _dio.get<Map<String, dynamic>>('/api/leave/balance');
+
+    return response.data ?? <String, dynamic>{};
+  }
+
   // Mengirim pengajuan cuti karyawan ke backend.
   Future<Map<String, dynamic>> submitLeaveRequest(
     LeaveRequestModel request,

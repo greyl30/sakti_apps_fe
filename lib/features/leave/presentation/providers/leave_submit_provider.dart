@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/network/api_client.dart';
 import '../../data/datasources/leave_remote_data_source.dart';
+import '../../data/models/leave_balance_model.dart';
 import '../../data/models/leave_request_model.dart';
 import '../../data/repositories/leave_repository.dart';
 import '../models/leave_form_data.dart';
@@ -49,6 +50,13 @@ final leaveSubmitProvider =
       final repository = ref.watch(leaveRepositoryProvider);
       return LeaveSubmitNotifier(repository);
     });
+
+// TODO(Backend):
+// Backend mengirim saldo cuti user login, FE hanya menampilkan data.
+final leaveBalanceProvider = FutureProvider<LeaveBalanceModel>((ref) async {
+  final repository = ref.watch(leaveRepositoryProvider);
+  return repository.getLeaveBalance();
+});
 
 class LeaveSubmitNotifier extends StateNotifier<LeaveSubmitState> {
   LeaveSubmitNotifier(this._repository) : super(const LeaveSubmitState());

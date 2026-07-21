@@ -29,8 +29,8 @@ class LeaveBalanceCard extends StatelessWidget {
         : const Color(0xFFC6E6F0);
 
     return Container(
-      height: 74,
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      height: 86,
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
       decoration: BoxDecoration(
         color: background,
         borderRadius: BorderRadius.circular(15),
@@ -61,19 +61,21 @@ class LeaveBalanceCard extends StatelessWidget {
               height: 1,
             ),
           ),
-          const SizedBox(height: 0),
-          Text(
-            subtitle,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              color: color.withValues(alpha: .8),
-              fontSize: 8,
-              fontWeight: FontWeight.w500,
-              height: 1,
+          if (subtitle.isNotEmpty) ...[
+            const SizedBox(height: 4),
+            Text(
+              subtitle,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: color.withValues(alpha: .8),
+                fontSize: 8,
+                fontWeight: FontWeight.w500,
+                height: 1,
+              ),
             ),
-          ),
+          ],
         ],
       ),
     );

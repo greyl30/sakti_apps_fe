@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 
 import '../../presentation/models/leave_form_data.dart';
 import '../datasources/leave_remote_data_source.dart';
+import '../models/leave_balance_model.dart';
 import '../models/leave_request_model.dart';
 
 // Repository untuk kebutuhan data pengajuan cuti.
@@ -12,6 +13,30 @@ class LeaveRepository {
   const LeaveRepository(this._remoteDataSource);
 
   final LeaveRemoteDataSource _remoteDataSource;
+
+  // Mengambil saldo cuti user login untuk ringkasan halaman Cuti.
+  Future<LeaveBalanceModel> getLeaveBalance() async {
+    try {
+      final response = await _remoteDataSource.getLeaveBalance();
+      return _mapBalanceResponse(response);
+    } on LeaveBalanceException {
+      rethrow;
+    } on DioException catch (error) {
+      throw LeaveBalanceException(
+        _mapDioError(
+          error,
+          timeoutMessage: 'Request saldo cuti melebihi batas waktu.',
+          fallbackMessage: 'Gagal mengambil saldo cuti.',
+        ),
+      );
+    } on SocketException {
+      throw const LeaveBalanceException('Tidak dapat terhubung ke server.');
+    } catch (error, stackTrace) {
+      debugPrint('Leave balance unexpected error: $error');
+      debugPrintStack(stackTrace: stackTrace);
+      throw const LeaveBalanceException('Gagal mengambil saldo cuti.');
+    }
+  }
 
   // Submit pengajuan dari form UI dengan mapper request API.
   Future<LeaveRequestResponse> submitLeaveForm(LeaveFormData formData) {
@@ -42,6 +67,21 @@ class LeaveRepository {
       debugPrintStack(stackTrace: stackTrace);
       throw const LeaveRequestException('Gagal mengirim pengajuan cuti.');
     }
+  }
+
+  LeaveBalanceModel _mapBalanceResponse(Map<String, dynamic> response) {
+    final isSuccess = response['success'] == true;
+    final rawData = response['data'];
+
+    if (isSuccess && rawData is Map<String, dynamic>) {
+      return LeaveBalanceModel.fromJson(rawData);
+    }
+
+    if (isSuccess && rawData is Map) {
+      return LeaveBalanceModel.fromJson(Map<String, dynamic>.from(rawData));
+    }
+
+    throw LeaveBalanceException(_readApiMessage(response));
   }
 
   LeaveRequestResponse _mapSubmitResponse(Map<String, dynamic> response) {
@@ -91,6 +131,15 @@ class LeaveRepository {
 
     return fallbackMessage;
   }
+}
+
+class LeaveBalanceException implements Exception {
+  const LeaveBalanceException(this.message);
+
+  final String message;
+
+  @override
+  String toString() => message;
 }
 
 class LeaveRequestException implements Exception {

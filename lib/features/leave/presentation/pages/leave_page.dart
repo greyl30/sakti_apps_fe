@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/constants/app_assets.dart';
@@ -6,15 +7,23 @@ import '../../../../core/router/route_name.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/app_bottom_navigation.dart';
 import '../models/leave_request_status.dart';
+import '../providers/leave_submit_provider.dart';
 import '../widgets/leave_cards.dart';
 import '../widgets/leave_list_item.dart';
 import '../widgets/leave_top_bar.dart';
 
-class LeavePage extends StatelessWidget {
+class LeavePage extends ConsumerWidget {
   const LeavePage({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final balance = ref.watch(leaveBalanceProvider);
+    final balanceData = balance.valueOrNull;
+    final isBalanceLoading = balance.isLoading && balanceData == null;
+    final balanceValueFallback = isBalanceLoading ? '...' : '-';
+    final hasPreviousYearLeave =
+        (balanceData?.previousYearRemainingLeave ?? 0) > 0;
+
     return Scaffold(
       backgroundColor: AppColors.whiteBackground,
       body: SafeArea(
@@ -32,40 +41,102 @@ class LeavePage extends StatelessWidget {
                 padding: const EdgeInsets.fromLTRB(24, 24, 24, 28),
                 children: [
                   // Card ringkasan sisa cuti
-                  GridView.count(
-                    crossAxisCount: 2,
-                    crossAxisSpacing: 15,
-                    mainAxisSpacing: 15,
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    childAspectRatio: 2,
-                    children: const [
-                      LeaveBalanceCard(
-                        value: '12',
-                        title: 'Sisa cuti 2026',
-                        subtitle: '',
-                        isWarning: true,
+                  if (hasPreviousYearLeave)
+                    GridView.count(
+                      crossAxisCount: 2,
+                      crossAxisSpacing: 15,
+                      mainAxisSpacing: 15,
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      childAspectRatio: 1.72,
+                      children: [
+                        LeaveBalanceCard(
+                          value:
+                              balanceData?.remainingLeave.toString() ??
+                              balanceValueFallback,
+                          title: 'Sisa cuti ${balanceData?.year ?? ''}',
+                          subtitle: '',
+                          isWarning: true,
+                        ),
+                        LeaveBalanceCard(
+                          value:
+                              balanceData?.previousYearRemainingLeave
+                                  .toString() ??
+                              balanceValueFallback,
+                          title: 'Sisa cuti tahun lalu',
+                          subtitle: '',
+                          isWarning: true,
+                        ),
+                        LeaveBalanceCard(
+                          value:
+                              balanceData?.usedLeave.toString() ??
+                              balanceValueFallback,
+                          title: 'Digunakan',
+                          subtitle: '',
+                          isWarning: false,
+                        ),
+                        LeaveBalanceCard(
+                          value:
+                              balanceData?.totalLeave.toString() ??
+                              balanceValueFallback,
+                          title: 'Total cuti tersedia',
+                          subtitle: '',
+                          isWarning: false,
+                        ),
+                      ],
+                    )
+                  else
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        LeaveBalanceCard(
+                          value:
+                              balanceData?.remainingLeave.toString() ??
+                              balanceValueFallback,
+                          title: 'Sisa cuti ${balanceData?.year ?? ''}',
+                          subtitle: '',
+                          isWarning: true,
+                        ),
+                        const SizedBox(height: 15),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: LeaveBalanceCard(
+                                value:
+                                    balanceData?.usedLeave.toString() ??
+                                    balanceValueFallback,
+                                title: 'Digunakan',
+                                subtitle: '',
+                                isWarning: false,
+                              ),
+                            ),
+                            const SizedBox(width: 15),
+                            Expanded(
+                              child: LeaveBalanceCard(
+                                value:
+                                    balanceData?.totalLeave.toString() ??
+                                    balanceValueFallback,
+                                title: 'Total cuti tersedia',
+                                subtitle: '',
+                                isWarning: false,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  if (balance.hasError) ...[
+                    const SizedBox(height: 10),
+                    const Text(
+                      'Saldo cuti belum dapat dimuat.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: Color(0xFF8A8F98),
+                        fontSize: 11,
+                        fontWeight: FontWeight.w500,
                       ),
-                      LeaveBalanceCard(
-                        value: '2',
-                        title: 'Sisa cuti 2025',
-                        subtitle: 'Berlaku s/d 31 Maret 2026',
-                        isWarning: true,
-                      ),
-                      LeaveBalanceCard(
-                        value: '3',
-                        title: 'Digunakan',
-                        subtitle: '',
-                        isWarning: false,
-                      ),
-                      LeaveBalanceCard(
-                        value: '13',
-                        title: 'Total cuti tersedia',
-                        subtitle: '',
-                        isWarning: false,
-                      ),
-                    ],
-                  ),
+                    ),
+                  ],
                   const SizedBox(height: 25),
                   // Tombol menuju form ajukan cuti
                   LeaveActionCard(
