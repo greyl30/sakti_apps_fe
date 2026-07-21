@@ -57,7 +57,9 @@ class AttendanceSubmitResponse {
   }
 
   String? get locationStatus {
-    final value = data['location_status'];
+    final value = clockOutTime == null
+        ? data['lokasi_status_masuk']
+        : data['lokasi_status_keluar'];
     if (value is! String || value.trim().isEmpty) return null;
     return value;
   }
