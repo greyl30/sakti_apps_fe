@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/constants/app_assets.dart';
@@ -8,36 +9,38 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/app_bottom_navigation.dart';
 import '../models/leave_form_data.dart';
 import '../models/leave_request_status.dart';
+import '../providers/leave_submit_provider.dart';
 import '../widgets/leave_list_item.dart';
 import '../widgets/leave_top_bar.dart';
 
-class LeaveConfirmationPage extends StatelessWidget {
+class LeaveConfirmationPage extends ConsumerWidget {
   const LeaveConfirmationPage({super.key, required this.data});
 
   final LeaveFormData data;
 
-  void _showSuccessDialog(BuildContext context) {
+  Future<void> _submitLeave(BuildContext context, WidgetRef ref) async {
+    final response = await ref.read(leaveSubmitProvider.notifier).submit(data);
+    if (!context.mounted) return;
+
+    if (response == null) {
+      final message = ref.read(leaveSubmitProvider).errorMessage;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(message ?? 'Gagal mengirim pengajuan cuti.'),
+          backgroundColor: AppColors.primaryRed,
+        ),
+      );
+      return;
+    }
+
+    _showSuccessDialog(context, response.toStatusData());
+  }
+
+  void _showSuccessDialog(
+    BuildContext context,
+    LeaveRequestStatusData statusData,
+  ) {
     final isDispensation = _isDispensation(data.type);
-    final statusData = LeaveRequestStatusData(
-      type: data.type,
-      reason: data.reason,
-      startDate: data.startDate,
-      endDate: data.endDate,
-      submittedDate: DateTime(2026, 7, 10),
-      supervisorName: 'Hendru Kusuma',
-      hrdName: 'HRD',
-      stage: isDispensation
-          ? LeaveApprovalStage.currentHRD
-          : LeaveApprovalStage.currentSupervisor,
-      status: isDispensation
-          ? LeaveApprovalStatus.approved
-          : LeaveApprovalStatus.waitingSupervisor,
-      progress: isDispensation
-          ? ApprovalProgress.approved
-          : ApprovalProgress.waitingSupervisor,
-      supervisorApprovalDate: isDispensation ? DateTime(2026, 7, 10) : null,
-      hrdApprovalDate: isDispensation ? DateTime(2026, 7, 10) : null,
-    );
 
     // Popup berhasil mengirim pengajuan cuti.
     showDialog<void>(
@@ -137,8 +140,9 @@ class LeaveConfirmationPage extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final isDispensation = _isDispensation(data.type);
+    final submitState = ref.watch(leaveSubmitProvider);
 
     return Scaffold(
       backgroundColor: AppColors.whiteBackground,
@@ -257,8 +261,14 @@ class LeaveConfirmationPage extends StatelessWidget {
                   const SizedBox(height: 24),
                   // Tombol ajukan cuti
                   LeavePrimaryButton(
-                    label: isDispensation ? 'Ajukan Dispensasi' : 'Ajukan Cuti',
-                    onPressed: () => _showSuccessDialog(context),
+                    label: submitState.isLoading
+                        ? 'Mengirim...'
+                        : isDispensation
+                        ? 'Ajukan Dispensasi'
+                        : 'Ajukan Cuti',
+                    onPressed: submitState.isLoading
+                        ? null
+                        : () => _submitLeave(context, ref),
                   ),
                 ],
               ),
