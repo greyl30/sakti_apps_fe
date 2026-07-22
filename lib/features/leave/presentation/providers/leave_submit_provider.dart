@@ -58,6 +58,29 @@ final leaveBalanceProvider = FutureProvider<LeaveBalanceModel>((ref) async {
   return repository.getLeaveBalance();
 });
 
+// TODO(Backend):
+// Backend mengirim daftar pengajuan user login, FE membagi data aktif/riwayat.
+final leaveStatusesProvider = FutureProvider<List<LeaveRequestResponse>>((
+  ref,
+) async {
+  final repository = ref.watch(leaveRepositoryProvider);
+  return repository.getLeaveStatuses();
+});
+
+final activeLeaveRequestsProvider = FutureProvider<List<LeaveRequestResponse>>((
+  ref,
+) async {
+  final statuses = await ref.watch(leaveStatusesProvider.future);
+  return statuses.where((request) => request.isActiveStatus).toList();
+});
+
+final leaveHistoryRequestsProvider = FutureProvider<List<LeaveRequestResponse>>(
+  (ref) async {
+    final statuses = await ref.watch(leaveStatusesProvider.future);
+    return statuses.where((request) => request.isHistoryStatus).toList();
+  },
+);
+
 class LeaveSubmitNotifier extends StateNotifier<LeaveSubmitState> {
   LeaveSubmitNotifier(this._repository) : super(const LeaveSubmitState());
 

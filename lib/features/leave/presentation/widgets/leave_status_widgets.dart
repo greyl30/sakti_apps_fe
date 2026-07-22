@@ -12,12 +12,9 @@ class LeaveStatusCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final title = data.stage == LeaveApprovalStage.currentSupervisor
-        ? 'Menunggu Atasan'
-        : 'Menunggu HRD';
-    final subtitle = data.stage == LeaveApprovalStage.currentSupervisor
-        ? 'Dikirim: ${_formatDate(data.submittedDate)}'
-        : 'Sedang dalam proses';
+    final title = _statusTitle(data);
+    final subtitle = _statusSubtitle(data);
+    final color = _statusColor(data.status);
 
     return Container(
       padding: const EdgeInsets.fromLTRB(18, 18, 18, 18),
@@ -29,13 +26,10 @@ class LeaveStatusCard extends StatelessWidget {
       child: Row(
         children: [
           SvgPicture.asset(
-            AppAssets.iconPending,
+            _statusIcon(data.status),
             width: 30,
             height: 30,
-            colorFilter: const ColorFilter.mode(
-              AppColors.secondaryBlue,
-              BlendMode.srcIn,
-            ),
+            colorFilter: ColorFilter.mode(color, BlendMode.srcIn),
           ),
           const SizedBox(width: 14),
           Expanded(
@@ -44,8 +38,8 @@ class LeaveStatusCard extends StatelessWidget {
               children: [
                 Text(
                   title,
-                  style: const TextStyle(
-                    color: AppColors.secondaryBlue,
+                  style: TextStyle(
+                    color: color,
                     fontSize: 16,
                     fontWeight: FontWeight.w800,
                     height: 1,
@@ -91,6 +85,11 @@ class LeaveDetailCard extends StatelessWidget {
           value: _formatLongDate(data.endDate),
         ),
         LeaveInfoRow(
+          icon: AppAssets.iconDurasi,
+          label: 'Durasi',
+          value: '${data.totalDays} hari kerja',
+        ),
+        LeaveInfoRow(
           icon: AppAssets.iconAlasan,
           label: 'Keterangan',
           value: data.reason,
@@ -107,6 +106,9 @@ class LeaveApprovalTimelineCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isRejected = data.status == LeaveApprovalStatus.rejected;
+    final isCanceled = data.status == LeaveApprovalStatus.canceled;
+
     return _StatusSectionCard(
       title: 'ALUR PERSETUJUAN',
       children: [
@@ -116,40 +118,51 @@ class LeaveApprovalTimelineCard extends StatelessWidget {
           state: _TimelineState.done,
           showLine: true,
         ),
-        _TimelineItem(
-          title: data.progress.index >= ApprovalProgress.waitingHRD.index
-              ? 'Disetujui Atasan'
-              : 'Menunggu Persetujuan Atasan',
-          subtitle: data.supervisorApprovalDate == null
-              ? 'Dalam proses'
-              : 'Ir. ${data.supervisorName} - ${_formatTime(data.supervisorApprovalDate!)}',
-          state: data.progress.index >= ApprovalProgress.waitingHRD.index
-              ? _TimelineState.done
-              : _TimelineState.active,
-          showLine: true,
-        ),
-        _TimelineItem(
-          title: 'Menunggu Konfirmasi HRD',
-          subtitle: data.progress == ApprovalProgress.waitingHRD
-              ? 'Dalam proses'
-              : 'Belum dimulai',
-          state: data.progress == ApprovalProgress.waitingHRD
-              ? _TimelineState.active
-              : data.progress == ApprovalProgress.approved
-              ? _TimelineState.done
-              : _TimelineState.pending,
-          showLine: true,
-        ),
-        _TimelineItem(
-          title: 'Pengajuan Cuti Berhasil',
-          subtitle: data.progress == ApprovalProgress.approved
-              ? 'Disetujui'
-              : 'Belum dimulai',
-          state: data.progress == ApprovalProgress.approved
-              ? _TimelineState.done
-              : _TimelineState.pending,
-          showLine: false,
-        ),
+        if (isRejected || isCanceled)
+          _TimelineItem(
+            title: isRejected ? 'Pengajuan Ditolak' : 'Pengajuan Dibatalkan',
+            subtitle: isRejected ? 'Ditolak' : 'Dibatalkan',
+            state: _TimelineState.failed,
+            showLine: false,
+          )
+        else ...[
+          _TimelineItem(
+            title: _hasSupervisorApproved(data)
+                ? 'Disetujui Atasan'
+                : 'Menunggu Persetujuan Atasan',
+            subtitle: data.supervisorApprovalDate == null
+                ? 'Dalam proses'
+                : '${data.supervisorName} - ${_formatTime(data.supervisorApprovalDate!)}',
+            state: _hasSupervisorApproved(data)
+                ? _TimelineState.done
+                : _TimelineState.active,
+            showLine: true,
+          ),
+          _TimelineItem(
+            title: 'Menunggu Finalisasi HRD',
+            subtitle: data.progress == ApprovalProgress.waitingHRD
+                ? 'Dalam proses'
+                : data.progress == ApprovalProgress.approved
+                ? _hrdApprovalSubtitle(data)
+                : 'Belum dimulai',
+            state: data.progress == ApprovalProgress.waitingHRD
+                ? _TimelineState.active
+                : data.progress == ApprovalProgress.approved
+                ? _TimelineState.done
+                : _TimelineState.pending,
+            showLine: true,
+          ),
+          _TimelineItem(
+            title: 'Pengajuan Cuti Berhasil',
+            subtitle: data.progress == ApprovalProgress.approved
+                ? 'Disetujui'
+                : 'Belum dimulai',
+            state: data.progress == ApprovalProgress.approved
+                ? _TimelineState.done
+                : _TimelineState.pending,
+            showLine: false,
+          ),
+        ],
       ],
     );
   }
@@ -268,7 +281,7 @@ class _StatusSectionCard extends StatelessWidget {
   }
 }
 
-enum _TimelineState { done, active, pending }
+enum _TimelineState { done, active, pending, failed }
 
 class _TimelineItem extends StatelessWidget {
   const _TimelineItem({
@@ -287,7 +300,10 @@ class _TimelineItem extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDone = state == _TimelineState.done;
     final isActive = state == _TimelineState.active;
-    final color = isDone || isActive
+    final isFailed = state == _TimelineState.failed;
+    final color = isFailed
+        ? AppColors.primaryRed
+        : isDone || isActive
         ? AppColors.primaryRed
         : const Color(0xFFC9D0D8);
 
@@ -360,6 +376,58 @@ class _TimelineItem extends StatelessWidget {
       ],
     );
   }
+}
+
+String _statusTitle(LeaveRequestStatusData data) {
+  return switch (data.status) {
+    LeaveApprovalStatus.waitingSupervisor => 'Menunggu Atasan',
+    LeaveApprovalStatus.waitingHRD => 'Menunggu HRD',
+    LeaveApprovalStatus.approved => 'Disetujui',
+    LeaveApprovalStatus.rejected => 'Ditolak',
+    LeaveApprovalStatus.canceled => 'Dibatalkan',
+  };
+}
+
+String _statusSubtitle(LeaveRequestStatusData data) {
+  return switch (data.status) {
+    LeaveApprovalStatus.waitingSupervisor =>
+      'Dikirim: ${_formatDate(data.submittedDate)}',
+    LeaveApprovalStatus.waitingHRD => 'Menunggu finalisasi HRD',
+    LeaveApprovalStatus.approved => 'Pengajuan selesai',
+    LeaveApprovalStatus.rejected => 'Pengajuan tidak disetujui',
+    LeaveApprovalStatus.canceled => 'Pengajuan telah dibatalkan',
+  };
+}
+
+String _statusIcon(LeaveApprovalStatus status) {
+  return switch (status) {
+    LeaveApprovalStatus.approved => AppAssets.iconCheck,
+    LeaveApprovalStatus.rejected ||
+    LeaveApprovalStatus.canceled => AppAssets.iconNo,
+    LeaveApprovalStatus.waitingSupervisor ||
+    LeaveApprovalStatus.waitingHRD => AppAssets.iconPending,
+  };
+}
+
+Color _statusColor(LeaveApprovalStatus status) {
+  return switch (status) {
+    LeaveApprovalStatus.approved => AppColors.secondaryBlue,
+    LeaveApprovalStatus.rejected ||
+    LeaveApprovalStatus.canceled => AppColors.primaryRed,
+    LeaveApprovalStatus.waitingSupervisor ||
+    LeaveApprovalStatus.waitingHRD => AppColors.secondaryBlue,
+  };
+}
+
+bool _hasSupervisorApproved(LeaveRequestStatusData data) {
+  return data.progress == ApprovalProgress.waitingHRD ||
+      data.progress == ApprovalProgress.approved ||
+      data.supervisorApprovalDate != null;
+}
+
+String _hrdApprovalSubtitle(LeaveRequestStatusData data) {
+  if (data.hrdApprovalDate == null) return 'Selesai';
+  return '${data.hrdName} - ${_formatTime(data.hrdApprovalDate!)}';
 }
 
 String _formatLongDate(DateTime date) {

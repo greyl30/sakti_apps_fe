@@ -5,59 +5,67 @@ import '../models/leave_history_model.dart';
 import 'leave_history_status_badge.dart';
 
 class LeaveHistoryCard extends StatelessWidget {
-  const LeaveHistoryCard({super.key, required this.history});
+  const LeaveHistoryCard({super.key, required this.history, this.onTap});
 
   final LeaveHistoryModel history;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      constraints: const BoxConstraints(minHeight: 88),
-      padding: const EdgeInsets.fromLTRB(25, 17, 20, 16),
-      decoration: BoxDecoration(
-        color: Colors.white,
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
         borderRadius: BorderRadius.circular(15),
-        border: Border.all(color: const Color(0xFFE8E8E8)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: .06),
-            blurRadius: 14,
-            offset: const Offset(0, 5),
+        child: Container(
+          constraints: const BoxConstraints(minHeight: 88),
+          padding: const EdgeInsets.fromLTRB(25, 17, 20, 16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(15),
+            border: Border.all(color: const Color(0xFFE8E8E8)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: .06),
+                blurRadius: 14,
+                offset: const Offset(0, 5),
+              ),
+            ],
           ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  history.leaveType,
-                  style: const TextStyle(
-                    color: AppColors.primaryRed,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w800,
-                    height: 1,
-                  ),
+          child: Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      history.leaveType,
+                      style: const TextStyle(
+                        color: AppColors.primaryRed,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w800,
+                        height: 1,
+                      ),
+                    ),
+                    const SizedBox(height: 11),
+                    Text(
+                      _formatDateRange(history.startDate, history.endDate),
+                      style: const TextStyle(
+                        color: AppColors.secondaryBlue,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        height: 1,
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 11),
-                Text(
-                  _formatDateRange(history.startDate, history.endDate),
-                  style: const TextStyle(
-                    color: AppColors.secondaryBlue,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    height: 1,
-                  ),
-                ),
-              ],
-            ),
+              ),
+              const SizedBox(width: 12),
+              LeaveHistoryStatusBadge(status: history.status),
+            ],
           ),
-          const SizedBox(width: 12),
-          LeaveHistoryStatusBadge(status: history.status),
-        ],
+        ),
       ),
     );
   }

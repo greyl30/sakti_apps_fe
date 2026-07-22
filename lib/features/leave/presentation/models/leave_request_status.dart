@@ -1,8 +1,21 @@
 enum LeaveApprovalStage { currentSupervisor, currentHRD }
 
-enum LeaveApprovalStatus { waitingSupervisor, waitingHRD, approved }
+enum LeaveApprovalStatus {
+  waitingSupervisor,
+  waitingHRD,
+  approved,
+  rejected,
+  canceled,
+}
 
-enum ApprovalProgress { submitted, waitingSupervisor, waitingHRD, approved }
+enum ApprovalProgress {
+  submitted,
+  waitingSupervisor,
+  waitingHRD,
+  approved,
+  rejected,
+  canceled,
+}
 
 class LeaveRequestStatusData {
   const LeaveRequestStatusData({
@@ -18,6 +31,7 @@ class LeaveRequestStatusData {
     required this.progress,
     this.supervisorApprovalDate,
     this.hrdApprovalDate,
+    this.totalDaysOverride,
   });
 
   final String type;
@@ -33,8 +47,10 @@ class LeaveRequestStatusData {
   final ApprovalProgress progress;
   final DateTime? supervisorApprovalDate;
   final DateTime? hrdApprovalDate;
+  final int? totalDaysOverride;
 
-  int get totalDays => endDate.difference(startDate).inDays + 1;
+  int get totalDays =>
+      totalDaysOverride ?? endDate.difference(startDate).inDays + 1;
 }
 
 class LeaveStatusRouteData {

@@ -33,6 +33,9 @@ class LeaveConfirmationPage extends ConsumerWidget {
       return;
     }
 
+    ref.invalidate(leaveStatusesProvider);
+    ref.invalidate(activeLeaveRequestsProvider);
+    ref.invalidate(leaveHistoryRequestsProvider);
     _showSuccessDialog(context, response.toStatusData());
   }
 
@@ -143,6 +146,12 @@ class LeaveConfirmationPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final isDispensation = _isDispensation(data.type);
     final submitState = ref.watch(leaveSubmitProvider);
+    final balance = ref.watch(leaveBalanceProvider);
+    final balanceData = balance.valueOrNull;
+    final isBalanceLoading = balance.isLoading && balanceData == null;
+    final remainingAfterRequest = balanceData == null
+        ? null
+        : _remainingAfterRequest(balanceData.remainingLeave, data.totalDays);
 
     return Scaffold(
       backgroundColor: AppColors.whiteBackground,
@@ -214,7 +223,11 @@ class LeaveConfirmationPage extends ConsumerWidget {
                           _SummaryRow(
                             icon: AppAssets.iconSisa,
                             label: 'Sisa Cuti',
-                            value: '${13 - data.totalDays} hari',
+                            value: remainingAfterRequest == null
+                                ? isBalanceLoading
+                                      ? '...'
+                                      : '-'
+                                : '$remainingAfterRequest hari',
                           ),
                           const SizedBox(height: 14),
                         ],
@@ -301,6 +314,11 @@ class LeaveConfirmationPage extends ConsumerWidget {
   bool _isDispensation(String type) {
     return type.trim().toLowerCase() == 'dispensasi';
   }
+}
+
+int _remainingAfterRequest(int remainingLeave, int requestDays) {
+  final result = remainingLeave - requestDays;
+  return result < 0 ? 0 : result;
 }
 
 class _SummaryRow extends StatelessWidget {

@@ -59,6 +59,12 @@ class _LeaveHistoryBadgeStyle {
         background: Color(0xFFFFE7E7),
         border: Color(0xFFF1BDBD),
       ),
+      LeaveHistoryStatus.canceled => const _LeaveHistoryBadgeStyle(
+        label: 'Dibatalkan',
+        foreground: Color(0xFF8A8F98),
+        background: Color(0xFFF3F4F6),
+        border: Color(0xFFD8DCE2),
+      ),
     };
   }
 }

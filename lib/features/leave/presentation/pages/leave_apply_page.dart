@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 
@@ -7,17 +8,18 @@ import '../../../../core/router/route_name.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/app_bottom_navigation.dart';
 import '../models/leave_form_data.dart';
+import '../providers/leave_submit_provider.dart';
 import '../widgets/leave_list_item.dart';
 import '../widgets/leave_top_bar.dart';
 
-class LeaveApplyPage extends StatefulWidget {
+class LeaveApplyPage extends ConsumerStatefulWidget {
   const LeaveApplyPage({super.key});
 
   @override
-  State<LeaveApplyPage> createState() => _LeaveApplyPageState();
+  ConsumerState<LeaveApplyPage> createState() => _LeaveApplyPageState();
 }
 
-class _LeaveApplyPageState extends State<LeaveApplyPage> {
+class _LeaveApplyPageState extends ConsumerState<LeaveApplyPage> {
   String _selectedType = 'Sakit';
   final _reasonController = TextEditingController();
   DateTimeRange? _dateRange;
@@ -63,6 +65,17 @@ class _LeaveApplyPageState extends State<LeaveApplyPage> {
     final totalDays = _dateRange == null
         ? null
         : _dateRange!.end.difference(_dateRange!.start).inDays + 1;
+    final balance = ref.watch(leaveBalanceProvider);
+    final balanceData = balance.valueOrNull;
+    final isBalanceLoading = balance.isLoading && balanceData == null;
+    final remainingLeaveText = balanceData == null
+        ? isBalanceLoading
+              ? '...'
+              : '-'
+        : balanceData.remainingLeave.toString();
+    final remainingAfterRequest = totalDays == null || balanceData == null
+        ? null
+        : _remainingAfterRequest(balanceData.remainingLeave, totalDays);
 
     return Scaffold(
       backgroundColor: AppColors.whiteBackground,
@@ -108,11 +121,11 @@ class _LeaveApplyPageState extends State<LeaveApplyPage> {
                           ),
                         ),
                         const SizedBox(width: 14),
-                        const Column(
+                        Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
+                            const Text(
                               'Sisa Cuti Tahunan',
                               style: TextStyle(
                                 color: Colors.white,
@@ -121,10 +134,10 @@ class _LeaveApplyPageState extends State<LeaveApplyPage> {
                                 height: 1,
                               ),
                             ),
-                            SizedBox(height: 8),
+                            const SizedBox(height: 8),
                             Text(
-                              '9 hari tersisa',
-                              style: TextStyle(
+                              '$remainingLeaveText hari tersisa',
+                              style: const TextStyle(
                                 color: Colors.white,
                                 fontSize: 17,
                                 fontWeight: FontWeight.w800,
@@ -203,7 +216,9 @@ class _LeaveApplyPageState extends State<LeaveApplyPage> {
                         border: Border.all(color: const Color(0xFFC6E6F0)),
                       ),
                       child: Text(
-                        'Durasi: $totalDays hari kerja\nSisa cuti setelah pengajuan ini: ${13 - totalDays} hari',
+                        'Durasi: $totalDays hari kerja\n'
+                        'Sisa cuti setelah pengajuan ini: '
+                        '${remainingAfterRequest?.toString() ?? (isBalanceLoading ? '...' : '-')} hari',
                         style: const TextStyle(
                           color: AppColors.secondaryBlue,
                           fontSize: 11,
@@ -256,6 +271,11 @@ class _LeaveApplyPageState extends State<LeaveApplyPage> {
     final month = date.month.toString().padLeft(2, '0');
     return '$day/$month/${date.year}';
   }
+}
+
+int _remainingAfterRequest(int remainingLeave, int requestDays) {
+  final result = remainingLeave - requestDays;
+  return result < 0 ? 0 : result;
 }
 
 class _FormLabel extends StatelessWidget {

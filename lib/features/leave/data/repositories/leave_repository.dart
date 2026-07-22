@@ -38,6 +38,30 @@ class LeaveRepository {
     }
   }
 
+  // Mengambil daftar pengajuan cuti user login dari backend.
+  Future<List<LeaveRequestResponse>> getLeaveStatuses() async {
+    try {
+      final response = await _remoteDataSource.getLeaveStatuses();
+      return _mapStatusResponse(response);
+    } on LeaveStatusException {
+      rethrow;
+    } on DioException catch (error) {
+      throw LeaveStatusException(
+        _mapDioError(
+          error,
+          timeoutMessage: 'Request data pengajuan cuti melebihi batas waktu.',
+          fallbackMessage: 'Gagal mengambil data pengajuan cuti.',
+        ),
+      );
+    } on SocketException {
+      throw const LeaveStatusException('Tidak dapat terhubung ke server.');
+    } catch (error, stackTrace) {
+      debugPrint('Leave status unexpected error: $error');
+      debugPrintStack(stackTrace: stackTrace);
+      throw const LeaveStatusException('Gagal mengambil data pengajuan cuti.');
+    }
+  }
+
   // Submit pengajuan dari form UI dengan mapper request API.
   Future<LeaveRequestResponse> submitLeaveForm(LeaveFormData formData) {
     return submitLeaveRequest(LeaveRequestModel.fromFormData(formData));
@@ -82,6 +106,26 @@ class LeaveRepository {
     }
 
     throw LeaveBalanceException(_readApiMessage(response));
+  }
+
+  List<LeaveRequestResponse> _mapStatusResponse(Map<String, dynamic> response) {
+    final isSuccess = response['success'] == true;
+    final rawData = response['data'];
+    final rawItems = rawData is Map ? rawData['items'] : null;
+
+    if (isSuccess && rawItems is List) {
+      return rawItems
+          .whereType<Map>()
+          .map(
+            (item) =>
+                LeaveRequestResponse.fromJson(Map<String, dynamic>.from(item)),
+          )
+          .toList();
+    }
+
+    if (isSuccess && rawItems == null) return const [];
+
+    throw LeaveStatusException(_readApiMessage(response));
   }
 
   LeaveRequestResponse _mapSubmitResponse(Map<String, dynamic> response) {
@@ -135,6 +179,15 @@ class LeaveRepository {
 
 class LeaveBalanceException implements Exception {
   const LeaveBalanceException(this.message);
+
+  final String message;
+
+  @override
+  String toString() => message;
+}
+
+class LeaveStatusException implements Exception {
+  const LeaveStatusException(this.message);
 
   final String message;
 

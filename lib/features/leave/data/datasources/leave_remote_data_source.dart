@@ -15,6 +15,16 @@ class LeaveRemoteDataSource {
     return response.data ?? <String, dynamic>{};
   }
 
+  // Mengambil status dan riwayat pengajuan cuti user login dari backend.
+  Future<Map<String, dynamic>> getLeaveStatuses() async {
+    final response = await _dio.get<Map<String, dynamic>>(
+      '/api/leave/status',
+      queryParameters: const {'limit': 10, 'page': 1},
+    );
+
+    return response.data ?? <String, dynamic>{};
+  }
+
   // Mengirim pengajuan cuti karyawan ke backend.
   Future<Map<String, dynamic>> submitLeaveRequest(
     LeaveRequestModel request,

@@ -6,7 +6,6 @@ import '../../../../core/constants/app_assets.dart';
 import '../../../../core/router/route_name.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/app_bottom_navigation.dart';
-import '../models/leave_request_status.dart';
 import '../providers/leave_submit_provider.dart';
 import '../widgets/leave_cards.dart';
 import '../widgets/leave_list_item.dart';
@@ -23,6 +22,14 @@ class LeavePage extends ConsumerWidget {
     final balanceValueFallback = isBalanceLoading ? '...' : '-';
     final hasPreviousYearLeave =
         (balanceData?.previousYearRemainingLeave ?? 0) > 0;
+    final totalAvailableLeave = balanceData == null
+        ? null
+        : balanceData.totalLeave +
+              (hasPreviousYearLeave
+                  ? balanceData.previousYearRemainingLeave
+                  : 0);
+    final activeRequests = ref.watch(activeLeaveRequestsProvider);
+    final historyRequests = ref.watch(leaveHistoryRequestsProvider);
 
     return Scaffold(
       backgroundColor: AppColors.whiteBackground,
@@ -77,7 +84,7 @@ class LeavePage extends ConsumerWidget {
                         ),
                         LeaveBalanceCard(
                           value:
-                              balanceData?.totalLeave.toString() ??
+                              totalAvailableLeave?.toString() ??
                               balanceValueFallback,
                           title: 'Total cuti tersedia',
                           subtitle: '',
@@ -114,7 +121,7 @@ class LeavePage extends ConsumerWidget {
                             Expanded(
                               child: LeaveBalanceCard(
                                 value:
-                                    balanceData?.totalLeave.toString() ??
+                                    totalAvailableLeave?.toString() ??
                                     balanceValueFallback,
                                 title: 'Total cuti tersedia',
                                 subtitle: '',
@@ -145,15 +152,45 @@ class LeavePage extends ConsumerWidget {
                   const SizedBox(height: 30),
                   const _SectionTitle(title: 'Pengajuan'),
                   const SizedBox(height: 20),
-                  LeaveListItem(
-                    title: 'Izin',
-                    subtitle: '13 - 15 Juli 2026',
-                    status: 'Dalam Proses',
-                    statusColor: const Color(0xFF8A8F98),
-                    icon: AppAssets.iconPending,
-                    onTap: () => context.push(
-                      RouteName.leaveStatus,
-                      extra: dummyLeaveWaitingSupervisor,
+                  activeRequests.when(
+                    data: (requests) {
+                      if (requests.isEmpty) {
+                        return const _LeaveEmptyText(
+                          'Belum ada pengajuan cuti aktif',
+                        );
+                      }
+
+                      return Column(
+                        children: [
+                          for (
+                            var index = 0;
+                            index < requests.length;
+                            index++
+                          ) ...[
+                            LeaveListItem(
+                              title: requests[index].presentationType,
+                              subtitle: _formatDateRange(
+                                requests[index].startDate,
+                                requests[index].endDate,
+                              ),
+                              status: requests[index].statusLabel,
+                              statusColor: const Color(0xFF8A8F98),
+                              icon: AppAssets.iconPending,
+                              onTap: () => context.push(
+                                RouteName.leaveStatus,
+                                extra: requests[index].toStatusData(),
+                              ),
+                            ),
+                            if (index != requests.length - 1)
+                              const SizedBox(height: 12),
+                          ],
+                        ],
+                      );
+                    },
+                    loading: () =>
+                        const _LeaveLoadingText('Memuat pengajuan cuti...'),
+                    error: (error, stackTrace) => const _LeaveEmptyText(
+                      'Pengajuan cuti belum dapat dimuat.',
                     ),
                   ),
                   const SizedBox(height: 28),
@@ -163,28 +200,51 @@ class LeavePage extends ConsumerWidget {
                     onActionTap: () => context.push(RouteName.leaveHistory),
                   ),
                   const SizedBox(height: 20),
-                  const LeaveListItem(
-                    title: 'Wawancara S2',
-                    subtitle: '22 Mei 2026',
-                    status: 'Disetujui',
-                    statusColor: AppColors.secondaryBlue,
-                    icon: AppAssets.iconCheck,
-                  ),
-                  const SizedBox(height: 12),
-                  const LeaveListItem(
-                    title: 'Acara keluarga',
-                    subtitle: '16 - 19 Maret 2026',
-                    status: 'Disetujui',
-                    statusColor: AppColors.secondaryBlue,
-                    icon: AppAssets.iconCheck,
-                  ),
-                  const SizedBox(height: 12),
-                  const LeaveListItem(
-                    title: 'Pengecekan kesehatan',
-                    subtitle: '3 Januari 2026',
-                    status: 'Ditolak',
-                    statusColor: AppColors.primaryRed,
-                    icon: AppAssets.iconNo,
+                  historyRequests.when(
+                    data: (requests) {
+                      if (requests.isEmpty) {
+                        return const _LeaveEmptyText(
+                          'Belum ada riwayat pengajuan',
+                        );
+                      }
+
+                      final visibleRequests = requests.take(3).toList();
+                      return Column(
+                        children: [
+                          for (
+                            var index = 0;
+                            index < visibleRequests.length;
+                            index++
+                          ) ...[
+                            LeaveListItem(
+                              title: visibleRequests[index].presentationType,
+                              subtitle: _formatDateRange(
+                                visibleRequests[index].startDate,
+                                visibleRequests[index].endDate,
+                              ),
+                              status: visibleRequests[index].statusLabel,
+                              statusColor: _historyStatusColor(
+                                visibleRequests[index].statusLabel,
+                              ),
+                              icon: _historyStatusIcon(
+                                visibleRequests[index].statusLabel,
+                              ),
+                              onTap: () => context.push(
+                                RouteName.leaveStatus,
+                                extra: visibleRequests[index].toStatusData(),
+                              ),
+                            ),
+                            if (index != visibleRequests.length - 1)
+                              const SizedBox(height: 12),
+                          ],
+                        ],
+                      );
+                    },
+                    loading: () =>
+                        const _LeaveLoadingText('Memuat riwayat pengajuan...'),
+                    error: (error, stackTrace) => const _LeaveEmptyText(
+                      'Riwayat pengajuan belum dapat dimuat.',
+                    ),
                   ),
                 ],
               ),
@@ -193,6 +253,97 @@ class LeavePage extends ConsumerWidget {
         ),
       ),
       bottomNavigationBar: const AppBottomNavigation(currentIndex: 2),
+    );
+  }
+}
+
+String _formatDateRange(DateTime startDate, DateTime endDate) {
+  if (_isSameDay(startDate, endDate)) return _formatDate(startDate);
+  return '${startDate.day} - ${_formatDate(endDate)}';
+}
+
+bool _isSameDay(DateTime first, DateTime second) {
+  return first.year == second.year &&
+      first.month == second.month &&
+      first.day == second.day;
+}
+
+String _formatDate(DateTime date) {
+  const months = [
+    'Januari',
+    'Februari',
+    'Maret',
+    'April',
+    'Mei',
+    'Juni',
+    'Juli',
+    'Agustus',
+    'September',
+    'Oktober',
+    'November',
+    'Desember',
+  ];
+  return '${date.day} ${months[date.month - 1]} ${date.year}';
+}
+
+Color _historyStatusColor(String statusLabel) {
+  final normalized = statusLabel.trim().toLowerCase();
+  if (normalized == 'ditolak' || normalized == 'dibatalkan') {
+    return AppColors.primaryRed;
+  }
+
+  return AppColors.secondaryBlue;
+}
+
+String _historyStatusIcon(String statusLabel) {
+  final normalized = statusLabel.trim().toLowerCase();
+  if (normalized == 'ditolak' || normalized == 'dibatalkan') {
+    return AppAssets.iconNo;
+  }
+
+  return AppAssets.iconCheck;
+}
+
+class _LeaveLoadingText extends StatelessWidget {
+  const _LeaveLoadingText(this.message);
+
+  final String message;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Text(
+        message,
+        textAlign: TextAlign.center,
+        style: const TextStyle(
+          color: Color(0xFF8A8F98),
+          fontSize: 11,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+    );
+  }
+}
+
+class _LeaveEmptyText extends StatelessWidget {
+  const _LeaveEmptyText(this.message);
+
+  final String message;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Text(
+        message,
+        textAlign: TextAlign.center,
+        style: const TextStyle(
+          color: Color(0xFF8A8F98),
+          fontSize: 11,
+          fontWeight: FontWeight.w500,
+        ),
+      ),
     );
   }
 }

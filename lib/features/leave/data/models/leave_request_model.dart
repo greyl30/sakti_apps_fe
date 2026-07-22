@@ -48,6 +48,7 @@ class LeaveRequestResponse {
     required this.backDate,
     required this.deductsLeave,
     required this.directlyApproved,
+    required this.directlyFinal,
     this.documentTitle,
     this.approvedBy,
     this.approvedAt,
@@ -71,6 +72,7 @@ class LeaveRequestResponse {
   final bool backDate;
   final bool deductsLeave;
   final bool directlyApproved;
+  final bool directlyFinal;
   final String? documentTitle;
   final String? approvedBy;
   final DateTime? approvedAt;
@@ -95,6 +97,7 @@ class LeaveRequestResponse {
       backDate: _readBool(json['back_date']),
       deductsLeave: _readBool(json['mengurangi_cuti']),
       directlyApproved: _readBool(json['langsung_approve']),
+      directlyFinal: _readBool(json['langsung_final']),
       documentTitle: _readNullableString(json['judul_dokumen']),
       approvedBy: _readNullableString(json['disetujui_oleh']),
       approvedAt: _readNullableDate(json['tanggal_disetujui']),
@@ -138,6 +141,56 @@ class LeaveRequestResponse {
     return _mapApiStatusToHistoryStatus(status);
   }
 
+  bool get isActiveStatus {
+    final normalized = status.trim().toLowerCase();
+    return normalized == 'submitted' ||
+        normalized == 'diajukan' ||
+        normalized == 'pending' ||
+        normalized == 'menunggu' ||
+        normalized == 'waiting_supervisor' ||
+        normalized == 'menunggu_atasan' ||
+        normalized == 'waiting_hrd' ||
+        normalized == 'menunggu_hrd' ||
+        normalized == 'approved_by_supervisor' ||
+        normalized == 'disetujui_atasan';
+  }
+
+  bool get isHistoryStatus {
+    final normalized = status.trim().toLowerCase();
+    return normalized == 'approved' ||
+        normalized == 'disetujui' ||
+        normalized == 'finalized' ||
+        normalized == 'difinalisasi' ||
+        normalized == 'rejected' ||
+        normalized == 'ditolak' ||
+        normalized == 'cancelled' ||
+        normalized == 'canceled' ||
+        normalized == 'dibatalkan';
+  }
+
+  String get statusLabel {
+    final normalized = status.trim().toLowerCase();
+
+    if (normalized == 'approved' ||
+        normalized == 'disetujui' ||
+        normalized == 'finalized' ||
+        normalized == 'difinalisasi') {
+      return 'Disetujui';
+    }
+
+    if (normalized == 'rejected' || normalized == 'ditolak') {
+      return 'Ditolak';
+    }
+
+    if (normalized == 'cancelled' ||
+        normalized == 'canceled' ||
+        normalized == 'dibatalkan') {
+      return 'Dibatalkan';
+    }
+
+    return 'Dalam Proses';
+  }
+
   LeaveRequestStatusData toStatusData({
     String fallbackSupervisorName = '-',
     String fallbackHrdName = 'HRD',
@@ -156,6 +209,7 @@ class LeaveRequestResponse {
       progress: approvalProgress,
       supervisorApprovalDate: approvedAt,
       hrdApprovalDate: finalizedAt,
+      totalDaysOverride: totalDays,
     );
   }
 
@@ -211,6 +265,16 @@ LeaveApprovalStatus _mapApiStatusToApprovalStatus(String value) {
     return LeaveApprovalStatus.approved;
   }
 
+  if (normalized == 'rejected' || normalized == 'ditolak') {
+    return LeaveApprovalStatus.rejected;
+  }
+
+  if (normalized == 'cancelled' ||
+      normalized == 'canceled' ||
+      normalized == 'dibatalkan') {
+    return LeaveApprovalStatus.canceled;
+  }
+
   if (normalized == 'waiting_hrd' ||
       normalized == 'menunggu_hrd' ||
       normalized == 'approved_by_supervisor' ||
@@ -231,6 +295,16 @@ ApprovalProgress _mapApiStatusToApprovalProgress(String value) {
     return ApprovalProgress.approved;
   }
 
+  if (normalized == 'rejected' || normalized == 'ditolak') {
+    return ApprovalProgress.rejected;
+  }
+
+  if (normalized == 'cancelled' ||
+      normalized == 'canceled' ||
+      normalized == 'dibatalkan') {
+    return ApprovalProgress.canceled;
+  }
+
   if (normalized == 'waiting_hrd' ||
       normalized == 'menunggu_hrd' ||
       normalized == 'approved_by_supervisor' ||
@@ -248,11 +322,14 @@ ApprovalProgress _mapApiStatusToApprovalProgress(String value) {
 LeaveHistoryStatus _mapApiStatusToHistoryStatus(String value) {
   final normalized = value.trim().toLowerCase();
 
-  if (normalized == 'rejected' ||
-      normalized == 'ditolak' ||
-      normalized == 'cancelled' ||
-      normalized == 'dibatalkan') {
+  if (normalized == 'rejected' || normalized == 'ditolak') {
     return LeaveHistoryStatus.rejected;
+  }
+
+  if (normalized == 'cancelled' ||
+      normalized == 'canceled' ||
+      normalized == 'dibatalkan') {
+    return LeaveHistoryStatus.canceled;
   }
 
   return LeaveHistoryStatus.approved;

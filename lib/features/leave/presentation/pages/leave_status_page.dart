@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 
 import '../../../../core/router/route_name.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -22,18 +21,7 @@ class LeaveStatusPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (data.status == LeaveApprovalStatus.approved) {
-      // Development-only redirect. Nantinya status approved berasal dari backend.
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (context.mounted) {
-          context.go(RouteName.leaveSuccess, extra: data);
-        }
-      });
-    }
-
-    final subtitle = data.stage == LeaveApprovalStage.currentSupervisor
-        ? 'Menunggu persetujuan atasan'
-        : 'Menunggu persetujuan HRD';
+    final subtitle = _statusSubtitle(data);
 
     return Scaffold(
       backgroundColor: AppColors.whiteBackground,
@@ -70,4 +58,14 @@ class LeaveStatusPage extends StatelessWidget {
       ),
     );
   }
+}
+
+String _statusSubtitle(LeaveRequestStatusData data) {
+  return switch (data.status) {
+    LeaveApprovalStatus.waitingSupervisor => 'Menunggu persetujuan atasan',
+    LeaveApprovalStatus.waitingHRD => 'Menunggu finalisasi HRD',
+    LeaveApprovalStatus.approved => 'Pengajuan selesai/disetujui',
+    LeaveApprovalStatus.rejected => 'Pengajuan ditolak',
+    LeaveApprovalStatus.canceled => 'Pengajuan dibatalkan',
+  };
 }

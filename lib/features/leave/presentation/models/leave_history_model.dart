@@ -1,4 +1,4 @@
-enum LeaveHistoryStatus { approved, rejected }
+enum LeaveHistoryStatus { approved, rejected, canceled }
 
 class LeaveHistoryModel {
   const LeaveHistoryModel({
