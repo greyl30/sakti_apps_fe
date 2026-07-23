@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/network/api_client.dart';
+import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../data/datasources/leave_remote_data_source.dart';
 import '../../data/models/leave_balance_model.dart';
 import '../../data/models/leave_request_model.dart';
@@ -64,7 +65,12 @@ final leaveStatusesProvider = FutureProvider<List<LeaveRequestResponse>>((
   ref,
 ) async {
   final repository = ref.watch(leaveRepositoryProvider);
-  return repository.getLeaveStatuses();
+  final userId = ref.watch(authProvider.select((state) => state.user?.id));
+  final statuses = await repository.getLeaveStatuses();
+
+  if (userId == null || userId.isEmpty) return statuses;
+
+  return statuses.where((request) => request.employeeId == userId).toList();
 });
 
 final activeLeaveRequestsProvider = FutureProvider<List<LeaveRequestResponse>>((

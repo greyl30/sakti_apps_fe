@@ -11,11 +11,30 @@ import '../widgets/leave_cards.dart';
 import '../widgets/leave_list_item.dart';
 import '../widgets/leave_top_bar.dart';
 
-class LeavePage extends ConsumerWidget {
+class LeavePage extends ConsumerStatefulWidget {
   const LeavePage({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<LeavePage> createState() => _LeavePageState();
+}
+
+class _LeavePageState extends ConsumerState<LeavePage> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      // Refresh saldo setelah halaman Cuti selesai dibuat agar tidak memakai cache lama.
+      ref.invalidate(leaveBalanceProvider);
+      // Refresh pengajuan pribadi agar role Atasan tidak melihat cache data approval bawahan.
+      ref.invalidate(leaveStatusesProvider);
+      ref.invalidate(activeLeaveRequestsProvider);
+      ref.invalidate(leaveHistoryRequestsProvider);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final balance = ref.watch(leaveBalanceProvider);
     final balanceData = balance.valueOrNull;
     final isBalanceLoading = balance.isLoading && balanceData == null;

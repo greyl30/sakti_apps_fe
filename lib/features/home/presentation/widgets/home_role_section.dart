@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/router/route_name.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../models/home_role.dart';
+import '../models/manager_leave_approval.dart';
+import '../providers/manager_leave_approval_provider.dart';
 
 class HomeRoleSection extends StatelessWidget {
   const HomeRoleSection({
@@ -39,7 +42,7 @@ class HomeRoleSection extends StatelessWidget {
   }
 }
 
-class ManagerHomeSection extends StatelessWidget {
+class ManagerHomeSection extends ConsumerWidget {
   const ManagerHomeSection({
     super.key,
     required this.onSeeAllTap,
@@ -50,13 +53,40 @@ class ManagerHomeSection extends StatelessWidget {
   final VoidCallback onItemTap;
 
   @override
-  Widget build(BuildContext context) {
-    return _RoleRequestCard(
-      title: 'Setujui Cuti',
-      pendingCount: 12,
-      items: dummyManagerApprovalItems,
-      onSeeAllTap: onSeeAllTap,
-      onItemTap: onItemTap,
+  Widget build(BuildContext context, WidgetRef ref) {
+    final approvals = ref.watch(managerPendingLeaveApprovalsProvider);
+
+    return approvals.when(
+      data: (items) {
+        final visibleItems = items.take(3).toList();
+        return _RoleRequestCard(
+          title: 'Setujui Cuti',
+          pendingCount: items.length,
+          items: [
+            for (final item in visibleItems)
+              _homeApprovalItemFromApproval(item),
+          ],
+          emptyMessage: 'Tidak ada pengajuan cuti',
+          onSeeAllTap: onSeeAllTap,
+          onItemTap: onItemTap,
+        );
+      },
+      loading: () => _RoleRequestCard(
+        title: 'Setujui Cuti',
+        pendingCount: 0,
+        items: const [],
+        emptyMessage: 'Memuat pengajuan cuti...',
+        onSeeAllTap: onSeeAllTap,
+        onItemTap: onItemTap,
+      ),
+      error: (error, stackTrace) => _RoleRequestCard(
+        title: 'Setujui Cuti',
+        pendingCount: 0,
+        items: const [],
+        emptyMessage: 'Pengajuan cuti belum dapat dimuat.',
+        onSeeAllTap: onSeeAllTap,
+        onItemTap: onItemTap,
+      ),
     );
   }
 }
@@ -77,6 +107,7 @@ class HrdHomeSection extends StatelessWidget {
       title: 'Finalisasi Cuti',
       pendingCount: 12,
       items: dummyHrdFinalizationItems,
+      emptyMessage: 'Tidak ada finalisasi cuti',
       onSeeAllTap: onSeeAllTap,
       onItemTap: onItemTap,
     );
@@ -88,6 +119,7 @@ class _RoleRequestCard extends StatelessWidget {
     required this.title,
     required this.pendingCount,
     required this.items,
+    required this.emptyMessage,
     required this.onSeeAllTap,
     required this.onItemTap,
   });
@@ -95,6 +127,7 @@ class _RoleRequestCard extends StatelessWidget {
   final String title;
   final int pendingCount;
   final List<HomeApprovalItem> items;
+  final String emptyMessage;
   final VoidCallback onSeeAllTap;
   final VoidCallback onItemTap;
 
@@ -164,19 +197,89 @@ class _RoleRequestCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 12),
-          ...List.generate(
-            items.length,
-            (index) => Padding(
-              padding: EdgeInsets.only(
-                bottom: index == items.length - 1 ? 0 : 10,
+          if (items.isEmpty)
+            _RoleRequestEmptyMessage(message: emptyMessage)
+          else
+            ...List.generate(
+              items.length,
+              (index) => Padding(
+                padding: EdgeInsets.only(
+                  bottom: index == items.length - 1 ? 0 : 10,
+                ),
+                child: _RoleRequestItem(item: items[index], onTap: onItemTap),
               ),
-              child: _RoleRequestItem(item: items[index], onTap: onItemTap),
             ),
-          ),
         ],
       ),
     );
   }
+}
+
+class _RoleRequestEmptyMessage extends StatelessWidget {
+  const _RoleRequestEmptyMessage({required this.message});
+
+  final String message;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Text(
+        message,
+        textAlign: TextAlign.center,
+        style: const TextStyle(
+          color: Color(0xFF8A8F98),
+          fontSize: 10,
+          fontWeight: FontWeight.w600,
+          height: 1.2,
+        ),
+      ),
+    );
+  }
+}
+
+HomeApprovalItem _homeApprovalItemFromApproval(ManagerLeaveApproval approval) {
+  return HomeApprovalItem(
+    employeeName: approval.employeeName,
+    requestType: managerApprovalTypeLabel(approval.type),
+    dateRange:
+        '${_formatShortDateRange(approval.startDate, approval.endDate)}'
+        ' - ${approval.totalDays} hari',
+  );
+}
+
+String _formatShortDateRange(DateTime startDate, DateTime endDate) {
+  if (_isSameDay(startDate, endDate)) return _formatShortDate(startDate);
+  return '${startDate.day} - ${_formatShortDate(endDate)}';
+}
+
+bool _isSameDay(DateTime first, DateTime second) {
+  return first.year == second.year &&
+      first.month == second.month &&
+      first.day == second.day;
+}
+
+String _formatShortDate(DateTime date) {
+  const months = [
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'Mei',
+    'Jun',
+    'Jul',
+    'Agu',
+    'Sep',
+    'Okt',
+    'Nov',
+    'Des',
+  ];
+  return '${date.day} ${months[date.month - 1]}';
 }
 
 class _RoleRequestItem extends StatelessWidget {

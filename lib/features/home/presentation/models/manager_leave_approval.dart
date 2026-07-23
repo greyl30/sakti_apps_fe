@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
 
-enum ManagerApprovalType { permission, sickLeave, emergencyLeave }
+enum ManagerApprovalType { permission, sickLeave, emergencyLeave, dispensation }
 
 class ManagerLeaveApproval {
   const ManagerLeaveApproval({
@@ -12,6 +12,7 @@ class ManagerLeaveApproval {
     required this.endDate,
     required this.remainingLeave,
     required this.reason,
+    this.totalDaysOverride,
   });
 
   final String id;
@@ -20,10 +21,12 @@ class ManagerLeaveApproval {
   final ManagerApprovalType type;
   final DateTime startDate;
   final DateTime endDate;
-  final int remainingLeave;
+  final int? remainingLeave;
   final String reason;
+  final int? totalDaysOverride;
 
-  int get totalDays => endDate.difference(startDate).inDays + 1;
+  int get totalDays =>
+      totalDaysOverride ?? endDate.difference(startDate).inDays + 1;
 }
 
 // TODO(Backend):
@@ -104,5 +107,6 @@ String managerApprovalTypeLabel(ManagerApprovalType type) {
     ManagerApprovalType.permission => 'Izin',
     ManagerApprovalType.sickLeave => 'Cuti Sakit',
     ManagerApprovalType.emergencyLeave => 'Cuti Darurat',
+    ManagerApprovalType.dispensation => 'Dispensasi',
   };
 }

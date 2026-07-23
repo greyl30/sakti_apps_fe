@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/router/route_name.dart';
@@ -6,22 +7,26 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../history/presentation/widgets/history_filter_chip.dart';
 import '../../../leave/presentation/widgets/leave_top_bar.dart';
 import '../models/manager_leave_approval.dart';
+import '../providers/manager_leave_approval_provider.dart';
 import '../widgets/manager_leave_approval_widgets.dart';
 
-class ManagerLeaveApprovalListPage extends StatefulWidget {
+class ManagerLeaveApprovalListPage extends ConsumerStatefulWidget {
   const ManagerLeaveApprovalListPage({super.key});
 
   @override
-  State<ManagerLeaveApprovalListPage> createState() =>
+  ConsumerState<ManagerLeaveApprovalListPage> createState() =>
       _ManagerLeaveApprovalListPageState();
 }
 
 class _ManagerLeaveApprovalListPageState
-    extends State<ManagerLeaveApprovalListPage> {
+    extends ConsumerState<ManagerLeaveApprovalListPage> {
   ManagerApprovalType? _selectedType;
 
   @override
   Widget build(BuildContext context) {
+    final approvals = ref.watch(managerPendingLeaveApprovalsProvider);
+    final actionState = ref.watch(managerLeaveApprovalActionProvider);
+
     return Scaffold(
       backgroundColor: AppColors.whiteBackground,
       body: SafeArea(
@@ -63,11 +68,11 @@ class _ManagerLeaveApprovalListPageState
                   ),
                   const SizedBox(width: 8),
                   HistoryFilterChip(
-                    label: 'Cuti Darurat',
+                    label: 'Dispensasi',
                     isSelected:
-                        _selectedType == ManagerApprovalType.emergencyLeave,
+                        _selectedType == ManagerApprovalType.dispensation,
                     onTap: () => setState(
-                      () => _selectedType = ManagerApprovalType.emergencyLeave,
+                      () => _selectedType = ManagerApprovalType.dispensation,
                     ),
                   ),
                 ],
@@ -75,33 +80,49 @@ class _ManagerLeaveApprovalListPageState
             ),
             const SizedBox(height: 16),
             Expanded(
-              child: ValueListenableBuilder<List<ManagerLeaveApproval>>(
-                valueListenable: managerApprovalStore,
-                builder: (context, approvals, _) {
+              child: approvals.when(
+                data: (items) {
                   final filtered = _selectedType == null
-                      ? approvals
-                      : approvals
+                      ? items
+                      : items
                             .where((approval) => approval.type == _selectedType)
                             .toList();
 
-                  // TODO(UI):
-                  // Tambahkan empty state saat tidak ada pengajuan menunggu.
+                  if (filtered.isEmpty) {
+                    return const _ManagerApprovalMessage(
+                      'Belum ada pengajuan cuti menunggu persetujuan',
+                    );
+                  }
+
                   return ListView.builder(
                     padding: const EdgeInsets.fromLTRB(20, 0, 20, 28),
                     itemCount: filtered.length,
                     itemBuilder: (context, index) {
                       final approval = filtered[index];
+                      final isProcessing = actionState.isProcessing(
+                        approval.id,
+                      );
                       return Padding(
                         padding: const EdgeInsets.only(bottom: 14),
                         child: ManagerApprovalCard(
                           approval: approval,
-                          onApprove: () => _showApproveDialog(approval),
-                          onReject: () => _showRejectDialog(approval),
+                          isProcessing: isProcessing,
+                          onApprove: isProcessing
+                              ? null
+                              : () => _approveLeave(approval),
+                          onReject: isProcessing
+                              ? null
+                              : () => _showRejectDialog(approval),
                         ),
                       );
                     },
                   );
                 },
+                loading: () =>
+                    const _ManagerApprovalMessage('Memuat pengajuan cuti...'),
+                error: (error, stackTrace) => const _ManagerApprovalMessage(
+                  'Pengajuan cuti belum dapat dimuat.',
+                ),
               ),
             ),
           ],
@@ -110,8 +131,23 @@ class _ManagerLeaveApprovalListPageState
     );
   }
 
-  void _showApproveDialog(ManagerLeaveApproval approval) {
-    removeManagerApproval(approval.id);
+  Future<void> _approveLeave(ManagerLeaveApproval approval) async {
+    final isSuccess = await ref
+        .read(managerLeaveApprovalActionProvider.notifier)
+        .approve(approval.id);
+    if (!mounted) return;
+
+    if (!isSuccess) {
+      final message = ref.read(managerLeaveApprovalActionProvider).errorMessage;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(message ?? 'Gagal menyetujui pengajuan cuti.'),
+          backgroundColor: AppColors.primaryRed,
+        ),
+      );
+      return;
+    }
+
     showDialog<void>(
       context: context,
       barrierDismissible: false,
@@ -131,6 +167,30 @@ class _ManagerLeaveApprovalListPageState
           context.push(RouteName.managerLeaveRejectReason, extra: approval);
         },
         onCancel: () => Navigator.of(dialogContext).pop(),
+      ),
+    );
+  }
+}
+
+class _ManagerApprovalMessage extends StatelessWidget {
+  const _ManagerApprovalMessage(this.message);
+
+  final String message;
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 24),
+        child: Text(
+          message,
+          textAlign: TextAlign.center,
+          style: const TextStyle(
+            color: Color(0xFF8A8F98),
+            fontSize: 12,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
       ),
     );
   }

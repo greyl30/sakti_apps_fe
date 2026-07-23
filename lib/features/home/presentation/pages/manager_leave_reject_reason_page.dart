@@ -1,25 +1,28 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/router/route_name.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../leave/presentation/widgets/leave_top_bar.dart';
 import '../models/manager_leave_approval.dart';
+import '../providers/manager_leave_approval_provider.dart';
 import '../widgets/manager_leave_approval_widgets.dart';
 
-class ManagerLeaveRejectReasonPage extends StatefulWidget {
+class ManagerLeaveRejectReasonPage extends ConsumerStatefulWidget {
   const ManagerLeaveRejectReasonPage({super.key, required this.approval});
 
   final ManagerLeaveApproval approval;
 
   @override
-  State<ManagerLeaveRejectReasonPage> createState() =>
+  ConsumerState<ManagerLeaveRejectReasonPage> createState() =>
       _ManagerLeaveRejectReasonPageState();
 }
 
 class _ManagerLeaveRejectReasonPageState
-    extends State<ManagerLeaveRejectReasonPage> {
+    extends ConsumerState<ManagerLeaveRejectReasonPage> {
   final _reasonController = TextEditingController();
+  String? _reasonError;
 
   @override
   void dispose() {
@@ -29,6 +32,9 @@ class _ManagerLeaveRejectReasonPageState
 
   @override
   Widget build(BuildContext context) {
+    final actionState = ref.watch(managerLeaveApprovalActionProvider);
+    final isProcessing = actionState.isProcessing(widget.approval.id);
+
     return Scaffold(
       backgroundColor: AppColors.whiteBackground,
       body: SafeArea(
@@ -61,11 +67,13 @@ class _ManagerLeaveRejectReasonPageState
                   const SizedBox(height: 10),
                   TextField(
                     controller: _reasonController,
+                    enabled: !actionState.isLoading,
                     minLines: 3,
                     maxLines: 3,
                     style: const TextStyle(fontSize: 12),
                     decoration: InputDecoration(
                       hintText: 'Tambahkan keterangan',
+                      errorText: _reasonError,
                       hintStyle: const TextStyle(
                         color: Color(0xFFB0B4BC),
                         fontSize: 11,
@@ -88,9 +96,9 @@ class _ManagerLeaveRejectReasonPageState
                   ),
                   const SizedBox(height: 22),
                   ManagerApprovalButton(
-                    label: 'Selesai',
+                    label: isProcessing ? 'Memproses...' : 'Selesai',
                     isPrimary: true,
-                    onPressed: _showRejectedDialog,
+                    onPressed: actionState.isLoading ? null : _rejectLeave,
                   ),
                 ],
               ),
@@ -101,10 +109,30 @@ class _ManagerLeaveRejectReasonPageState
     );
   }
 
-  void _showRejectedDialog() {
-    // TODO(Backend):
-    // Kirim status penolakan dan alasan ke backend.
-    removeManagerApproval(widget.approval.id);
+  Future<void> _rejectLeave() async {
+    final reason = _reasonController.text.trim();
+    if (reason.isEmpty) {
+      setState(() => _reasonError = 'Alasan penolakan wajib diisi.');
+      return;
+    }
+
+    setState(() => _reasonError = null);
+    final isSuccess = await ref
+        .read(managerLeaveApprovalActionProvider.notifier)
+        .reject(leaveId: widget.approval.id, reason: reason);
+    if (!mounted) return;
+
+    if (!isSuccess) {
+      final message = ref.read(managerLeaveApprovalActionProvider).errorMessage;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(message ?? 'Gagal menolak pengajuan cuti.'),
+          backgroundColor: AppColors.primaryRed,
+        ),
+      );
+      return;
+    }
+
     showDialog<void>(
       context: context,
       barrierDismissible: false,

@@ -14,11 +14,13 @@ class ManagerApprovalCard extends StatelessWidget {
     required this.approval,
     required this.onApprove,
     required this.onReject,
+    this.isProcessing = false,
   });
 
   final ManagerLeaveApproval approval;
-  final VoidCallback onApprove;
-  final VoidCallback onReject;
+  final VoidCallback? onApprove;
+  final VoidCallback? onReject;
+  final bool isProcessing;
 
   @override
   Widget build(BuildContext context) {
@@ -86,12 +88,24 @@ class ManagerApprovalCard extends StatelessWidget {
               ),
             ],
           ),
+          const SizedBox(height: 10),
+          Text(
+            approval.reason,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              color: Color(0xFF5F6972),
+              fontSize: 10,
+              fontWeight: FontWeight.w500,
+              height: 1.35,
+            ),
+          ),
           const SizedBox(height: 16),
           Row(
             children: [
               Expanded(
                 child: _ApprovalActionButton(
-                  label: 'Tolak',
+                  label: isProcessing ? '...' : 'Tolak',
                   isPrimary: false,
                   onPressed: onReject,
                 ),
@@ -99,7 +113,7 @@ class ManagerApprovalCard extends StatelessWidget {
               const SizedBox(width: 14),
               Expanded(
                 child: _ApprovalActionButton(
-                  label: 'Setujui',
+                  label: isProcessing ? '...' : 'Setujui',
                   isPrimary: true,
                   onPressed: onApprove,
                 ),
@@ -196,12 +210,14 @@ class ManagerApprovalDetailCard extends StatelessWidget {
           LeaveSummaryRow(
             icon: AppAssets.iconSisa,
             label: 'Sisa Cuti',
-            value: '${approval.remainingLeave} hari',
+            value: approval.remainingLeave == null
+                ? '-'
+                : '${approval.remainingLeave} hari',
           ),
           LeaveSummaryRow(
             icon: AppAssets.iconAlasan,
             label: 'Alasan',
-            value: managerApprovalTypeLabel(approval.type),
+            value: approval.reason,
           ),
         ],
       ),
@@ -219,7 +235,7 @@ class ManagerApprovalButton extends StatelessWidget {
 
   final String label;
   final bool isPrimary;
-  final VoidCallback onPressed;
+  final VoidCallback? onPressed;
 
   @override
   Widget build(BuildContext context) {
@@ -438,7 +454,7 @@ class _ApprovalActionButton extends StatelessWidget {
 
   final String label;
   final bool isPrimary;
-  final VoidCallback onPressed;
+  final VoidCallback? onPressed;
   final double height;
   final double borderRadius;
 
@@ -491,7 +507,32 @@ BoxDecoration _cardDecoration() {
 }
 
 String _formatShortDateRange(DateTime startDate, DateTime endDate) {
-  return '${startDate.day} - ${endDate.day} Jul 2026';
+  if (_isSameDay(startDate, endDate)) return _formatShortDate(startDate);
+  return '${startDate.day} - ${_formatShortDate(endDate)}';
+}
+
+bool _isSameDay(DateTime first, DateTime second) {
+  return first.year == second.year &&
+      first.month == second.month &&
+      first.day == second.day;
+}
+
+String _formatShortDate(DateTime date) {
+  const months = [
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'Mei',
+    'Jun',
+    'Jul',
+    'Agu',
+    'Sep',
+    'Okt',
+    'Nov',
+    'Des',
+  ];
+  return '${date.day} ${months[date.month - 1]} ${date.year}';
 }
 
 String _formatLongDate(DateTime date) {
