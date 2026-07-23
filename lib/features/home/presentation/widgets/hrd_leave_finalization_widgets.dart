@@ -14,10 +14,12 @@ class HrdFinalizationCard extends StatelessWidget {
     super.key,
     required this.finalization,
     required this.onFinalize,
+    this.isProcessing = false,
   });
 
   final HrdLeaveFinalization finalization;
-  final VoidCallback onFinalize;
+  final VoidCallback? onFinalize;
+  final bool isProcessing;
 
   @override
   Widget build(BuildContext context) {
@@ -98,7 +100,7 @@ class HrdFinalizationCard extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           ManagerApprovalButton(
-            label: 'Finalisasi',
+            label: isProcessing ? '...' : 'Finalisasi',
             isPrimary: true,
             onPressed: onFinalize,
           ),
@@ -169,5 +171,30 @@ class _InfoPill extends StatelessWidget {
 }
 
 String _formatShortDateRange(DateTime startDate, DateTime endDate) {
-  return '${startDate.day} - ${endDate.day} Jul 2026';
+  if (_isSameDay(startDate, endDate)) return _formatShortDate(startDate);
+  return '${startDate.day} - ${_formatShortDate(endDate)}';
+}
+
+bool _isSameDay(DateTime first, DateTime second) {
+  return first.year == second.year &&
+      first.month == second.month &&
+      first.day == second.day;
+}
+
+String _formatShortDate(DateTime date) {
+  const months = [
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'Mei',
+    'Jun',
+    'Jul',
+    'Agu',
+    'Sep',
+    'Okt',
+    'Nov',
+    'Des',
+  ];
+  return '${date.day} ${months[date.month - 1]} ${date.year}';
 }

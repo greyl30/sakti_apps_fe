@@ -38,16 +38,3 @@ const dummyManagerApprovalItems = [
     dateRange: '20 - 22 Juli',
   ),
 ];
-
-const dummyHrdFinalizationItems = [
-  HomeApprovalItem(
-    employeeName: 'Jasmina Melati',
-    requestType: 'Cuti Sakit',
-    dateRange: '15 - 17 Juli',
-  ),
-  HomeApprovalItem(
-    employeeName: 'Julian Ramadhan',
-    requestType: 'Cuti Darurat',
-    dateRange: '20 - 22 Juli',
-  ),
-];

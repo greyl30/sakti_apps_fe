@@ -5,7 +5,9 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/router/route_name.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../models/home_role.dart';
+import '../models/hrd_leave_finalization.dart';
 import '../models/manager_leave_approval.dart';
+import '../providers/hrd_leave_finalization_provider.dart';
 import '../providers/manager_leave_approval_provider.dart';
 
 class HomeRoleSection extends StatelessWidget {
@@ -91,7 +93,7 @@ class ManagerHomeSection extends ConsumerWidget {
   }
 }
 
-class HrdHomeSection extends StatelessWidget {
+class HrdHomeSection extends ConsumerWidget {
   const HrdHomeSection({
     super.key,
     required this.onSeeAllTap,
@@ -102,14 +104,40 @@ class HrdHomeSection extends StatelessWidget {
   final VoidCallback onItemTap;
 
   @override
-  Widget build(BuildContext context) {
-    return _RoleRequestCard(
-      title: 'Finalisasi Cuti',
-      pendingCount: 12,
-      items: dummyHrdFinalizationItems,
-      emptyMessage: 'Tidak ada finalisasi cuti',
-      onSeeAllTap: onSeeAllTap,
-      onItemTap: onItemTap,
+  Widget build(BuildContext context, WidgetRef ref) {
+    final finalizations = ref.watch(hrdPendingLeaveFinalizationsProvider);
+
+    return finalizations.when(
+      data: (items) {
+        final visibleItems = items.take(3).toList();
+        return _RoleRequestCard(
+          title: 'Finalisasi Cuti',
+          pendingCount: items.length,
+          items: [
+            for (final item in visibleItems)
+              _homeFinalizationItemFromFinalization(item),
+          ],
+          emptyMessage: 'Tidak ada finalisasi cuti',
+          onSeeAllTap: onSeeAllTap,
+          onItemTap: onItemTap,
+        );
+      },
+      loading: () => _RoleRequestCard(
+        title: 'Finalisasi Cuti',
+        pendingCount: 0,
+        items: const [],
+        emptyMessage: 'Memuat finalisasi cuti...',
+        onSeeAllTap: onSeeAllTap,
+        onItemTap: onItemTap,
+      ),
+      error: (error, stackTrace) => _RoleRequestCard(
+        title: 'Finalisasi Cuti',
+        pendingCount: 0,
+        items: const [],
+        emptyMessage: 'Finalisasi cuti belum dapat dimuat.',
+        onSeeAllTap: onSeeAllTap,
+        onItemTap: onItemTap,
+      ),
     );
   }
 }
@@ -250,6 +278,18 @@ HomeApprovalItem _homeApprovalItemFromApproval(ManagerLeaveApproval approval) {
     dateRange:
         '${_formatShortDateRange(approval.startDate, approval.endDate)}'
         ' - ${approval.totalDays} hari',
+  );
+}
+
+HomeApprovalItem _homeFinalizationItemFromFinalization(
+  HrdLeaveFinalization finalization,
+) {
+  return HomeApprovalItem(
+    employeeName: finalization.employeeName,
+    requestType: managerApprovalTypeLabel(finalization.type),
+    dateRange:
+        '${_formatShortDateRange(finalization.startDate, finalization.endDate)}'
+        ' - ${finalization.totalDays} hari',
   );
 }
 

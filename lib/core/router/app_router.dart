@@ -285,13 +285,14 @@ final appRouter = GoRouter(
     ),
     GoRoute(
       path: RouteName.hrdLeaveFinalizationDetail,
-      builder: (context, state) => HrdLeaveFinalizationDetailPage(
-        finalization: state.extra is HrdLeaveFinalization
-            ? state.extra! as HrdLeaveFinalization
-            : hrdFinalizationStore.value.isNotEmpty
-            ? hrdFinalizationStore.value.first
-            : fallbackHrdFinalization,
-      ),
+      builder: (context, state) {
+        final extra = state.extra;
+        if (extra is HrdLeaveFinalization) {
+          return HrdLeaveFinalizationDetailPage(finalization: extra);
+        }
+
+        return const HrdLeaveFinalizationListPage();
+      },
     ),
   ],
 );
