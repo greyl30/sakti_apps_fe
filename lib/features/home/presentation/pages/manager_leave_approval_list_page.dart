@@ -80,48 +80,57 @@ class _ManagerLeaveApprovalListPageState
             ),
             const SizedBox(height: 16),
             Expanded(
-              child: approvals.when(
-                data: (items) {
-                  final filtered = _selectedType == null
-                      ? items
-                      : items
-                            .where((approval) => approval.type == _selectedType)
-                            .toList();
+              child: RefreshIndicator(
+                color: AppColors.primaryRed,
+                onRefresh: _refreshApprovals,
+                child: approvals.when(
+                  data: (items) {
+                    final filtered = _selectedType == null
+                        ? items
+                        : items
+                              .where(
+                                (approval) => approval.type == _selectedType,
+                              )
+                              .toList();
 
-                  if (filtered.isEmpty) {
-                    return const _ManagerApprovalMessage(
-                      'Belum ada pengajuan cuti menunggu persetujuan',
+                    if (filtered.isEmpty) {
+                      return const _ManagerApprovalMessageList(
+                        'Belum ada pengajuan cuti menunggu persetujuan',
+                      );
+                    }
+
+                    return ListView.builder(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      padding: const EdgeInsets.fromLTRB(20, 0, 20, 28),
+                      itemCount: filtered.length,
+                      itemBuilder: (context, index) {
+                        final approval = filtered[index];
+                        final isProcessing = actionState.isProcessing(
+                          approval.id,
+                        );
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 14),
+                          child: ManagerApprovalCard(
+                            approval: approval,
+                            isProcessing: isProcessing,
+                            onApprove: isProcessing
+                                ? null
+                                : () => _approveLeave(approval),
+                            onReject: isProcessing
+                                ? null
+                                : () => _showRejectDialog(approval),
+                          ),
+                        );
+                      },
                     );
-                  }
-
-                  return ListView.builder(
-                    padding: const EdgeInsets.fromLTRB(20, 0, 20, 28),
-                    itemCount: filtered.length,
-                    itemBuilder: (context, index) {
-                      final approval = filtered[index];
-                      final isProcessing = actionState.isProcessing(
-                        approval.id,
-                      );
-                      return Padding(
-                        padding: const EdgeInsets.only(bottom: 14),
-                        child: ManagerApprovalCard(
-                          approval: approval,
-                          isProcessing: isProcessing,
-                          onApprove: isProcessing
-                              ? null
-                              : () => _approveLeave(approval),
-                          onReject: isProcessing
-                              ? null
-                              : () => _showRejectDialog(approval),
-                        ),
-                      );
-                    },
-                  );
-                },
-                loading: () =>
-                    const _ManagerApprovalMessage('Memuat pengajuan cuti...'),
-                error: (error, stackTrace) => const _ManagerApprovalMessage(
-                  'Pengajuan cuti belum dapat dimuat.',
+                  },
+                  loading: () => const _ManagerApprovalMessageList(
+                    'Memuat pengajuan cuti...',
+                  ),
+                  error: (error, stackTrace) =>
+                      const _ManagerApprovalMessageList(
+                        'Pengajuan cuti belum dapat dimuat.',
+                      ),
                 ),
               ),
             ),
@@ -129,6 +138,16 @@ class _ManagerLeaveApprovalListPageState
         ),
       ),
     );
+  }
+
+  Future<void> _refreshApprovals() async {
+    ref.invalidate(managerPendingLeaveApprovalsProvider);
+
+    try {
+      await ref.read(managerPendingLeaveApprovalsProvider.future);
+    } catch (_) {
+      // Error state tetap ditampilkan oleh provider.
+    }
   }
 
   Future<void> _approveLeave(ManagerLeaveApproval approval) async {
@@ -172,17 +191,19 @@ class _ManagerLeaveApprovalListPageState
   }
 }
 
-class _ManagerApprovalMessage extends StatelessWidget {
-  const _ManagerApprovalMessage(this.message);
+class _ManagerApprovalMessageList extends StatelessWidget {
+  const _ManagerApprovalMessageList(this.message);
 
   final String message;
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 24),
-        child: Text(
+    return ListView(
+      physics: const AlwaysScrollableScrollPhysics(),
+      padding: const EdgeInsets.symmetric(horizontal: 24),
+      children: [
+        const SizedBox(height: 220),
+        Text(
           message,
           textAlign: TextAlign.center,
           style: const TextStyle(
@@ -191,7 +212,7 @@ class _ManagerApprovalMessage extends StatelessWidget {
             fontWeight: FontWeight.w500,
           ),
         ),
-      ),
+      ],
     );
   }
 }

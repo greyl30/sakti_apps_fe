@@ -29,12 +29,7 @@ class LeaveSuccessPage extends StatelessWidget {
             Align(
               alignment: Alignment.centerLeft,
               child: InkWell(
-                onTap: () => context.go(
-                  isDispensation || isRejected
-                      ? RouteName.leave
-                      : RouteName.leaveStatus,
-                  extra: isDispensation || isRejected ? null : data,
-                ),
+                onTap: () => _goBack(context),
                 customBorder: const CircleBorder(),
                 child: SvgPicture.asset(AppAssets.back2, width: 40, height: 40),
               ),
@@ -60,7 +55,7 @@ class LeaveSuccessPage extends StatelessWidget {
               data: data,
               cancelReason: isRejected ? data.resultReason : null,
               cancelReasonLabel: 'Alasan penolakan',
-              showRemainingLeave: !isDispensation,
+              showRemainingLeave: false,
             ),
             const SizedBox(height: 28),
             if (isRejected)
@@ -99,5 +94,14 @@ class LeaveSuccessPage extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  void _goBack(BuildContext context) {
+    if (context.canPop()) {
+      context.pop();
+      return;
+    }
+
+    context.go(RouteName.leave);
   }
 }

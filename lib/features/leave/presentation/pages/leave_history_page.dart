@@ -82,41 +82,47 @@ class _LeaveHistoryPageState extends ConsumerState<LeaveHistoryPage> {
 
             const SizedBox(height: 18),
             Expanded(
-              child: histories.when(
-                data: (requests) {
-                  final filteredRequests = requests
-                      .where(
-                        (request) =>
-                            _selectedStatus == null ||
-                            request.historyStatus == _selectedStatus,
-                      )
-                      .toList();
+              child: RefreshIndicator(
+                color: AppColors.primaryRed,
+                onRefresh: _refreshHistories,
+                child: histories.when(
+                  data: (requests) {
+                    final filteredRequests = requests
+                        .where(
+                          (request) =>
+                              _selectedStatus == null ||
+                              request.historyStatus == _selectedStatus,
+                        )
+                        .toList();
 
-                  if (filteredRequests.isEmpty) {
-                    return const _LeaveHistoryMessage(
-                      'Belum ada riwayat pengajuan',
-                    );
-                  }
-
-                  return ListView.builder(
-                    padding: const EdgeInsets.fromLTRB(24, 0, 24, 28),
-                    itemCount: filteredRequests.length,
-                    itemBuilder: (context, index) {
-                      final request = filteredRequests[index];
-                      return Padding(
-                        padding: const EdgeInsets.only(bottom: 15),
-                        child: LeaveHistoryCard(
-                          history: request.toHistoryModel(),
-                          onTap: () => _openHistoryRequest(context, request),
-                        ),
+                    if (filteredRequests.isEmpty) {
+                      return const _LeaveHistoryMessageList(
+                        'Belum ada riwayat pengajuan',
                       );
-                    },
-                  );
-                },
-                loading: () =>
-                    const _LeaveHistoryMessage('Memuat riwayat pengajuan...'),
-                error: (error, stackTrace) => const _LeaveHistoryMessage(
-                  'Riwayat pengajuan belum dapat dimuat.',
+                    }
+
+                    return ListView.builder(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      padding: const EdgeInsets.fromLTRB(24, 0, 24, 28),
+                      itemCount: filteredRequests.length,
+                      itemBuilder: (context, index) {
+                        final request = filteredRequests[index];
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 15),
+                          child: LeaveHistoryCard(
+                            history: request.toHistoryModel(),
+                            onTap: () => _openHistoryRequest(context, request),
+                          ),
+                        );
+                      },
+                    );
+                  },
+                  loading: () => const _LeaveHistoryMessageList(
+                    'Memuat riwayat pengajuan...',
+                  ),
+                  error: (error, stackTrace) => const _LeaveHistoryMessageList(
+                    'Riwayat pengajuan belum dapat dimuat.',
+                  ),
                 ),
               ),
             ),
@@ -124,6 +130,17 @@ class _LeaveHistoryPageState extends ConsumerState<LeaveHistoryPage> {
         ),
       ),
     );
+  }
+
+  Future<void> _refreshHistories() async {
+    ref.invalidate(leaveStatusesProvider);
+    ref.invalidate(leaveHistoryRequestsProvider);
+
+    try {
+      await ref.read(leaveStatusesProvider.future);
+    } catch (_) {
+      // Error state tetap ditampilkan oleh provider.
+    }
   }
 }
 
@@ -145,17 +162,19 @@ void _openHistoryRequest(BuildContext context, LeaveRequestResponse request) {
   );
 }
 
-class _LeaveHistoryMessage extends StatelessWidget {
-  const _LeaveHistoryMessage(this.message);
+class _LeaveHistoryMessageList extends StatelessWidget {
+  const _LeaveHistoryMessageList(this.message);
 
   final String message;
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 24),
-        child: Text(
+    return ListView(
+      physics: const AlwaysScrollableScrollPhysics(),
+      padding: const EdgeInsets.symmetric(horizontal: 24),
+      children: [
+        const SizedBox(height: 220),
+        Text(
           message,
           textAlign: TextAlign.center,
           style: const TextStyle(
@@ -164,7 +183,7 @@ class _LeaveHistoryMessage extends StatelessWidget {
             fontWeight: FontWeight.w500,
           ),
         ),
-      ),
+      ],
     );
   }
 }

@@ -12,8 +12,11 @@ import '../../../attendance/data/repositories/attendance_repository.dart';
 import '../../../attendance/presentation/models/attendance_ui_state.dart';
 import '../../../attendance/presentation/widgets/attendance_status_dialog.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
+import '../../../history/presentation/providers/attendance_history_provider.dart';
 import '../../../../core/constants/app_assets.dart';
 import '../models/home_role.dart';
+import '../providers/hrd_leave_finalization_provider.dart';
+import '../providers/manager_leave_approval_provider.dart';
 import '../widgets/home_attendance_card.dart';
 import '../widgets/home_header.dart';
 import '../widgets/home_history_section.dart';
@@ -42,68 +45,73 @@ class HomePage extends ConsumerWidget {
       backgroundColor: AppColors.whiteBackground,
       body: SafeArea(
         bottom: false,
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: [
-            HomeHeader(
-              userName: _displayValue(user?.namaLengkap),
-              positionLabel: positionParts.isEmpty
-                  ? '-'
-                  : positionParts.join(' | '),
-              onProfileTap: () => context.push(RouteName.profile),
-              onNotificationTap: () => context.push(RouteName.notification),
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(24, 16, 24, 28),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  HomeAttendanceCard(
-                    isHoliday: attendanceState.isHoliday,
-                    canCheckIn: kDebugMode || !attendanceState.hasClockIn,
-                    canCheckOut:
-                        !attendanceState.isHoliday &&
-                        (kDebugMode || attendanceState.hasClockIn),
-                    onCheckInTap: () => _handleCheckInTap(
-                      context,
-                      isHoliday: attendanceState.isHoliday,
-                      hasClockIn: attendanceState.hasClockIn,
-                    ),
-                    onCheckOutTap: () => _handleCheckOutTap(
-                      context,
-                      isHoliday: attendanceState.isHoliday,
-                      hasClockIn: attendanceState.hasClockIn,
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  HomeReminderSection(
-                    isHoliday: attendanceState.isHoliday,
-                    onCheckInReminderTap: () => _handleCheckInTap(
-                      context,
-                      isHoliday: attendanceState.isHoliday,
-                      hasClockIn: attendanceState.hasClockIn,
-                    ),
-                    onCheckOutReminderTap: () => _handleCheckOutTap(
-                      context,
-                      isHoliday: attendanceState.isHoliday,
-                      hasClockIn: attendanceState.hasClockIn,
-                    ),
-                  ),
-                  HomeRoleSection(
-                    role: role,
-                    onSeeAllTap: () =>
-                        context.push(RouteName.managerLeaveApprovals),
-                    onItemTap: () =>
-                        context.push(RouteName.managerLeaveApprovals),
-                  ),
-                  const SizedBox(height: 20),
-                  HomeHistorySection(
-                    onSeeAllTap: () => context.push(RouteName.history),
-                  ),
-                ],
+        child: RefreshIndicator(
+          color: AppColors.primaryRed,
+          onRefresh: () => _refreshHome(ref, role),
+          child: ListView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: EdgeInsets.zero,
+            children: [
+              HomeHeader(
+                userName: _displayValue(user?.namaLengkap),
+                positionLabel: positionParts.isEmpty
+                    ? '-'
+                    : positionParts.join(' | '),
+                onProfileTap: () => context.push(RouteName.profile),
+                onNotificationTap: () => context.push(RouteName.notification),
               ),
-            ),
-          ],
+              Padding(
+                padding: const EdgeInsets.fromLTRB(24, 16, 24, 28),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    HomeAttendanceCard(
+                      isHoliday: attendanceState.isHoliday,
+                      canCheckIn: kDebugMode || !attendanceState.hasClockIn,
+                      canCheckOut:
+                          !attendanceState.isHoliday &&
+                          (kDebugMode || attendanceState.hasClockIn),
+                      onCheckInTap: () => _handleCheckInTap(
+                        context,
+                        isHoliday: attendanceState.isHoliday,
+                        hasClockIn: attendanceState.hasClockIn,
+                      ),
+                      onCheckOutTap: () => _handleCheckOutTap(
+                        context,
+                        isHoliday: attendanceState.isHoliday,
+                        hasClockIn: attendanceState.hasClockIn,
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    HomeReminderSection(
+                      isHoliday: attendanceState.isHoliday,
+                      onCheckInReminderTap: () => _handleCheckInTap(
+                        context,
+                        isHoliday: attendanceState.isHoliday,
+                        hasClockIn: attendanceState.hasClockIn,
+                      ),
+                      onCheckOutReminderTap: () => _handleCheckOutTap(
+                        context,
+                        isHoliday: attendanceState.isHoliday,
+                        hasClockIn: attendanceState.hasClockIn,
+                      ),
+                    ),
+                    HomeRoleSection(
+                      role: role,
+                      onSeeAllTap: () =>
+                          context.push(RouteName.managerLeaveApprovals),
+                      onItemTap: () =>
+                          context.push(RouteName.managerLeaveApprovals),
+                    ),
+                    const SizedBox(height: 20),
+                    HomeHistorySection(
+                      onSeeAllTap: () => context.push(RouteName.history),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
       bottomNavigationBar: const AppBottomNavigation(currentIndex: 0),
@@ -165,6 +173,29 @@ class HomePage extends ConsumerWidget {
       _showCheckOutUnavailableDialog(context);
       return false;
     }
+  }
+
+  Future<void> _refreshHome(WidgetRef ref, UserRole role) async {
+    ref.invalidate(attendanceHistoriesProvider);
+
+    switch (role) {
+      case UserRole.manager:
+        ref.invalidate(managerPendingLeaveApprovalsProvider);
+      case UserRole.hrd:
+        ref.invalidate(hrdPendingLeaveFinalizationsProvider);
+      case UserRole.employee:
+        break;
+    }
+
+    final futures = <Future<Object?>>[
+      ref.read(attendanceHistoriesProvider.future),
+      if (role == UserRole.manager)
+        ref.read(managerPendingLeaveApprovalsProvider.future),
+      if (role == UserRole.hrd)
+        ref.read(hrdPendingLeaveFinalizationsProvider.future),
+    ];
+
+    await Future.wait(futures.map((future) => future.catchError((_) => null)));
   }
 
   void _showHolidayDialog(BuildContext context) {

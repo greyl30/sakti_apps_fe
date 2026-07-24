@@ -103,7 +103,7 @@ class LeaveSummaryCard extends StatelessWidget {
     required this.data,
     this.cancelReason,
     this.cancelReasonLabel = 'Alasan pembatalan',
-    this.showRemainingLeave = true,
+    this.showRemainingLeave = false,
   });
 
   final LeaveRequestStatusData data;

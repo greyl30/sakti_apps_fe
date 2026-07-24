@@ -65,209 +65,215 @@ class _LeavePageState extends ConsumerState<LeavePage> {
               fallbackRoute: RouteName.home,
             ),
             Expanded(
-              child: ListView(
-                padding: const EdgeInsets.fromLTRB(24, 24, 24, 28),
-                children: [
-                  // Card ringkasan sisa cuti
-                  if (hasPreviousYearLeave)
-                    GridView.count(
-                      crossAxisCount: 2,
-                      crossAxisSpacing: 15,
-                      mainAxisSpacing: 15,
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      childAspectRatio: 1.72,
-                      children: [
-                        LeaveBalanceCard(
-                          value:
-                              balanceData?.remainingLeave.toString() ??
-                              balanceValueFallback,
-                          title: 'Sisa cuti ${balanceData?.year ?? ''}',
-                          subtitle: '',
-                          isWarning: true,
-                        ),
-                        LeaveBalanceCard(
-                          value:
-                              balanceData?.previousYearRemainingLeave
-                                  .toString() ??
-                              balanceValueFallback,
-                          title: 'Sisa cuti tahun lalu',
-                          subtitle: '',
-                          isWarning: true,
-                        ),
-                        LeaveBalanceCard(
-                          value:
-                              balanceData?.usedLeave.toString() ??
-                              balanceValueFallback,
-                          title: 'Digunakan',
-                          subtitle: '',
-                          isWarning: false,
-                        ),
-                        LeaveBalanceCard(
-                          value:
-                              totalAvailableLeave?.toString() ??
-                              balanceValueFallback,
-                          title: 'Total cuti tersedia',
-                          subtitle: '',
-                          isWarning: false,
-                        ),
-                      ],
-                    )
-                  else
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        LeaveBalanceCard(
-                          value:
-                              balanceData?.remainingLeave.toString() ??
-                              balanceValueFallback,
-                          title: 'Sisa cuti ${balanceData?.year ?? ''}',
-                          subtitle: '',
-                          isWarning: true,
-                        ),
-                        const SizedBox(height: 15),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: LeaveBalanceCard(
-                                value:
-                                    balanceData?.usedLeave.toString() ??
-                                    balanceValueFallback,
-                                title: 'Digunakan',
-                                subtitle: '',
-                                isWarning: false,
+              child: RefreshIndicator(
+                color: AppColors.primaryRed,
+                onRefresh: _refreshLeaveData,
+                child: ListView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  padding: const EdgeInsets.fromLTRB(24, 24, 24, 28),
+                  children: [
+                    // Card ringkasan sisa cuti
+                    if (hasPreviousYearLeave)
+                      GridView.count(
+                        crossAxisCount: 2,
+                        crossAxisSpacing: 15,
+                        mainAxisSpacing: 15,
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        childAspectRatio: 1.72,
+                        children: [
+                          LeaveBalanceCard(
+                            value:
+                                balanceData?.remainingLeave.toString() ??
+                                balanceValueFallback,
+                            title: 'Sisa cuti ${balanceData?.year ?? ''}',
+                            subtitle: '',
+                            isWarning: true,
+                          ),
+                          LeaveBalanceCard(
+                            value:
+                                balanceData?.previousYearRemainingLeave
+                                    .toString() ??
+                                balanceValueFallback,
+                            title: 'Sisa cuti tahun lalu',
+                            subtitle: '',
+                            isWarning: true,
+                          ),
+                          LeaveBalanceCard(
+                            value:
+                                balanceData?.usedLeave.toString() ??
+                                balanceValueFallback,
+                            title: 'Digunakan',
+                            subtitle: '',
+                            isWarning: false,
+                          ),
+                          LeaveBalanceCard(
+                            value:
+                                totalAvailableLeave?.toString() ??
+                                balanceValueFallback,
+                            title: 'Total cuti tersedia',
+                            subtitle: '',
+                            isWarning: false,
+                          ),
+                        ],
+                      )
+                    else
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          LeaveBalanceCard(
+                            value:
+                                balanceData?.remainingLeave.toString() ??
+                                balanceValueFallback,
+                            title: 'Sisa cuti ${balanceData?.year ?? ''}',
+                            subtitle: '',
+                            isWarning: true,
+                          ),
+                          const SizedBox(height: 15),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: LeaveBalanceCard(
+                                  value:
+                                      balanceData?.usedLeave.toString() ??
+                                      balanceValueFallback,
+                                  title: 'Digunakan',
+                                  subtitle: '',
+                                  isWarning: false,
+                                ),
                               ),
-                            ),
-                            const SizedBox(width: 15),
-                            Expanded(
-                              child: LeaveBalanceCard(
-                                value:
-                                    totalAvailableLeave?.toString() ??
-                                    balanceValueFallback,
-                                title: 'Total cuti tersedia',
-                                subtitle: '',
-                                isWarning: false,
+                              const SizedBox(width: 15),
+                              Expanded(
+                                child: LeaveBalanceCard(
+                                  value:
+                                      totalAvailableLeave?.toString() ??
+                                      balanceValueFallback,
+                                  title: 'Total cuti tersedia',
+                                  subtitle: '',
+                                  isWarning: false,
+                                ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
+                        ],
+                      ),
+                    if (balance.hasError) ...[
+                      const SizedBox(height: 10),
+                      const Text(
+                        'Saldo cuti belum dapat dimuat.',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: Color(0xFF8A8F98),
+                          fontSize: 11,
+                          fontWeight: FontWeight.w500,
                         ),
-                      ],
+                      ),
+                    ],
+                    const SizedBox(height: 25),
+                    // Tombol menuju form ajukan cuti
+                    LeaveActionCard(
+                      onTap: () => context.push(RouteName.leaveApply),
                     ),
-                  if (balance.hasError) ...[
-                    const SizedBox(height: 10),
-                    const Text(
-                      'Saldo cuti belum dapat dimuat.',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: Color(0xFF8A8F98),
-                        fontSize: 11,
-                        fontWeight: FontWeight.w500,
+                    const SizedBox(height: 30),
+                    const _SectionTitle(title: 'Pengajuan'),
+                    const SizedBox(height: 20),
+                    activeRequests.when(
+                      data: (requests) {
+                        if (requests.isEmpty) {
+                          return const _LeaveEmptyText(
+                            'Belum ada pengajuan cuti aktif',
+                          );
+                        }
+
+                        return Column(
+                          children: [
+                            for (
+                              var index = 0;
+                              index < requests.length;
+                              index++
+                            ) ...[
+                              LeaveListItem(
+                                title: requests[index].presentationType,
+                                subtitle: _formatDateRange(
+                                  requests[index].startDate,
+                                  requests[index].endDate,
+                                ),
+                                status: requests[index].statusLabel,
+                                statusColor: const Color(0xFF8A8F98),
+                                icon: AppAssets.iconPending,
+                                onTap: () => context.push(
+                                  RouteName.leaveStatus,
+                                  extra: requests[index].toStatusData(),
+                                ),
+                              ),
+                              if (index != requests.length - 1)
+                                const SizedBox(height: 12),
+                            ],
+                          ],
+                        );
+                      },
+                      loading: () =>
+                          const _LeaveLoadingText('Memuat pengajuan cuti...'),
+                      error: (error, stackTrace) => const _LeaveEmptyText(
+                        'Pengajuan cuti belum dapat dimuat.',
+                      ),
+                    ),
+                    const SizedBox(height: 28),
+                    _SectionTitle(
+                      title: 'Riwayat Pengajuan',
+                      actionLabel: 'Lihat semua',
+                      onActionTap: () => context.push(RouteName.leaveHistory),
+                    ),
+                    const SizedBox(height: 20),
+                    historyRequests.when(
+                      data: (requests) {
+                        if (requests.isEmpty) {
+                          return const _LeaveEmptyText(
+                            'Belum ada riwayat pengajuan',
+                          );
+                        }
+
+                        final visibleRequests = requests.take(3).toList();
+                        return Column(
+                          children: [
+                            for (
+                              var index = 0;
+                              index < visibleRequests.length;
+                              index++
+                            ) ...[
+                              LeaveListItem(
+                                title: visibleRequests[index].presentationType,
+                                subtitle: _formatDateRange(
+                                  visibleRequests[index].startDate,
+                                  visibleRequests[index].endDate,
+                                ),
+                                status: visibleRequests[index].statusLabel,
+                                statusColor: _historyStatusColor(
+                                  visibleRequests[index].statusLabel,
+                                ),
+                                icon: _historyStatusIcon(
+                                  visibleRequests[index].statusLabel,
+                                ),
+                                onTap: () => _openHistoryRequest(
+                                  context,
+                                  visibleRequests[index],
+                                ),
+                              ),
+                              if (index != visibleRequests.length - 1)
+                                const SizedBox(height: 12),
+                            ],
+                          ],
+                        );
+                      },
+                      loading: () => const _LeaveLoadingText(
+                        'Memuat riwayat pengajuan...',
+                      ),
+                      error: (error, stackTrace) => const _LeaveEmptyText(
+                        'Riwayat pengajuan belum dapat dimuat.',
                       ),
                     ),
                   ],
-                  const SizedBox(height: 25),
-                  // Tombol menuju form ajukan cuti
-                  LeaveActionCard(
-                    onTap: () => context.push(RouteName.leaveApply),
-                  ),
-                  const SizedBox(height: 30),
-                  const _SectionTitle(title: 'Pengajuan'),
-                  const SizedBox(height: 20),
-                  activeRequests.when(
-                    data: (requests) {
-                      if (requests.isEmpty) {
-                        return const _LeaveEmptyText(
-                          'Belum ada pengajuan cuti aktif',
-                        );
-                      }
-
-                      return Column(
-                        children: [
-                          for (
-                            var index = 0;
-                            index < requests.length;
-                            index++
-                          ) ...[
-                            LeaveListItem(
-                              title: requests[index].presentationType,
-                              subtitle: _formatDateRange(
-                                requests[index].startDate,
-                                requests[index].endDate,
-                              ),
-                              status: requests[index].statusLabel,
-                              statusColor: const Color(0xFF8A8F98),
-                              icon: AppAssets.iconPending,
-                              onTap: () => context.push(
-                                RouteName.leaveStatus,
-                                extra: requests[index].toStatusData(),
-                              ),
-                            ),
-                            if (index != requests.length - 1)
-                              const SizedBox(height: 12),
-                          ],
-                        ],
-                      );
-                    },
-                    loading: () =>
-                        const _LeaveLoadingText('Memuat pengajuan cuti...'),
-                    error: (error, stackTrace) => const _LeaveEmptyText(
-                      'Pengajuan cuti belum dapat dimuat.',
-                    ),
-                  ),
-                  const SizedBox(height: 28),
-                  _SectionTitle(
-                    title: 'Riwayat Pengajuan',
-                    actionLabel: 'Lihat semua',
-                    onActionTap: () => context.push(RouteName.leaveHistory),
-                  ),
-                  const SizedBox(height: 20),
-                  historyRequests.when(
-                    data: (requests) {
-                      if (requests.isEmpty) {
-                        return const _LeaveEmptyText(
-                          'Belum ada riwayat pengajuan',
-                        );
-                      }
-
-                      final visibleRequests = requests.take(3).toList();
-                      return Column(
-                        children: [
-                          for (
-                            var index = 0;
-                            index < visibleRequests.length;
-                            index++
-                          ) ...[
-                            LeaveListItem(
-                              title: visibleRequests[index].presentationType,
-                              subtitle: _formatDateRange(
-                                visibleRequests[index].startDate,
-                                visibleRequests[index].endDate,
-                              ),
-                              status: visibleRequests[index].statusLabel,
-                              statusColor: _historyStatusColor(
-                                visibleRequests[index].statusLabel,
-                              ),
-                              icon: _historyStatusIcon(
-                                visibleRequests[index].statusLabel,
-                              ),
-                              onTap: () => _openHistoryRequest(
-                                context,
-                                visibleRequests[index],
-                              ),
-                            ),
-                            if (index != visibleRequests.length - 1)
-                              const SizedBox(height: 12),
-                          ],
-                        ],
-                      );
-                    },
-                    loading: () =>
-                        const _LeaveLoadingText('Memuat riwayat pengajuan...'),
-                    error: (error, stackTrace) => const _LeaveEmptyText(
-                      'Riwayat pengajuan belum dapat dimuat.',
-                    ),
-                  ),
-                ],
+                ),
               ),
             ),
           ],
@@ -275,6 +281,26 @@ class _LeavePageState extends ConsumerState<LeavePage> {
       ),
       bottomNavigationBar: const AppBottomNavigation(currentIndex: 2),
     );
+  }
+
+  Future<void> _refreshLeaveData() async {
+    ref.invalidate(leaveBalanceProvider);
+    ref.invalidate(leaveStatusesProvider);
+    ref.invalidate(activeLeaveRequestsProvider);
+    ref.invalidate(leaveHistoryRequestsProvider);
+
+    await Future.wait([
+      _ignoreRefreshError(ref.read(leaveBalanceProvider.future)),
+      _ignoreRefreshError(ref.read(leaveStatusesProvider.future)),
+    ]);
+  }
+
+  Future<void> _ignoreRefreshError(Future<Object?> future) async {
+    try {
+      await future;
+    } catch (_) {
+      // Error state tetap ditampilkan oleh provider.
+    }
   }
 }
 

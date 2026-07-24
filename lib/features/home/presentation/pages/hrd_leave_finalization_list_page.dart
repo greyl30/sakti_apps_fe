@@ -80,48 +80,55 @@ class _HrdLeaveFinalizationListPageState
             ),
             const SizedBox(height: 16),
             Expanded(
-              child: finalizations.when(
-                data: (items) {
-                  final filtered = _selectedType == null
-                      ? items
-                      : items
-                            .where(
-                              (finalization) =>
-                                  finalization.type == _selectedType,
-                            )
-                            .toList();
+              child: RefreshIndicator(
+                color: AppColors.primaryRed,
+                onRefresh: _refreshFinalizations,
+                child: finalizations.when(
+                  data: (items) {
+                    final filtered = _selectedType == null
+                        ? items
+                        : items
+                              .where(
+                                (finalization) =>
+                                    finalization.type == _selectedType,
+                              )
+                              .toList();
 
-                  if (filtered.isEmpty) {
-                    return const _HrdFinalizationMessage(
-                      'Belum ada pengajuan cuti menunggu finalisasi',
+                    if (filtered.isEmpty) {
+                      return const _HrdFinalizationMessageList(
+                        'Belum ada pengajuan cuti menunggu finalisasi',
+                      );
+                    }
+
+                    return ListView.builder(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      padding: const EdgeInsets.fromLTRB(20, 0, 20, 28),
+                      itemCount: filtered.length,
+                      itemBuilder: (context, index) {
+                        final finalization = filtered[index];
+                        final isProcessing = actionState.isProcessing(
+                          finalization.id,
+                        );
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 14),
+                          child: HrdFinalizationCard(
+                            finalization: finalization,
+                            isProcessing: isProcessing,
+                            onFinalize: isProcessing
+                                ? null
+                                : () => _finalizeLeave(finalization),
+                          ),
+                        );
+                      },
                     );
-                  }
-
-                  return ListView.builder(
-                    padding: const EdgeInsets.fromLTRB(20, 0, 20, 28),
-                    itemCount: filtered.length,
-                    itemBuilder: (context, index) {
-                      final finalization = filtered[index];
-                      final isProcessing = actionState.isProcessing(
-                        finalization.id,
-                      );
-                      return Padding(
-                        padding: const EdgeInsets.only(bottom: 14),
-                        child: HrdFinalizationCard(
-                          finalization: finalization,
-                          isProcessing: isProcessing,
-                          onFinalize: isProcessing
-                              ? null
-                              : () => _finalizeLeave(finalization),
-                        ),
-                      );
-                    },
-                  );
-                },
-                loading: () =>
-                    const _HrdFinalizationMessage('Memuat finalisasi cuti...'),
-                error: (error, stackTrace) => const _HrdFinalizationMessage(
-                  'Finalisasi cuti belum dapat dimuat.',
+                  },
+                  loading: () => const _HrdFinalizationMessageList(
+                    'Memuat finalisasi cuti...',
+                  ),
+                  error: (error, stackTrace) =>
+                      const _HrdFinalizationMessageList(
+                        'Finalisasi cuti belum dapat dimuat.',
+                      ),
                 ),
               ),
             ),
@@ -129,6 +136,16 @@ class _HrdLeaveFinalizationListPageState
         ),
       ),
     );
+  }
+
+  Future<void> _refreshFinalizations() async {
+    ref.invalidate(hrdPendingLeaveFinalizationsProvider);
+
+    try {
+      await ref.read(hrdPendingLeaveFinalizationsProvider.future);
+    } catch (_) {
+      // Error state tetap ditampilkan oleh provider.
+    }
   }
 
   Future<void> _finalizeLeave(HrdLeaveFinalization finalization) async {
@@ -158,17 +175,19 @@ class _HrdLeaveFinalizationListPageState
   }
 }
 
-class _HrdFinalizationMessage extends StatelessWidget {
-  const _HrdFinalizationMessage(this.message);
+class _HrdFinalizationMessageList extends StatelessWidget {
+  const _HrdFinalizationMessageList(this.message);
 
   final String message;
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 24),
-        child: Text(
+    return ListView(
+      physics: const AlwaysScrollableScrollPhysics(),
+      padding: const EdgeInsets.symmetric(horizontal: 24),
+      children: [
+        const SizedBox(height: 220),
+        Text(
           message,
           textAlign: TextAlign.center,
           style: const TextStyle(
@@ -177,7 +196,7 @@ class _HrdFinalizationMessage extends StatelessWidget {
             fontWeight: FontWeight.w500,
           ),
         ),
-      ),
+      ],
     );
   }
 }
