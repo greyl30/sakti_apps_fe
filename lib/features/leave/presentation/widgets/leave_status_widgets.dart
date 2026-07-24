@@ -106,66 +106,33 @@ class LeaveApprovalTimelineCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isRejected = data.status == LeaveApprovalStatus.rejected;
-    final isCanceled = data.status == LeaveApprovalStatus.canceled;
+    final items = _timelineItems(data);
 
     return _StatusSectionCard(
       title: 'ALUR PERSETUJUAN',
       children: [
-        _TimelineItem(
-          title: 'Pengajuan Dikirim',
-          subtitle: _formatDateTime(data.submittedDate),
-          state: _TimelineState.done,
-          showLine: true,
-        ),
-        if (isRejected || isCanceled)
+        for (var index = 0; index < items.length; index++)
           _TimelineItem(
-            title: isRejected ? 'Pengajuan Ditolak' : 'Pengajuan Dibatalkan',
-            subtitle: isRejected ? 'Ditolak' : 'Dibatalkan',
-            state: _TimelineState.failed,
-            showLine: false,
-          )
-        else ...[
-          _TimelineItem(
-            title: _hasSupervisorApproved(data)
-                ? 'Disetujui Atasan'
-                : 'Menunggu Persetujuan Atasan',
-            subtitle: data.supervisorApprovalDate == null
-                ? 'Dalam proses'
-                : '${data.supervisorName} - ${_formatTime(data.supervisorApprovalDate!)}',
-            state: _hasSupervisorApproved(data)
-                ? _TimelineState.done
-                : _TimelineState.active,
-            showLine: true,
+            title: items[index].title,
+            subtitle: items[index].subtitle,
+            state: items[index].state,
+            showLine: index != items.length - 1,
           ),
-          _TimelineItem(
-            title: 'Menunggu Finalisasi HRD',
-            subtitle: data.progress == ApprovalProgress.waitingHRD
-                ? 'Dalam proses'
-                : data.progress == ApprovalProgress.approved
-                ? _hrdApprovalSubtitle(data)
-                : 'Belum dimulai',
-            state: data.progress == ApprovalProgress.waitingHRD
-                ? _TimelineState.active
-                : data.progress == ApprovalProgress.approved
-                ? _TimelineState.done
-                : _TimelineState.pending,
-            showLine: true,
-          ),
-          _TimelineItem(
-            title: 'Pengajuan Cuti Berhasil',
-            subtitle: data.progress == ApprovalProgress.approved
-                ? 'Disetujui'
-                : 'Belum dimulai',
-            state: data.progress == ApprovalProgress.approved
-                ? _TimelineState.done
-                : _TimelineState.pending,
-            showLine: false,
-          ),
-        ],
       ],
     );
   }
+}
+
+class _TimelineData {
+  const _TimelineData({
+    required this.title,
+    required this.subtitle,
+    required this.state,
+  });
+
+  final String title;
+  final String subtitle;
+  final _TimelineState state;
 }
 
 class LeaveInfoRow extends StatelessWidget {
@@ -425,9 +392,121 @@ bool _hasSupervisorApproved(LeaveRequestStatusData data) {
       data.supervisorApprovalDate != null;
 }
 
-String _hrdApprovalSubtitle(LeaveRequestStatusData data) {
-  if (data.hrdApprovalDate == null) return 'Selesai';
-  return '${data.hrdName} - ${_formatTime(data.hrdApprovalDate!)}';
+List<_TimelineData> _timelineItems(LeaveRequestStatusData data) {
+  final items = <_TimelineData>[
+    _TimelineData(
+      title: 'Pengajuan Dikirim',
+      subtitle: _formatDateTime(data.submittedDate),
+      state: _TimelineState.done,
+    ),
+  ];
+
+  if (data.status == LeaveApprovalStatus.rejected) {
+    if (_hasSupervisorApproved(data)) {
+      items.add(_supervisorApprovedTimeline(data));
+    }
+
+    items.add(
+      _TimelineData(
+        title: 'Pengajuan Ditolak',
+        subtitle: _terminalStatusSubtitle(data.statusUpdatedDate),
+        state: _TimelineState.failed,
+      ),
+    );
+    return items;
+  }
+
+  if (data.status == LeaveApprovalStatus.canceled) {
+    if (_hasSupervisorApproved(data)) {
+      items.add(_supervisorApprovedTimeline(data));
+    }
+
+    items.add(
+      _TimelineData(
+        title: 'Pengajuan Dibatalkan',
+        subtitle: _terminalStatusSubtitle(data.cancelledDate),
+        state: _TimelineState.failed,
+      ),
+    );
+    return items;
+  }
+
+  if (data.progress == ApprovalProgress.waitingSupervisor ||
+      data.progress == ApprovalProgress.submitted) {
+    items.add(
+      const _TimelineData(
+        title: 'Menunggu Persetujuan Atasan',
+        subtitle: 'Dalam proses',
+        state: _TimelineState.active,
+      ),
+    );
+    items.add(
+      const _TimelineData(
+        title: 'Menunggu Konfirmasi HRD',
+        subtitle: 'Belum dimulai',
+        state: _TimelineState.pending,
+      ),
+    );
+    items.add(
+      const _TimelineData(
+        title: 'Pengajuan Cuti Berhasil',
+        subtitle: 'Belum dimulai',
+        state: _TimelineState.pending,
+      ),
+    );
+    return items;
+  }
+
+  if (_hasSupervisorApproved(data)) {
+    items.add(_supervisorApprovedTimeline(data));
+  }
+
+  if (data.progress == ApprovalProgress.waitingHRD) {
+    items.add(
+      const _TimelineData(
+        title: 'Menunggu Konfirmasi HRD',
+        subtitle: 'Dalam proses',
+        state: _TimelineState.active,
+      ),
+    );
+    items.add(
+      const _TimelineData(
+        title: 'Pengajuan Cuti Berhasil',
+        subtitle: 'Belum dimulai',
+        state: _TimelineState.pending,
+      ),
+    );
+    return items;
+  }
+
+  if (data.progress == ApprovalProgress.approved) {
+    items.add(
+      _TimelineData(
+        title: 'Pengajuan Cuti Berhasil',
+        subtitle: data.hrdApprovalDate == null
+            ? 'Selesai'
+            : '${data.hrdName} - ${_formatTime(data.hrdApprovalDate!)}',
+        state: _TimelineState.done,
+      ),
+    );
+  }
+
+  return items;
+}
+
+_TimelineData _supervisorApprovedTimeline(LeaveRequestStatusData data) {
+  return _TimelineData(
+    title: 'Disetujui Atasan',
+    subtitle: data.supervisorApprovalDate == null
+        ? 'Disetujui'
+        : '${data.supervisorName} - ${_formatTime(data.supervisorApprovalDate!)}',
+    state: _TimelineState.done,
+  );
+}
+
+String _terminalStatusSubtitle(DateTime? date) {
+  if (date == null) return 'Selesai';
+  return _formatDateTime(date);
 }
 
 String _formatLongDate(DateTime date) {

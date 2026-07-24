@@ -6,6 +6,8 @@ import '../../../../core/constants/app_assets.dart';
 import '../../../../core/router/route_name.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/app_bottom_navigation.dart';
+import '../../data/models/leave_request_model.dart';
+import '../models/leave_request_status.dart';
 import '../providers/leave_submit_provider.dart';
 import '../widgets/leave_cards.dart';
 import '../widgets/leave_list_item.dart';
@@ -248,9 +250,9 @@ class _LeavePageState extends ConsumerState<LeavePage> {
                               icon: _historyStatusIcon(
                                 visibleRequests[index].statusLabel,
                               ),
-                              onTap: () => context.push(
-                                RouteName.leaveStatus,
-                                extra: visibleRequests[index].toStatusData(),
+                              onTap: () => _openHistoryRequest(
+                                context,
+                                visibleRequests[index],
                               ),
                             ),
                             if (index != visibleRequests.length - 1)
@@ -274,6 +276,18 @@ class _LeavePageState extends ConsumerState<LeavePage> {
       bottomNavigationBar: const AppBottomNavigation(currentIndex: 2),
     );
   }
+}
+
+void _openHistoryRequest(BuildContext context, LeaveRequestResponse request) {
+  final statusData = request.toStatusData();
+
+  if (statusData.status == LeaveApprovalStatus.approved ||
+      statusData.status == LeaveApprovalStatus.rejected) {
+    context.push(RouteName.leaveSuccess, extra: statusData);
+    return;
+  }
+
+  context.push(RouteName.leaveStatus, extra: statusData);
 }
 
 String _formatDateRange(DateTime startDate, DateTime endDate) {

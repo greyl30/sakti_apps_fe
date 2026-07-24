@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/router/route_name.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../history/presentation/widgets/history_filter_chip.dart';
+import '../../data/models/leave_request_model.dart';
 import '../models/leave_history_model.dart';
 import '../models/leave_request_status.dart';
 import '../providers/leave_submit_provider.dart';
@@ -106,13 +107,7 @@ class _LeaveHistoryPageState extends ConsumerState<LeaveHistoryPage> {
                         padding: const EdgeInsets.only(bottom: 15),
                         child: LeaveHistoryCard(
                           history: request.toHistoryModel(),
-                          onTap: () => context.push(
-                            RouteName.leaveStatus,
-                            extra: LeaveStatusRouteData(
-                              data: request.toStatusData(),
-                              fallbackRoute: RouteName.leaveHistory,
-                            ),
-                          ),
+                          onTap: () => _openHistoryRequest(context, request),
                         ),
                       );
                     },
@@ -130,6 +125,24 @@ class _LeaveHistoryPageState extends ConsumerState<LeaveHistoryPage> {
       ),
     );
   }
+}
+
+void _openHistoryRequest(BuildContext context, LeaveRequestResponse request) {
+  final statusData = request.toStatusData();
+
+  if (statusData.status == LeaveApprovalStatus.approved ||
+      statusData.status == LeaveApprovalStatus.rejected) {
+    context.push(RouteName.leaveSuccess, extra: statusData);
+    return;
+  }
+
+  context.push(
+    RouteName.leaveStatus,
+    extra: LeaveStatusRouteData(
+      data: statusData,
+      fallbackRoute: RouteName.leaveHistory,
+    ),
+  );
 }
 
 class _LeaveHistoryMessage extends StatelessWidget {

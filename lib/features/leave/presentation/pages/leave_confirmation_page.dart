@@ -152,6 +152,13 @@ class LeaveConfirmationPage extends ConsumerWidget {
     final remainingAfterRequest = balanceData == null
         ? null
         : _remainingAfterRequest(balanceData.remainingLeave, data.totalDays);
+    final availableRequestQuota = balanceData?.availableRequestQuota;
+    final isQuotaExceeded =
+        availableRequestQuota != null && data.totalDays > availableRequestQuota;
+    final canSubmit =
+        !submitState.isLoading &&
+        availableRequestQuota != null &&
+        !isQuotaExceeded;
 
     return Scaffold(
       backgroundColor: AppColors.whiteBackground,
@@ -271,6 +278,19 @@ class LeaveConfirmationPage extends ConsumerWidget {
                       ],
                     ),
                   ),
+                  if (isQuotaExceeded) ...[
+                    const SizedBox(height: 12),
+                    const Text(
+                      'Jumlah hari cuti melebihi kuota pengajuan yang tersedia.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: AppColors.primaryRed,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        height: 1.35,
+                      ),
+                    ),
+                  ],
                   const SizedBox(height: 24),
                   // Tombol ajukan cuti
                   LeavePrimaryButton(
@@ -279,9 +299,9 @@ class LeaveConfirmationPage extends ConsumerWidget {
                         : isDispensation
                         ? 'Ajukan Dispensasi'
                         : 'Ajukan Cuti',
-                    onPressed: submitState.isLoading
-                        ? null
-                        : () => _submitLeave(context, ref),
+                    onPressed: canSubmit
+                        ? () => _submitLeave(context, ref)
+                        : null,
                   ),
                 ],
               ),

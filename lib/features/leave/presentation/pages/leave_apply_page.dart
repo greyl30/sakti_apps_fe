@@ -45,14 +45,16 @@ class _LeaveApplyPageState extends ConsumerState<LeaveApplyPage> {
   }
 
   void _goToConfirmation() {
-    final fallbackStart = DateTime(2026, 7, 13);
+    final dateRange = _dateRange;
+    if (dateRange == null) return;
+
     final data = LeaveFormData(
       type: _selectedType,
       reason: _reasonController.text.trim().isEmpty
           ? 'Kepentingan keluarga di Surabaya'
           : _reasonController.text.trim(),
-      startDate: _dateRange?.start ?? fallbackStart,
-      endDate: _dateRange?.end ?? fallbackStart.add(const Duration(days: 2)),
+      startDate: dateRange.start,
+      endDate: dateRange.end,
     );
 
     context.push(RouteName.leaveConfirmation, extra: data);
@@ -76,6 +78,13 @@ class _LeaveApplyPageState extends ConsumerState<LeaveApplyPage> {
     final remainingAfterRequest = totalDays == null || balanceData == null
         ? null
         : _remainingAfterRequest(balanceData.remainingLeave, totalDays);
+    final availableRequestQuota = balanceData?.availableRequestQuota;
+    final isQuotaExceeded =
+        totalDays != null &&
+        availableRequestQuota != null &&
+        totalDays > availableRequestQuota;
+    final canContinue =
+        _dateRange != null && availableRequestQuota != null && !isQuotaExceeded;
 
     return Scaffold(
       backgroundColor: AppColors.whiteBackground,
@@ -227,12 +236,24 @@ class _LeaveApplyPageState extends ConsumerState<LeaveApplyPage> {
                         ),
                       ),
                     ),
+                    if (isQuotaExceeded) ...[
+                      const SizedBox(height: 8),
+                      const Text(
+                        'Jumlah hari cuti melebihi kuota pengajuan yang tersedia.',
+                        style: TextStyle(
+                          color: AppColors.primaryRed,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                          height: 1.35,
+                        ),
+                      ),
+                    ],
                   ],
                   const SizedBox(height: 24),
                   // Tombol selanjutnya
                   LeavePrimaryButton(
                     label: 'Selanjutnya',
-                    onPressed: _goToConfirmation,
+                    onPressed: canContinue ? _goToConfirmation : null,
                   ),
                 ],
               ),

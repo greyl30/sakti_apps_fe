@@ -31,6 +31,9 @@ class LeaveRequestStatusData {
     required this.progress,
     this.supervisorApprovalDate,
     this.hrdApprovalDate,
+    this.cancelledDate,
+    this.statusUpdatedDate,
+    this.resultReason,
     this.totalDaysOverride,
   });
 
@@ -47,6 +50,9 @@ class LeaveRequestStatusData {
   final ApprovalProgress progress;
   final DateTime? supervisorApprovalDate;
   final DateTime? hrdApprovalDate;
+  final DateTime? cancelledDate;
+  final DateTime? statusUpdatedDate;
+  final String? resultReason;
   final int? totalDaysOverride;
 
   int get totalDays =>

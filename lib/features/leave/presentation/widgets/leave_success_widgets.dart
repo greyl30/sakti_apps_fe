@@ -12,11 +12,13 @@ class LeaveSuccessHeader extends StatelessWidget {
     required this.title,
     required this.description,
     this.badge = 'TERSIMPAN',
+    this.icon = AppAssets.iconCheck,
   });
 
   final String title;
   final String description;
   final String badge;
+  final String icon;
 
   @override
   Widget build(BuildContext context) {
@@ -40,7 +42,7 @@ class LeaveSuccessHeader extends StatelessWidget {
               shape: BoxShape.circle,
             ),
             child: SvgPicture.asset(
-              AppAssets.iconCheck,
+              icon,
               width: 42,
               height: 42,
               colorFilter: const ColorFilter.mode(
@@ -100,11 +102,13 @@ class LeaveSummaryCard extends StatelessWidget {
     super.key,
     required this.data,
     this.cancelReason,
+    this.cancelReasonLabel = 'Alasan pembatalan',
     this.showRemainingLeave = true,
   });
 
   final LeaveRequestStatusData data;
   final String? cancelReason;
+  final String cancelReasonLabel;
   final bool showRemainingLeave;
 
   @override
@@ -154,7 +158,7 @@ class LeaveSummaryCard extends StatelessWidget {
           if (cancelReason != null)
             LeaveSummaryRow(
               icon: AppAssets.iconAlasan,
-              label: 'Alasan pembatalan',
+              label: cancelReasonLabel,
               value: cancelReason!,
             ),
         ],
