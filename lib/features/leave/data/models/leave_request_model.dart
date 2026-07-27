@@ -250,6 +250,7 @@ class LeaveRequestResponse {
       cancelledDate: cancelledAt,
       statusUpdatedDate: updatedAt,
       resultReason: cancelReason,
+      skipsHrdFinalization: directlyFinal,
       totalDaysOverride: totalDays,
     );
   }

@@ -34,6 +34,7 @@ class LeaveRequestStatusData {
     this.cancelledDate,
     this.statusUpdatedDate,
     this.resultReason,
+    this.skipsHrdFinalization = false,
     this.totalDaysOverride,
   });
 
@@ -53,6 +54,7 @@ class LeaveRequestStatusData {
   final DateTime? cancelledDate;
   final DateTime? statusUpdatedDate;
   final String? resultReason;
+  final bool skipsHrdFinalization;
   final int? totalDaysOverride;
 
   int get totalDays =>

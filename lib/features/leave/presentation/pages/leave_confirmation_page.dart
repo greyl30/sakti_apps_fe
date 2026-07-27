@@ -7,6 +7,7 @@ import '../../../../core/constants/app_assets.dart';
 import '../../../../core/router/route_name.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/app_bottom_navigation.dart';
+import '../../../home/presentation/providers/hrd_leave_finalization_provider.dart';
 import '../models/leave_form_data.dart';
 import '../models/leave_request_status.dart';
 import '../providers/leave_submit_provider.dart';
@@ -36,6 +37,7 @@ class LeaveConfirmationPage extends ConsumerWidget {
     ref.invalidate(leaveStatusesProvider);
     ref.invalidate(activeLeaveRequestsProvider);
     ref.invalidate(leaveHistoryRequestsProvider);
+    ref.invalidate(hrdPendingLeaveFinalizationsProvider);
     _showSuccessDialog(context, response.toStatusData());
   }
 

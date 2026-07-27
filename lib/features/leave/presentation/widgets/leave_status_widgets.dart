@@ -440,13 +440,15 @@ List<_TimelineData> _timelineItems(LeaveRequestStatusData data) {
         state: _TimelineState.active,
       ),
     );
-    items.add(
-      const _TimelineData(
-        title: 'Menunggu Konfirmasi HRD',
-        subtitle: 'Belum dimulai',
-        state: _TimelineState.pending,
-      ),
-    );
+    if (!data.skipsHrdFinalization) {
+      items.add(
+        const _TimelineData(
+          title: 'Menunggu Konfirmasi HRD',
+          subtitle: 'Belum dimulai',
+          state: _TimelineState.pending,
+        ),
+      );
+    }
     items.add(
       const _TimelineData(
         title: 'Pengajuan Cuti Berhasil',
