@@ -50,9 +50,7 @@ class _LeaveApplyPageState extends ConsumerState<LeaveApplyPage> {
 
     final data = LeaveFormData(
       type: _selectedType,
-      reason: _reasonController.text.trim().isEmpty
-          ? 'Kepentingan keluarga di Surabaya'
-          : _reasonController.text.trim(),
+      reason: _reasonController.text.trim().isEmpty ? '' : _reasonController.text.trim(),
       startDate: dateRange.start,
       endDate: dateRange.end,
     );
@@ -67,6 +65,7 @@ class _LeaveApplyPageState extends ConsumerState<LeaveApplyPage> {
     final totalDays = _dateRange == null
         ? null
         : _dateRange!.end.difference(_dateRange!.start).inDays + 1;
+    final isDispensation = _selectedType.trim().toLowerCase() == 'dispensasi';
     final balance = ref.watch(leaveBalanceProvider);
     final balanceData = balance.valueOrNull;
     final isBalanceLoading = balance.isLoading && balanceData == null;
@@ -79,12 +78,18 @@ class _LeaveApplyPageState extends ConsumerState<LeaveApplyPage> {
         ? null
         : _remainingAfterRequest(balanceData.remainingLeave, totalDays);
     final availableRequestQuota = balanceData?.availableRequestQuota;
+    final isDispensationDurationExceeded =
+        isDispensation && totalDays != null && totalDays > 2;
     final isQuotaExceeded =
+        !isDispensation &&
         totalDays != null &&
         availableRequestQuota != null &&
         totalDays > availableRequestQuota;
     final canContinue =
-        _dateRange != null && availableRequestQuota != null && !isQuotaExceeded;
+        _dateRange != null &&
+        !isDispensationDurationExceeded &&
+        (isDispensation ||
+            (availableRequestQuota != null && !isQuotaExceeded));
 
     return Scaffold(
       backgroundColor: AppColors.whiteBackground,
@@ -225,9 +230,12 @@ class _LeaveApplyPageState extends ConsumerState<LeaveApplyPage> {
                         border: Border.all(color: const Color(0xFFC6E6F0)),
                       ),
                       child: Text(
-                        'Durasi: $totalDays hari kerja\n'
-                        'Sisa cuti setelah pengajuan ini: '
-                        '${remainingAfterRequest?.toString() ?? (isBalanceLoading ? '...' : '-')} hari',
+                        isDispensation
+                            ? 'Durasi: $totalDays hari kerja\n'
+                                  'Dispensasi tidak mengurangi saldo cuti.'
+                            : 'Durasi: $totalDays hari kerja\n'
+                                  'Sisa cuti setelah pengajuan ini: '
+                                  '${remainingAfterRequest?.toString() ?? (isBalanceLoading ? '...' : '-')} hari',
                         style: const TextStyle(
                           color: AppColors.secondaryBlue,
                           fontSize: 11,
@@ -236,6 +244,18 @@ class _LeaveApplyPageState extends ConsumerState<LeaveApplyPage> {
                         ),
                       ),
                     ),
+                    if (isDispensationDurationExceeded) ...[
+                      const SizedBox(height: 8),
+                      const Text(
+                        'Dispensasi maksimal 2 hari.',
+                        style: TextStyle(
+                          color: AppColors.primaryRed,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                          height: 1.35,
+                        ),
+                      ),
+                    ],
                     if (isQuotaExceeded) ...[
                       const SizedBox(height: 8),
                       const Text(

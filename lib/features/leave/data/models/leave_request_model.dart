@@ -122,7 +122,13 @@ class LeaveRequestResponse {
 
   String get presentationType => _mapApiTypeToPresentation(subType);
 
+  bool get isDispensation {
+    return subType.trim().toLowerCase() == 'dispensasi';
+  }
+
   LeaveApprovalStatus get approvalStatus {
+    if (isDispensation) return LeaveApprovalStatus.approved;
+
     final normalized = status.trim().toLowerCase();
 
     if (_isRejectedStatus(normalized)) return LeaveApprovalStatus.rejected;
@@ -139,6 +145,8 @@ class LeaveRequestResponse {
   }
 
   ApprovalProgress get approvalProgress {
+    if (isDispensation) return ApprovalProgress.approved;
+
     final normalized = status.trim().toLowerCase();
 
     if (_isRejectedStatus(normalized)) return ApprovalProgress.rejected;
@@ -169,6 +177,8 @@ class LeaveRequestResponse {
   }
 
   bool get isFinalizedByHrd {
+    if (isDispensation) return true;
+
     final normalized = status.trim().toLowerCase();
     return finalizedAt != null ||
         finalizedBy != null ||
@@ -178,6 +188,8 @@ class LeaveRequestResponse {
   }
 
   bool get isActiveStatus {
+    if (isDispensation) return false;
+
     final normalized = status.trim().toLowerCase();
     return normalized == 'submitted' ||
         normalized == 'diajukan' ||
@@ -193,6 +205,8 @@ class LeaveRequestResponse {
   }
 
   bool get isHistoryStatus {
+    if (isDispensation) return true;
+
     final normalized = status.trim().toLowerCase();
     return (_isApprovedStatus(normalized) && isFinalizedByHrd) ||
         normalized == 'finalized' ||
@@ -205,6 +219,8 @@ class LeaveRequestResponse {
   }
 
   String get statusLabel {
+    if (isDispensation) return 'Disetujui';
+
     final normalized = status.trim().toLowerCase();
 
     if (_isApprovedStatus(normalized) && isFinalizedByHrd) {

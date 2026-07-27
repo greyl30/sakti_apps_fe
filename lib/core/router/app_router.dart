@@ -172,7 +172,7 @@ final appRouter = GoRouter(
             ? state.extra! as LeaveFormData
             : LeaveFormData(
                 type: 'Izin',
-                reason: 'Kepentingan keluarga di Surabaya',
+                reason: '',
                 startDate: DateTime(2026, 7, 13),
                 endDate: DateTime(2026, 7, 15),
               ),

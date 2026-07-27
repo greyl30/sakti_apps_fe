@@ -155,11 +155,15 @@ class LeaveConfirmationPage extends ConsumerWidget {
         ? null
         : _remainingAfterRequest(balanceData.remainingLeave, data.totalDays);
     final availableRequestQuota = balanceData?.availableRequestQuota;
+    final isDispensationDurationExceeded = isDispensation && data.totalDays > 2;
     final isQuotaExceeded =
-        availableRequestQuota != null && data.totalDays > availableRequestQuota;
+        !isDispensation &&
+        availableRequestQuota != null &&
+        data.totalDays > availableRequestQuota;
     final canSubmit =
         !submitState.isLoading &&
-        availableRequestQuota != null &&
+        !isDispensationDurationExceeded &&
+        (isDispensation || availableRequestQuota != null) &&
         !isQuotaExceeded;
 
     return Scaffold(
@@ -284,6 +288,19 @@ class LeaveConfirmationPage extends ConsumerWidget {
                     const SizedBox(height: 12),
                     const Text(
                       'Jumlah hari cuti melebihi kuota pengajuan yang tersedia.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: AppColors.primaryRed,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        height: 1.35,
+                      ),
+                    ),
+                  ],
+                  if (isDispensationDurationExceeded) ...[
+                    const SizedBox(height: 12),
+                    const Text(
+                      'Dispensasi maksimal 2 hari.',
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         color: AppColors.primaryRed,
