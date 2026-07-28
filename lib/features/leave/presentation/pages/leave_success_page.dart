@@ -18,6 +18,10 @@ class LeaveSuccessPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDispensation = data.type.trim().toLowerCase() == 'dispensasi';
     final isRejected = data.status == LeaveApprovalStatus.rejected;
+    final canCancel =
+        !isDispensation &&
+        data.status == LeaveApprovalStatus.approved &&
+        (data.id?.isNotEmpty ?? false);
 
     return Scaffold(
       backgroundColor: AppColors.whiteBackground,
@@ -83,11 +87,16 @@ class LeaveSuccessPage extends StatelessWidget {
                   label: 'Kembali ke Beranda',
                   onPressed: () => context.go(RouteName.home),
                 )
-              else
+              else if (canCancel)
                 LeaveSecondaryButton(
                   label: 'Batalkan Cuti',
                   onPressed: () =>
                       context.push(RouteName.leaveCancel, extra: data),
+                )
+              else
+                LeaveSecondaryButton(
+                  label: 'Kembali ke Cuti',
+                  onPressed: () => context.go(RouteName.leave),
                 ),
             ],
           ],

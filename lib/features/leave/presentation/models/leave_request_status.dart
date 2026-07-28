@@ -19,6 +19,7 @@ enum ApprovalProgress {
 
 class LeaveRequestStatusData {
   const LeaveRequestStatusData({
+    this.id,
     required this.type,
     required this.reason,
     required this.startDate,
@@ -38,6 +39,7 @@ class LeaveRequestStatusData {
     this.totalDaysOverride,
   });
 
+  final String? id;
   final String type;
   final String reason;
   final DateTime startDate;

@@ -251,6 +251,7 @@ class LeaveRequestResponse {
   }) {
     // Mapper sementara agar response API dapat memakai widget status yang ada.
     return LeaveRequestStatusData(
+      id: id,
       type: presentationType,
       reason: reason,
       startDate: startDate,

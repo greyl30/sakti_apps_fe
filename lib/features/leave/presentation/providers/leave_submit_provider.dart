@@ -87,6 +87,19 @@ final leaveHistoryRequestsProvider = FutureProvider<List<LeaveRequestResponse>>(
   },
 );
 
+class LeaveCancelState {
+  const LeaveCancelState({this.isLoading = false, this.errorMessage});
+
+  final bool isLoading;
+  final String? errorMessage;
+}
+
+final leaveCancelProvider =
+    StateNotifierProvider<LeaveCancelNotifier, LeaveCancelState>((ref) {
+      final repository = ref.watch(leaveRepositoryProvider);
+      return LeaveCancelNotifier(ref, repository);
+    });
+
 class LeaveSubmitNotifier extends StateNotifier<LeaveSubmitState> {
   LeaveSubmitNotifier(this._repository) : super(const LeaveSubmitState());
 
@@ -123,5 +136,51 @@ class LeaveSubmitNotifier extends StateNotifier<LeaveSubmitState> {
 
   void reset() {
     state = const LeaveSubmitState();
+  }
+}
+
+class LeaveCancelNotifier extends StateNotifier<LeaveCancelState> {
+  LeaveCancelNotifier(this._ref, this._repository)
+    : super(const LeaveCancelState());
+
+  final Ref _ref;
+  final LeaveRepository _repository;
+
+  Future<bool> cancel({required String leaveId, required String reason}) async {
+    if (state.isLoading) return false;
+
+    state = const LeaveCancelState(isLoading: true);
+    try {
+      await _repository.cancelLeave(leaveId: leaveId, reason: reason);
+      await _refreshLeaveData();
+      state = const LeaveCancelState();
+      return true;
+    } on LeaveCancelException catch (error) {
+      state = LeaveCancelState(errorMessage: error.message);
+      return false;
+    } catch (_) {
+      state = const LeaveCancelState(errorMessage: 'Gagal membatalkan cuti.');
+      return false;
+    }
+  }
+
+  Future<void> _refreshLeaveData() async {
+    _ref.invalidate(leaveBalanceProvider);
+    _ref.invalidate(leaveStatusesProvider);
+    _ref.invalidate(activeLeaveRequestsProvider);
+    _ref.invalidate(leaveHistoryRequestsProvider);
+
+    await Future.wait([
+      _ignoreRefreshError(_ref.read(leaveBalanceProvider.future)),
+      _ignoreRefreshError(_ref.read(leaveStatusesProvider.future)),
+    ]);
+  }
+
+  Future<void> _ignoreRefreshError(Future<Object?> future) async {
+    try {
+      await future;
+    } catch (_) {
+      // Halaman pemakai provider tetap menampilkan error state saat dibuka.
+    }
   }
 }

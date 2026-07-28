@@ -147,6 +147,17 @@ class _LeaveHistoryPageState extends ConsumerState<LeaveHistoryPage> {
 void _openHistoryRequest(BuildContext context, LeaveRequestResponse request) {
   final statusData = request.toStatusData();
 
+  if (statusData.status == LeaveApprovalStatus.canceled) {
+    context.push(
+      RouteName.leaveCancelSuccess,
+      extra: {
+        'data': statusData,
+        'reason': request.cancelReason ?? 'Tidak ada alasan pembatalan',
+      },
+    );
+    return;
+  }
+
   if (statusData.status == LeaveApprovalStatus.approved ||
       statusData.status == LeaveApprovalStatus.rejected) {
     context.push(RouteName.leaveSuccess, extra: statusData);

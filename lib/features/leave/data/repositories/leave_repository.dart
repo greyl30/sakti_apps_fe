@@ -93,6 +93,38 @@ class LeaveRepository {
     }
   }
 
+  // Batalkan pengajuan cuti final/disetujui di backend.
+  Future<void> cancelLeave({
+    required String leaveId,
+    required String reason,
+  }) async {
+    try {
+      final response = await _remoteDataSource.cancelLeave(
+        leaveId: leaveId,
+        reason: reason,
+      );
+      if (response['success'] != true) {
+        throw LeaveCancelException(_readApiMessage(response));
+      }
+    } on LeaveCancelException {
+      rethrow;
+    } on DioException catch (error) {
+      throw LeaveCancelException(
+        _mapDioError(
+          error,
+          timeoutMessage: 'Request pembatalan cuti melebihi batas waktu.',
+          fallbackMessage: 'Gagal membatalkan cuti.',
+        ),
+      );
+    } on SocketException {
+      throw const LeaveCancelException('Tidak dapat terhubung ke server.');
+    } catch (error, stackTrace) {
+      debugPrint('Leave cancel unexpected error: $error');
+      debugPrintStack(stackTrace: stackTrace);
+      throw const LeaveCancelException('Gagal membatalkan cuti.');
+    }
+  }
+
   LeaveBalanceModel _mapBalanceResponse(Map<String, dynamic> response) {
     final isSuccess = response['success'] == true;
     final rawData = response['data'];
@@ -197,6 +229,15 @@ class LeaveStatusException implements Exception {
 
 class LeaveRequestException implements Exception {
   const LeaveRequestException(this.message);
+
+  final String message;
+
+  @override
+  String toString() => message;
+}
+
+class LeaveCancelException implements Exception {
+  const LeaveCancelException(this.message);
 
   final String message;
 

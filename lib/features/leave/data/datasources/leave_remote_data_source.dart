@@ -36,4 +36,17 @@ class LeaveRemoteDataSource {
 
     return response.data ?? <String, dynamic>{};
   }
+
+  // Membatalkan pengajuan cuti yang sudah final/disetujui.
+  Future<Map<String, dynamic>> cancelLeave({
+    required String leaveId,
+    required String reason,
+  }) async {
+    final response = await _dio.put<Map<String, dynamic>>(
+      '/api/leave/$leaveId/cancel',
+      data: {'alasan': reason},
+    );
+
+    return response.data ?? <String, dynamic>{};
+  }
 }

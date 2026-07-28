@@ -1,24 +1,26 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/router/route_name.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/app_bottom_navigation.dart';
 import '../models/leave_request_status.dart';
+import '../providers/leave_submit_provider.dart';
 import '../widgets/leave_list_item.dart';
 import '../widgets/leave_success_widgets.dart';
 import '../widgets/leave_top_bar.dart';
 
-class LeaveCancelPage extends StatefulWidget {
+class LeaveCancelPage extends ConsumerStatefulWidget {
   const LeaveCancelPage({super.key, required this.data});
 
   final LeaveRequestStatusData data;
 
   @override
-  State<LeaveCancelPage> createState() => _LeaveCancelPageState();
+  ConsumerState<LeaveCancelPage> createState() => _LeaveCancelPageState();
 }
 
-class _LeaveCancelPageState extends State<LeaveCancelPage> {
+class _LeaveCancelPageState extends ConsumerState<LeaveCancelPage> {
   final _reasonController = TextEditingController();
 
   @override
@@ -27,8 +29,27 @@ class _LeaveCancelPageState extends State<LeaveCancelPage> {
     super.dispose();
   }
 
-  void _showCancelDialog() {
-    // Popup pembatalan cuti, backend belum dipanggil.
+  Future<void> _submitCancellation() async {
+    final leaveId = widget.data.id;
+    final reason = _resolvedReason;
+
+    if (leaveId == null || leaveId.isEmpty) {
+      _showError('Data pengajuan cuti tidak lengkap.');
+      return;
+    }
+
+    final success = await ref
+        .read(leaveCancelProvider.notifier)
+        .cancel(leaveId: leaveId, reason: reason);
+
+    if (!mounted) return;
+
+    if (!success) {
+      final message = ref.read(leaveCancelProvider).errorMessage;
+      _showError(message ?? 'Gagal membatalkan cuti.');
+      return;
+    }
+
     showDialog<void>(
       context: context,
       barrierDismissible: false,
@@ -38,20 +59,29 @@ class _LeaveCancelPageState extends State<LeaveCancelPage> {
           Navigator.of(dialogContext).pop();
           context.go(
             RouteName.leaveCancelSuccess,
-            extra: {
-              'data': widget.data,
-              'reason': _reasonController.text.trim().isEmpty
-                  ? 'Ada keperluan mendadak lainnya'
-                  : _reasonController.text.trim(),
-            },
+            extra: {'data': widget.data, 'reason': reason},
           );
         },
       ),
     );
   }
 
+  String get _resolvedReason {
+    final reason = _reasonController.text.trim();
+    if (reason.isNotEmpty) return reason;
+    return 'Ada keperluan mendadak lainnya';
+  }
+
+  void _showError(String message) {
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
+  }
+
   @override
   Widget build(BuildContext context) {
+    final cancelState = ref.watch(leaveCancelProvider);
+
     return Scaffold(
       backgroundColor: AppColors.whiteBackground,
       body: SafeArea(
@@ -140,8 +170,12 @@ class _LeaveCancelPageState extends State<LeaveCancelPage> {
                   const SizedBox(height: 24),
                   // Tombol kirim pembatalan.
                   LeavePrimaryButton(
-                    label: 'Kirim Pembatalan',
-                    onPressed: _showCancelDialog,
+                    label: cancelState.isLoading
+                        ? 'Mengirim Pembatalan...'
+                        : 'Kirim Pembatalan',
+                    onPressed: cancelState.isLoading
+                        ? null
+                        : _submitCancellation,
                   ),
                 ],
               ),
