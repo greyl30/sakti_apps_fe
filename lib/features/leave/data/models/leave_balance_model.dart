@@ -20,10 +20,10 @@ class LeaveBalanceModel {
   factory LeaveBalanceModel.fromJson(Map<String, dynamic> json) {
     return LeaveBalanceModel(
       year: _readInt(json['tahun']),
-      totalLeave: _readInt(json['jumlah_cuti'] ?? json['total_cuti_tersedia']),
+      totalLeave: _readInt(json['total_cuti_tersedia']),
       usedLeave: _readInt(json['telah_dilaksanakan']),
       scheduledLeave: _readInt(json['akan_dilaksanakan']),
-      remainingLeave: _readInt(json['sisa_cuti']),
+      remainingLeave: _readInt(json['sisa_cuti_tahun_ini']),
       previousYearRemainingLeave: _readInt(json['sisa_cuti_tahun_lalu']),
       availableRequestQuota: _readInt(json['kuota_pengajuan_tersedia']),
     );

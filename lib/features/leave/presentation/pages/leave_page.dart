@@ -43,12 +43,6 @@ class _LeavePageState extends ConsumerState<LeavePage> {
     final balanceValueFallback = isBalanceLoading ? '...' : '-';
     final hasPreviousYearLeave =
         (balanceData?.previousYearRemainingLeave ?? 0) > 0;
-    final totalAvailableLeave = balanceData == null
-        ? null
-        : balanceData.totalLeave +
-              (hasPreviousYearLeave
-                  ? balanceData.previousYearRemainingLeave
-                  : 0);
     final activeRequests = ref.watch(activeLeaveRequestsProvider);
     final historyRequests = ref.watch(leaveHistoryRequestsProvider);
 
@@ -109,7 +103,7 @@ class _LeavePageState extends ConsumerState<LeavePage> {
                           ),
                           LeaveBalanceCard(
                             value:
-                                totalAvailableLeave?.toString() ??
+                                balanceData?.totalLeave.toString() ??
                                 balanceValueFallback,
                             title: 'Total cuti tersedia',
                             subtitle: '',
@@ -146,7 +140,7 @@ class _LeavePageState extends ConsumerState<LeavePage> {
                               Expanded(
                                 child: LeaveBalanceCard(
                                   value:
-                                      totalAvailableLeave?.toString() ??
+                                      balanceData?.totalLeave.toString() ??
                                       balanceValueFallback,
                                   title: 'Total cuti tersedia',
                                   subtitle: '',
