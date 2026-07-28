@@ -1,3 +1,4 @@
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/network/api_client.dart';
@@ -94,10 +95,30 @@ class LeaveCancelState {
   final String? errorMessage;
 }
 
+class LeaveLetterDownloadState {
+  const LeaveLetterDownloadState({this.processingId, this.errorMessage});
+
+  final String? processingId;
+  final String? errorMessage;
+
+  bool get isLoading => processingId != null;
+
+  bool isProcessing(String leaveId) => processingId == leaveId;
+}
+
 final leaveCancelProvider =
     StateNotifierProvider<LeaveCancelNotifier, LeaveCancelState>((ref) {
       final repository = ref.watch(leaveRepositoryProvider);
       return LeaveCancelNotifier(ref, repository);
+    });
+
+final leaveLetterDownloadProvider =
+    StateNotifierProvider<
+      LeaveLetterDownloadNotifier,
+      LeaveLetterDownloadState
+    >((ref) {
+      final repository = ref.watch(leaveRepositoryProvider);
+      return LeaveLetterDownloadNotifier(repository);
     });
 
 class LeaveSubmitNotifier extends StateNotifier<LeaveSubmitState> {
@@ -181,6 +202,44 @@ class LeaveCancelNotifier extends StateNotifier<LeaveCancelState> {
       await future;
     } catch (_) {
       // Halaman pemakai provider tetap menampilkan error state saat dibuka.
+    }
+  }
+}
+
+class LeaveLetterDownloadNotifier
+    extends StateNotifier<LeaveLetterDownloadState> {
+  LeaveLetterDownloadNotifier(this._repository)
+    : super(const LeaveLetterDownloadState());
+
+  static const _downloadsChannel = MethodChannel('sakti_apps_fe/downloads');
+
+  final LeaveRepository _repository;
+
+  Future<bool> download(String leaveId) async {
+    if (state.isLoading) return false;
+
+    state = LeaveLetterDownloadState(processingId: leaveId);
+    try {
+      final download = await _repository.downloadLeaveLetter(leaveId);
+      await _downloadsChannel.invokeMethod<void>('savePdfToDownloads', {
+        'fileName': download.fileName,
+        'bytes': Uint8List.fromList(download.bytes),
+      });
+      state = const LeaveLetterDownloadState();
+      return true;
+    } on LeaveDownloadException catch (error) {
+      state = LeaveLetterDownloadState(errorMessage: error.message);
+      return false;
+    } on PlatformException catch (error) {
+      state = LeaveLetterDownloadState(
+        errorMessage: error.message ?? 'Gagal menyimpan surat ke Downloads.',
+      );
+      return false;
+    } catch (_) {
+      state = const LeaveLetterDownloadState(
+        errorMessage: 'Gagal mengunduh surat.',
+      );
+      return false;
     }
   }
 }

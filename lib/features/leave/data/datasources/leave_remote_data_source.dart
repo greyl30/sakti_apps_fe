@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 
+import '../models/leave_letter_download.dart';
 import '../models/leave_request_model.dart';
 
 // Remote data source untuk kebutuhan pengajuan cuti karyawan.
@@ -48,5 +49,42 @@ class LeaveRemoteDataSource {
     );
 
     return response.data ?? <String, dynamic>{};
+  }
+
+  // Mengunduh surat cuti/dispensasi dalam format PDF.
+  Future<LeaveLetterDownload> downloadLeaveLetter(String leaveId) async {
+    final response = await _dio.get<List<int>>(
+      '/api/leave/$leaveId/download',
+      options: Options(
+        responseType: ResponseType.bytes,
+        headers: const {'Accept': 'application/pdf'},
+      ),
+    );
+
+    return LeaveLetterDownload(
+      fileName: _readFileName(response.headers),
+      bytes: response.data ?? const <int>[],
+    );
+  }
+
+  String _readFileName(Headers headers) {
+    final contentDisposition = headers.value('content-disposition') ?? '';
+    final encodedMatch = RegExp(
+      r'''filename\*=UTF-8''([^;]+)''',
+      caseSensitive: false,
+    ).firstMatch(contentDisposition);
+    final encodedFileName = encodedMatch?.group(1);
+    if (encodedFileName != null && encodedFileName.trim().isNotEmpty) {
+      return Uri.decodeComponent(encodedFileName.trim());
+    }
+
+    final fileNameMatch = RegExp(
+      r'''filename="?([^";]+)"?''',
+      caseSensitive: false,
+    ).firstMatch(contentDisposition);
+    final fileName = fileNameMatch?.group(1)?.trim();
+    if (fileName != null && fileName.isNotEmpty) return fileName;
+
+    return 'surat-cuti.pdf';
   }
 }

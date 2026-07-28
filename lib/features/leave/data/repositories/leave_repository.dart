@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart';
 import '../../presentation/models/leave_form_data.dart';
 import '../datasources/leave_remote_data_source.dart';
 import '../models/leave_balance_model.dart';
+import '../models/leave_letter_download.dart';
 import '../models/leave_request_model.dart';
 
 // Repository untuk kebutuhan data pengajuan cuti.
@@ -125,6 +126,32 @@ class LeaveRepository {
     }
   }
 
+  Future<LeaveLetterDownload> downloadLeaveLetter(String leaveId) async {
+    try {
+      final download = await _remoteDataSource.downloadLeaveLetter(leaveId);
+      if (download.bytes.isEmpty) {
+        throw const LeaveDownloadException('File surat kosong.');
+      }
+      return download;
+    } on LeaveDownloadException {
+      rethrow;
+    } on DioException catch (error) {
+      throw LeaveDownloadException(
+        _mapDioError(
+          error,
+          timeoutMessage: 'Request unduh surat melebihi batas waktu.',
+          fallbackMessage: 'Gagal mengunduh surat.',
+        ),
+      );
+    } on SocketException {
+      throw const LeaveDownloadException('Tidak dapat terhubung ke server.');
+    } catch (error, stackTrace) {
+      debugPrint('Leave letter download unexpected error: $error');
+      debugPrintStack(stackTrace: stackTrace);
+      throw const LeaveDownloadException('Gagal mengunduh surat.');
+    }
+  }
+
   LeaveBalanceModel _mapBalanceResponse(Map<String, dynamic> response) {
     final isSuccess = response['success'] == true;
     final rawData = response['data'];
@@ -238,6 +265,15 @@ class LeaveRequestException implements Exception {
 
 class LeaveCancelException implements Exception {
   const LeaveCancelException(this.message);
+
+  final String message;
+
+  @override
+  String toString() => message;
+}
+
+class LeaveDownloadException implements Exception {
+  const LeaveDownloadException(this.message);
 
   final String message;
 
