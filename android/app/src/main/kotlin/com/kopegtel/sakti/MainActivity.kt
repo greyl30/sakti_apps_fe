@@ -1,4 +1,4 @@
-package com.example.sakti_apps_fe
+package com.kopegtel.sakti
 
 import android.content.ContentValues
 import android.os.Build

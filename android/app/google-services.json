@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "904822700710",
+    "project_id": "sakti-apps",
+    "storage_bucket": "sakti-apps.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:904822700710:android:036ad37fc6fe7e53b75267",
+        "android_client_info": {
+          "package_name": "com.kopegtel.sakti"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCtCrAmMSyhgcI7Z6j6TyZn3h7S3qqUIQQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

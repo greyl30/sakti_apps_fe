@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/firebase/firebase_messaging_service.dart';
 import '../../../../core/network/api_client.dart';
 import '../../data/datasources/auth_remote_data_source.dart';
 import '../../data/models/user_model.dart';
@@ -64,6 +65,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
     try {
       final user = await _repository.login(email: email, password: password);
       state = state.copyWith(isLoading: false, user: user);
+      await AppFirebaseMessagingService.registerCurrentToken();
       return true;
     } on AuthException catch (error) {
       state = state.copyWith(isLoading: false, errorMessage: error.message);
@@ -82,6 +84,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
     }
 
     state = state.copyWith(isLoading: false, user: user);
+    await AppFirebaseMessagingService.registerCurrentToken();
     return true;
   }
 
