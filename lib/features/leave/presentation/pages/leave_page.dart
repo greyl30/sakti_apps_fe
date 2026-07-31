@@ -43,6 +43,10 @@ class _LeavePageState extends ConsumerState<LeavePage> {
     final balanceValueFallback = isBalanceLoading ? '...' : '-';
     final hasPreviousYearLeave =
         (balanceData?.previousYearRemainingLeave ?? 0) > 0;
+    final currentLeaveYear = _leaveYearLabel(balanceData?.year);
+    final previousYearValidUntil = _formatValidUntil(
+      balanceData?.previousYearLeaveValidUntil,
+    );
     final activeRequests = ref.watch(activeLeaveRequestsProvider);
     final historyRequests = ref.watch(leaveHistoryRequestsProvider);
 
@@ -80,7 +84,7 @@ class _LeavePageState extends ConsumerState<LeavePage> {
                             value:
                                 balanceData?.remainingLeave.toString() ??
                                 balanceValueFallback,
-                            title: 'Sisa cuti ${balanceData?.year ?? ''}',
+                            title: 'Sisa cuti $currentLeaveYear',
                             subtitle: '',
                             isWarning: true,
                           ),
@@ -90,7 +94,9 @@ class _LeavePageState extends ConsumerState<LeavePage> {
                                     .toString() ??
                                 balanceValueFallback,
                             title: 'Sisa cuti tahun lalu',
-                            subtitle: '',
+                            subtitle: previousYearValidUntil == null
+                                ? ''
+                                : 'Berlaku s.d. $previousYearValidUntil',
                             isWarning: true,
                           ),
                           LeaveBalanceCard(
@@ -119,7 +125,7 @@ class _LeavePageState extends ConsumerState<LeavePage> {
                             value:
                                 balanceData?.remainingLeave.toString() ??
                                 balanceValueFallback,
-                            title: 'Sisa cuti ${balanceData?.year ?? ''}',
+                            title: 'Sisa cuti $currentLeaveYear',
                             subtitle: '',
                             isWarning: true,
                           ),
@@ -348,6 +354,16 @@ String _formatDate(DateTime date) {
     'Desember',
   ];
   return '${date.day} ${months[date.month - 1]} ${date.year}';
+}
+
+String _leaveYearLabel(int? year) {
+  if (year == null || year <= 0) return DateTime.now().year.toString();
+  return year.toString();
+}
+
+String? _formatValidUntil(DateTime? date) {
+  if (date == null) return null;
+  return _formatDate(date);
 }
 
 Color _historyStatusColor(String statusLabel) {

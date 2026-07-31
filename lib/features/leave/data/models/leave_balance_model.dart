@@ -6,6 +6,7 @@ class LeaveBalanceModel {
     required this.scheduledLeave,
     required this.remainingLeave,
     required this.previousYearRemainingLeave,
+    required this.previousYearLeaveValidUntil,
     required this.availableRequestQuota,
   });
 
@@ -15,6 +16,7 @@ class LeaveBalanceModel {
   final int scheduledLeave;
   final int remainingLeave;
   final int previousYearRemainingLeave;
+  final DateTime? previousYearLeaveValidUntil;
   final int availableRequestQuota;
 
   factory LeaveBalanceModel.fromJson(Map<String, dynamic> json) {
@@ -25,6 +27,9 @@ class LeaveBalanceModel {
       scheduledLeave: _readInt(json['akan_dilaksanakan']),
       remainingLeave: _readInt(json['sisa_cuti_tahun_ini']),
       previousYearRemainingLeave: _readInt(json['sisa_cuti_tahun_lalu']),
+      previousYearLeaveValidUntil: _readDate(
+        json['sisa_cuti_tahun_lalu_berlaku_sampai'],
+      ),
       availableRequestQuota: _readInt(json['kuota_pengajuan_tersedia']),
     );
   }
@@ -34,4 +39,10 @@ int _readInt(Object? value) {
   if (value is int) return value;
   if (value is num) return value.toInt();
   return int.tryParse(value?.toString() ?? '') ?? 0;
+}
+
+DateTime? _readDate(Object? value) {
+  final rawValue = value?.toString().trim();
+  if (rawValue == null || rawValue.isEmpty) return null;
+  return DateTime.tryParse(rawValue);
 }
