@@ -21,13 +21,23 @@ final notificationsProvider =
       AsyncValue<List<NotificationModel>>
     >((ref) {
       final repository = ref.watch(notificationRepositoryProvider);
-      return NotificationsNotifier(repository)..load();
+      return NotificationsNotifier(ref, repository)..load();
+    });
+
+final notificationUnreadCountProvider =
+    StateNotifierProvider<NotificationUnreadCountNotifier, AsyncValue<int>>((
+      ref,
+    ) {
+      final repository = ref.watch(notificationRepositoryProvider);
+      return NotificationUnreadCountNotifier(repository)..load();
     });
 
 class NotificationsNotifier
     extends StateNotifier<AsyncValue<List<NotificationModel>>> {
-  NotificationsNotifier(this._repository) : super(const AsyncValue.loading());
+  NotificationsNotifier(this._ref, this._repository)
+    : super(const AsyncValue.loading());
 
+  final Ref _ref;
   final NotificationRepository _repository;
 
   Future<void> load() async {
@@ -62,6 +72,25 @@ class NotificationsNotifier
               .toList(),
         );
       }
+      await _ref.read(notificationUnreadCountProvider.notifier).refresh();
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  Future<bool> markAllAsRead() async {
+    try {
+      await _repository.markAllAsRead();
+      final currentItems = state.valueOrNull;
+      if (currentItems != null) {
+        state = AsyncValue.data(
+          currentItems
+              .map((notification) => notification.copyWith(isRead: true))
+              .toList(),
+        );
+      }
+      _ref.read(notificationUnreadCountProvider.notifier).setCount(0);
       return true;
     } catch (_) {
       return false;
@@ -74,5 +103,29 @@ class NotificationsNotifier
     return notifications
         .map((notification) => notification.toPresentationModel())
         .toList();
+  }
+}
+
+class NotificationUnreadCountNotifier extends StateNotifier<AsyncValue<int>> {
+  NotificationUnreadCountNotifier(this._repository)
+    : super(const AsyncValue.loading());
+
+  final NotificationRepository _repository;
+
+  Future<void> load() async {
+    state = const AsyncValue.loading();
+    await refresh();
+  }
+
+  Future<void> refresh() async {
+    try {
+      state = AsyncValue.data(await _repository.getUnreadCount());
+    } catch (error, stackTrace) {
+      state = AsyncValue.error(error, stackTrace);
+    }
+  }
+
+  void setCount(int count) {
+    state = AsyncValue.data(count < 0 ? 0 : count);
   }
 }

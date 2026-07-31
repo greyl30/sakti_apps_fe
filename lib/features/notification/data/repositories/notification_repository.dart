@@ -34,6 +34,29 @@ class NotificationRepository {
     }
   }
 
+  Future<int> getUnreadCount() async {
+    try {
+      final response = await _remoteDataSource.getUnreadCount();
+      return _mapUnreadCountResponse(response);
+    } on NotificationException {
+      rethrow;
+    } on DioException catch (error) {
+      throw NotificationException(
+        _mapDioError(
+          error,
+          timeoutMessage: 'Request jumlah notifikasi melebihi batas waktu.',
+          fallbackMessage: 'Gagal mengambil jumlah notifikasi.',
+        ),
+      );
+    } on SocketException {
+      throw const NotificationException('Tidak dapat terhubung ke server.');
+    } catch (error, stackTrace) {
+      debugPrint('Notification unread unexpected error: $error');
+      debugPrintStack(stackTrace: stackTrace);
+      throw const NotificationException('Gagal mengambil jumlah notifikasi.');
+    }
+  }
+
   Future<void> markAsRead(String notificationId) async {
     try {
       final response = await _remoteDataSource.markAsRead(notificationId);
@@ -61,6 +84,33 @@ class NotificationRepository {
     }
   }
 
+  Future<void> markAllAsRead() async {
+    try {
+      final response = await _remoteDataSource.markAllAsRead();
+      if (response['success'] != true) {
+        throw NotificationException(_readApiMessage(response));
+      }
+    } on NotificationException {
+      rethrow;
+    } on DioException catch (error) {
+      throw NotificationException(
+        _mapDioError(
+          error,
+          timeoutMessage: 'Request baca semua notifikasi melebihi batas waktu.',
+          fallbackMessage: 'Gagal menandai semua notifikasi sebagai dibaca.',
+        ),
+      );
+    } on SocketException {
+      throw const NotificationException('Tidak dapat terhubung ke server.');
+    } catch (error, stackTrace) {
+      debugPrint('Notification read-all unexpected error: $error');
+      debugPrintStack(stackTrace: stackTrace);
+      throw const NotificationException(
+        'Gagal menandai semua notifikasi sebagai dibaca.',
+      );
+    }
+  }
+
   List<NotificationResponseModel> _mapNotificationResponse(
     Map<String, dynamic> response,
   ) {
@@ -82,6 +132,28 @@ class NotificationRepository {
     if (isSuccess && rawItems == null) return const [];
 
     throw NotificationException(_readApiMessage(response));
+  }
+
+  int _mapUnreadCountResponse(Map<String, dynamic> response) {
+    final isSuccess = response['success'] == true;
+    final rawData = response['data'];
+
+    if (!isSuccess) {
+      throw NotificationException(_readApiMessage(response));
+    }
+
+    final rawCount = rawData is Map
+        ? rawData['unread_count'] ??
+              rawData['unread'] ??
+              rawData['count'] ??
+              rawData['total']
+        : rawData;
+
+    if (rawCount is int) return rawCount;
+    if (rawCount is num) return rawCount.toInt();
+
+    final parsed = int.tryParse(rawCount?.toString() ?? '');
+    return parsed ?? 0;
   }
 
   String _readApiMessage(Map<String, dynamic> response) {

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/constants/app_assets.dart';
 import '../../../../core/network/api_client.dart';
 import '../../../../core/router/route_name.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -13,7 +14,7 @@ import '../../../attendance/presentation/models/attendance_ui_state.dart';
 import '../../../attendance/presentation/widgets/attendance_status_dialog.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../../history/presentation/providers/attendance_history_provider.dart';
-import '../../../../core/constants/app_assets.dart';
+import '../../../notification/presentation/providers/notification_provider.dart';
 import '../models/home_role.dart';
 import '../providers/hrd_leave_finalization_provider.dart';
 import '../providers/manager_leave_approval_provider.dart';
@@ -40,6 +41,8 @@ class HomePage extends ConsumerWidget {
     ].whereType<String>().where((value) => value.trim().isNotEmpty).toList();
     // Dummy state presensi, nantinya diganti dari backend/provider.
     const attendanceState = dummyAttendanceUiState;
+    final unreadCount = ref.watch(notificationUnreadCountProvider);
+    final hasUnreadNotifications = (unreadCount.valueOrNull ?? 0) > 0;
 
     return Scaffold(
       backgroundColor: AppColors.whiteBackground,
@@ -59,6 +62,7 @@ class HomePage extends ConsumerWidget {
                     : positionParts.join(' | '),
                 onProfileTap: () => context.push(RouteName.profile),
                 onNotificationTap: () => context.push(RouteName.notification),
+                hasUnreadNotifications: hasUnreadNotifications,
               ),
               Padding(
                 padding: const EdgeInsets.fromLTRB(24, 16, 24, 28),
@@ -177,7 +181,6 @@ class HomePage extends ConsumerWidget {
 
   Future<void> _refreshHome(WidgetRef ref, UserRole role) async {
     ref.invalidate(attendanceHistoriesProvider);
-
     switch (role) {
       case UserRole.manager:
         ref.invalidate(managerPendingLeaveApprovalsProvider);
@@ -187,15 +190,23 @@ class HomePage extends ConsumerWidget {
         break;
     }
 
-    final futures = <Future<Object?>>[
-      ref.read(attendanceHistoriesProvider.future),
+    final futures = <Future<void>>[
+      ref.read(attendanceHistoriesProvider.future).then((_) {}),
+      ref.read(notificationsProvider.notifier).refresh(),
+      ref.read(notificationUnreadCountProvider.notifier).refresh(),
       if (role == UserRole.manager)
-        ref.read(managerPendingLeaveApprovalsProvider.future),
+        ref.read(managerPendingLeaveApprovalsProvider.future).then((_) {}),
       if (role == UserRole.hrd)
-        ref.read(hrdPendingLeaveFinalizationsProvider.future),
+        ref.read(hrdPendingLeaveFinalizationsProvider.future).then((_) {}),
     ];
 
-    await Future.wait(futures.map((future) => future.catchError((_) => null)));
+    await Future.wait(
+      futures.map((future) async {
+        try {
+          await future;
+        } catch (_) {}
+      }),
+    );
   }
 
   void _showHolidayDialog(BuildContext context) {

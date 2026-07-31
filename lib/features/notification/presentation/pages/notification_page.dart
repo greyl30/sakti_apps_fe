@@ -9,11 +9,24 @@ import '../models/notification_model.dart';
 import '../providers/notification_provider.dart';
 import '../widgets/notification_card.dart';
 
-class NotificationPage extends ConsumerWidget {
+class NotificationPage extends ConsumerStatefulWidget {
   const NotificationPage({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<NotificationPage> createState() => _NotificationPageState();
+}
+
+class _NotificationPageState extends ConsumerState<NotificationPage> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(notificationsProvider.notifier).markAllAsRead();
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final notifications = ref.watch(notificationsProvider);
 
     return Scaffold(
@@ -76,6 +89,7 @@ class NotificationPage extends ConsumerWidget {
 
   Future<void> _refreshNotifications(WidgetRef ref) async {
     await ref.read(notificationsProvider.notifier).refresh();
+    await ref.read(notificationUnreadCountProvider.notifier).refresh();
   }
 
   Future<void> _openNotificationDetail(
@@ -83,9 +97,11 @@ class NotificationPage extends ConsumerWidget {
     WidgetRef ref,
     NotificationModel notification,
   ) async {
-    final isMarkedAsRead = await ref
-        .read(notificationsProvider.notifier)
-        .markAsRead(notification.id);
+    final isMarkedAsRead = notification.isRead
+        ? true
+        : await ref
+              .read(notificationsProvider.notifier)
+              .markAsRead(notification.id);
 
     if (!context.mounted) return;
 

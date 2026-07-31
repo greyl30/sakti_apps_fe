@@ -12,6 +12,8 @@ class ProfileConfirmationDialog extends StatelessWidget {
     required this.cancelText,
     required this.onConfirm,
     required this.onCancel,
+    this.isConfirmLoading = false,
+    this.isCancelLoading = false,
   });
 
   final String icon;
@@ -20,6 +22,8 @@ class ProfileConfirmationDialog extends StatelessWidget {
   final String cancelText;
   final VoidCallback onConfirm;
   final VoidCallback onCancel;
+  final bool isConfirmLoading;
+  final bool isCancelLoading;
 
   @override
   Widget build(BuildContext context) {
@@ -72,7 +76,10 @@ class ProfileConfirmationDialog extends StatelessWidget {
                   child: _DialogButton(
                     label: confirmText,
                     isPrimary: false,
-                    onPressed: onConfirm,
+                    isLoading: isConfirmLoading,
+                    onPressed: isConfirmLoading || isCancelLoading
+                        ? null
+                        : onConfirm,
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -80,7 +87,10 @@ class ProfileConfirmationDialog extends StatelessWidget {
                   child: _DialogButton(
                     label: cancelText,
                     isPrimary: true,
-                    onPressed: onCancel,
+                    isLoading: isCancelLoading,
+                    onPressed: isConfirmLoading || isCancelLoading
+                        ? null
+                        : onCancel,
                   ),
                 ),
               ],
@@ -97,11 +107,13 @@ class _DialogButton extends StatelessWidget {
     required this.label,
     required this.isPrimary,
     required this.onPressed,
+    this.isLoading = false,
   });
 
   final String label;
   final bool isPrimary;
-  final VoidCallback onPressed;
+  final VoidCallback? onPressed;
+  final bool isLoading;
 
   @override
   Widget build(BuildContext context) {
@@ -123,14 +135,23 @@ class _DialogButton extends StatelessWidget {
             ),
           ),
         ),
-        child: Text(
-          label,
-          style: const TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w800,
-            height: 1,
-          ),
-        ),
+        child: isLoading
+            ? SizedBox(
+                width: 18,
+                height: 18,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2.2,
+                  color: isPrimary ? Colors.white : AppColors.primaryRed,
+                ),
+              )
+            : Text(
+                label,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w800,
+                  height: 1,
+                ),
+              ),
       ),
     );
   }

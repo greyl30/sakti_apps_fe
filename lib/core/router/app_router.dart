@@ -35,6 +35,8 @@ import '../../features/notification/presentation/pages/notification_detail_page.
 import '../../features/notification/presentation/pages/notification_page.dart';
 import '../../features/profile/presentation/pages/change_password_placeholder_page.dart';
 import '../../features/profile/presentation/pages/profile_page.dart';
+import '../../features/profile/presentation/pages/telegram_connect_page.dart';
+import '../../features/profile/presentation/pages/telegram_success_page.dart';
 import '../../features/splash/presentation/pages/splash_page.dart';
 import 'route_name.dart';
 
@@ -52,6 +54,8 @@ const _roleProtectedRoutes = <String, Set<String>>{
   RouteName.managerLeaveRejectReason: {'atasan'},
   RouteName.hrdLeaveFinalizations: {'hrd'},
   RouteName.hrdLeaveFinalizationDetail: {'hrd'},
+  RouteName.telegramConnect: {'atasan', 'manager'},
+  RouteName.telegramSuccess: {'atasan', 'manager'},
 };
 
 final appRouter = GoRouter(
@@ -250,6 +254,14 @@ final appRouter = GoRouter(
     GoRoute(
       path: RouteName.changePassword,
       builder: (context, state) => const ChangePasswordPlaceholderPage(),
+    ),
+    GoRoute(
+      path: RouteName.telegramConnect,
+      builder: (context, state) => const TelegramConnectPage(),
+    ),
+    GoRoute(
+      path: RouteName.telegramSuccess,
+      builder: (context, state) => const TelegramSuccessPage(),
     ),
     GoRoute(
       path: RouteName.history,

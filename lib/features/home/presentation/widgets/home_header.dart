@@ -13,12 +13,14 @@ class HomeHeader extends StatelessWidget {
     required this.positionLabel,
     required this.onProfileTap,
     required this.onNotificationTap,
+    required this.hasUnreadNotifications,
   });
 
   final String userName;
   final String positionLabel;
   final VoidCallback onProfileTap;
   final VoidCallback onNotificationTap;
+  final bool hasUnreadNotifications;
 
   @override
   Widget build(BuildContext context) {
@@ -98,10 +100,29 @@ class HomeHeader extends StatelessWidget {
           InkWell(
             onTap: onNotificationTap,
             customBorder: const CircleBorder(),
-            child: SvgPicture.asset(
-              AppAssets.iconBelbulat,
-              width: 40.36,
-              height: 40.36,
+            child: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                SvgPicture.asset(
+                  AppAssets.iconBelbulat,
+                  width: 40.36,
+                  height: 40.36,
+                ),
+                if (hasUnreadNotifications)
+                  Positioned(
+                    top: 1,
+                    right: 1,
+                    child: Container(
+                      width: 9,
+                      height: 9,
+                      decoration: BoxDecoration(
+                        color: AppColors.primaryRed,
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Colors.white, width: 1.5),
+                      ),
+                    ),
+                  ),
+              ],
             ),
           ),
         ],

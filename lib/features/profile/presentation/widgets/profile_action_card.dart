@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 
-import '../../../../core/constants/app_assets.dart';
 import '../../../../core/theme/app_colors.dart';
 
 class ProfileActionCard extends StatelessWidget {
@@ -11,12 +9,14 @@ class ProfileActionCard extends StatelessWidget {
     required this.title,
     required this.subtitle,
     required this.onTap,
+    this.isDestructive = false,
   });
 
   final String icon;
   final String title;
   final String subtitle;
   final VoidCallback onTap;
+  final bool isDestructive;
 
   @override
   Widget build(BuildContext context) {
@@ -24,79 +24,35 @@ class ProfileActionCard extends StatelessWidget {
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(42),
         child: Ink(
-          height: 70,
-          padding: const EdgeInsets.symmetric(horizontal: 14),
+          height: 58,
+          padding: const EdgeInsets.symmetric(horizontal: 22),
           decoration: BoxDecoration(
-            color: const Color(0xFFD33B32),
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.primaryRed.withValues(alpha: .18),
-                blurRadius: 12,
-                offset: const Offset(0, 6),
-              ),
-            ],
+            color: isDestructive
+                ? AppColors.primaryRed
+                : const Color(0xFFFFF4F4),
+            borderRadius: BorderRadius.circular(42),
+            border: Border.all(
+              color: isDestructive
+                  ? AppColors.primaryRed
+                  : const Color(0xFFF0B5B5),
+              width: 1.4,
+            ),
           ),
-          child: Row(
-            children: [
-              Container(
-                width: 43,
-                height: 43,
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: SvgPicture.asset(
-                  icon,
-                  width: 22,
-                  height: 22,
-                  colorFilter: const ColorFilter.mode(
-                    AppColors.primaryRed,
-                    BlendMode.srcIn,
-                  ),
-                ),
+          child: Center(
+            child: Text(
+              title,
+              textAlign: TextAlign.center,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: isDestructive ? Colors.white : AppColors.primaryRed,
+                fontSize: 17,
+                fontWeight: FontWeight.w800,
+                height: 1,
               ),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 13,
-                        fontWeight: FontWeight.w800,
-                        height: 1,
-                      ),
-                    ),
-                    const SizedBox(height: 7),
-                    Text(
-                      subtitle,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 11,
-                        fontWeight: FontWeight.w500,
-                        height: 1,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              SvgPicture.asset(
-                AppAssets.iconNext,
-                width: 15,
-                height: 15,
-                colorFilter: const ColorFilter.mode(
-                  Colors.white,
-                  BlendMode.srcIn,
-                ),
-              ),
-            ],
+            ),
           ),
         ),
       ),

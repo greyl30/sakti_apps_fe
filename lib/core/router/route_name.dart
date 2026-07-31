@@ -22,6 +22,8 @@ class RouteName {
   static const notificationDetail = '/notification/detail';
   static const profile = '/profile';
   static const changePassword = '/profile/change-password';
+  static const telegramConnect = '/profile/telegram-connect';
+  static const telegramSuccess = '/profile/telegram-success';
   static const history = '/history';
   static const managerLeaveApprovals = '/manager/leave-approvals';
   static const managerLeaveApprovalDetail = '/manager/leave-approvals/detail';
