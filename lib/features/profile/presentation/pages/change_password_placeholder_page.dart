@@ -1,23 +1,25 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/router/route_name.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../../auth/presentation/widgets/auth_primary_button.dart';
 import '../../../leave/presentation/widgets/leave_top_bar.dart';
 import '../widgets/change_password_success_dialog.dart';
 import '../widgets/password_text_field.dart';
 
-class ChangePasswordPlaceholderPage extends StatefulWidget {
+class ChangePasswordPlaceholderPage extends ConsumerStatefulWidget {
   const ChangePasswordPlaceholderPage({super.key});
 
   @override
-  State<ChangePasswordPlaceholderPage> createState() =>
+  ConsumerState<ChangePasswordPlaceholderPage> createState() =>
       _ChangePasswordPlaceholderPageState();
 }
 
 class _ChangePasswordPlaceholderPageState
-    extends State<ChangePasswordPlaceholderPage> {
+    extends ConsumerState<ChangePasswordPlaceholderPage> {
   final _formKey = GlobalKey<FormState>();
   final _oldPasswordController = TextEditingController();
   final _newPasswordController = TextEditingController();
@@ -35,23 +37,41 @@ class _ChangePasswordPlaceholderPageState
     super.dispose();
   }
 
-  void _submitChangePassword() {
-    // Validasi dasar form ubah password.
+  Future<void> _submitChangePassword() async {
     final isValid = _formKey.currentState?.validate() ?? false;
     if (!isValid) return;
 
-    // TODO(Backend):
-    // Kirim request Change Password.
-    // Verifikasi password lama.
-    // Update password pada Supabase Auth melalui backend.
+    final success = await ref
+        .read(authProvider.notifier)
+        .changePassword(
+          currentPassword: _oldPasswordController.text,
+          newPassword: _newPasswordController.text,
+          confirmPassword: _confirmPasswordController.text,
+        );
+
+    if (!mounted) return;
+
+    if (!success) {
+      final errorMessage = ref.read(authProvider).errorMessage;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(errorMessage ?? 'Gagal mengubah password.')),
+      );
+      return;
+    }
+
+    final successMessage =
+        ref.read(authProvider).successMessage ??
+        'Password berhasil diubah. Silakan login kembali.';
+
     showDialog<void>(
       context: context,
       barrierDismissible: false,
       builder: (dialogContext) => ChangePasswordSuccessDialog(
-        title: 'Password berhasil diubah',
+        title: successMessage,
+        buttonLabel: 'Kembali ke Login',
         onOkPressed: () {
           Navigator.of(dialogContext).pop();
-          context.go(RouteName.profile);
+          context.go(RouteName.login);
         },
       ),
     );
@@ -59,6 +79,8 @@ class _ChangePasswordPlaceholderPageState
 
   @override
   Widget build(BuildContext context) {
+    final authState = ref.watch(authProvider);
+
     return Scaffold(
       backgroundColor: AppColors.whiteBackground,
       body: SafeArea(
@@ -104,8 +126,9 @@ class _ChangePasswordPlaceholderPageState
                             _obscureNewPassword = !_obscureNewPassword;
                           });
                         },
-                        validator: PasswordValidator.required(
-                          'Password baru wajib diisi',
+                        validator: (value) => _validateNewPassword(
+                          value,
+                          _oldPasswordController.text,
                         ),
                       ),
                       const SizedBox(height: 22),
@@ -127,9 +150,11 @@ class _ChangePasswordPlaceholderPageState
                       const SizedBox(height: 30),
                       // Tombol ubah password.
                       AuthPrimaryButton(
-                        label: 'Ubah Password',
-                        isLoading: false,
-                        onPressed: _submitChangePassword,
+                        label: 'Kirim',
+                        isLoading: authState.isLoading,
+                        onPressed: authState.isLoading
+                            ? null
+                            : _submitChangePassword,
                       ),
                       const SizedBox(height: 18),
                       Center(
@@ -160,5 +185,27 @@ class _ChangePasswordPlaceholderPageState
         ),
       ),
     );
+  }
+
+  String? _validateNewPassword(String? value, String currentPassword) {
+    final password = value ?? '';
+    if (password.isEmpty) return 'Password baru wajib diisi';
+    if (password.length < 8) return 'Password baru minimal 8 karakter';
+    if (!RegExp(r'[A-Z]').hasMatch(password)) {
+      return 'Password baru harus memiliki huruf besar';
+    }
+    if (!RegExp(r'[a-z]').hasMatch(password)) {
+      return 'Password baru harus memiliki huruf kecil';
+    }
+    if (!RegExp(r'[0-9]').hasMatch(password)) {
+      return 'Password baru harus memiliki angka';
+    }
+    if (!RegExp(r'[!@#$%^&*(),.?":{}|<>_\-+=\[\]\\;/`~]').hasMatch(password)) {
+      return 'Password baru harus memiliki karakter khusus';
+    }
+    if (password == currentPassword) {
+      return 'Password baru tidak boleh sama dengan password lama';
+    }
+    return null;
   }
 }

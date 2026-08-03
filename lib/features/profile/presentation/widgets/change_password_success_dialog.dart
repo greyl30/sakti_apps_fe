@@ -10,10 +10,12 @@ class ChangePasswordSuccessDialog extends StatelessWidget {
     super.key,
     required this.title,
     required this.onOkPressed,
+    this.buttonLabel = 'OK',
   });
 
   final String title;
   final VoidCallback onOkPressed;
+  final String buttonLabel;
 
   @override
   Widget build(BuildContext context) {
@@ -61,7 +63,7 @@ class ChangePasswordSuccessDialog extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 20),
-            LeavePrimaryButton(label: 'OK', onPressed: onOkPressed),
+            LeavePrimaryButton(label: buttonLabel, onPressed: onOkPressed),
           ],
         ),
       ),

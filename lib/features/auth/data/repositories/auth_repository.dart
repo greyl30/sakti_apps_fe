@@ -7,6 +7,8 @@ import 'package:supabase_flutter/supabase_flutter.dart' as supabase;
 import '../../../../core/supabase/supabase_client.dart';
 import '../../../../core/storage/secure_storage_service.dart';
 import '../datasources/auth_remote_data_source.dart';
+import '../models/change_password_request.dart';
+import '../models/change_password_response.dart';
 import '../models/login_request.dart';
 import '../models/reset_password_request.dart';
 import '../models/user_model.dart';
@@ -124,6 +126,37 @@ class AuthRepository {
     } on DioException catch (error) {
       throw AuthException(
         _mapDioError(error, fallbackMessage: 'Gagal mereset password.'),
+      );
+    } on SocketException {
+      throw const AuthException('Tidak dapat terhubung ke server.');
+    }
+  }
+
+  // Ubah password user login melalui backend.
+  Future<ChangePasswordResponse> changePassword({
+    required String currentPassword,
+    required String newPassword,
+    required String confirmPassword,
+  }) async {
+    try {
+      final response = await _remoteDataSource.changePassword(
+        ChangePasswordRequest(
+          currentPassword: currentPassword,
+          newPassword: newPassword,
+          confirmPassword: confirmPassword,
+        ),
+      );
+
+      if (!response.success) {
+        throw AuthException(response.message);
+      }
+
+      return response;
+    } on AuthException {
+      rethrow;
+    } on DioException catch (error) {
+      throw AuthException(
+        _mapDioError(error, fallbackMessage: 'Gagal mengubah password.'),
       );
     } on SocketException {
       throw const AuthException('Tidak dapat terhubung ke server.');

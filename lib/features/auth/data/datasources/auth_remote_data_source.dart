@@ -2,6 +2,8 @@ import 'package:dio/dio.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' as supabase;
 
 import '../../../../core/supabase/supabase_client.dart';
+import '../models/change_password_request.dart';
+import '../models/change_password_response.dart';
 import '../models/login_request.dart';
 import '../models/reset_password_request.dart';
 
@@ -55,6 +57,20 @@ class AuthRemoteDataSource {
       '/api/auth/reset-password',
       data: request.toJson(),
       options: Options(extra: const <String, dynamic>{'skipAuth': true}),
+    );
+  }
+
+  // Memanggil endpoint ubah password dengan Bearer token user login.
+  Future<ChangePasswordResponse> changePassword(
+    ChangePasswordRequest request,
+  ) async {
+    final response = await _dio.put<Map<String, dynamic>>(
+      '/api/auth/change-password',
+      data: request.toJson(),
+    );
+
+    return ChangePasswordResponse.fromJson(
+      response.data ?? <String, dynamic>{},
     );
   }
 }
