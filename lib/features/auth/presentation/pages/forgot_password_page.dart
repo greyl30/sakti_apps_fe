@@ -114,9 +114,14 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
                   prefixIconPadding: const EdgeInsets.only(left: 15),
                   keyboardType: TextInputType.emailAddress,
                   validator: (value) {
-                    if (value == null || value.trim().isEmpty) {
+                    final email = value?.trim() ?? '';
+                    if (email.isEmpty) {
                       return 'Email wajib diisi';
                     }
+                    final isValidEmail = RegExp(
+                      r'^[^@\s]+@[^@\s]+\.[^@\s]+$',
+                    ).hasMatch(email);
+                    if (!isValidEmail) return 'Format email tidak valid';
                     return null;
                   },
                 ),

@@ -105,6 +105,30 @@ class AuthNotifier extends StateNotifier<AuthState> {
     }
   }
 
+  Future<bool> resetPassword({
+    required String token,
+    required String newPassword,
+    required String confirmPassword,
+  }) async {
+    state = state.copyWith(isLoading: true, clearMessage: true);
+
+    try {
+      await _repository.resetPassword(
+        token: token,
+        newPassword: newPassword,
+        confirmPassword: confirmPassword,
+      );
+      state = state.copyWith(
+        isLoading: false,
+        successMessage: 'Password berhasil direset',
+      );
+      return true;
+    } on AuthException catch (error) {
+      state = state.copyWith(isLoading: false, errorMessage: error.message);
+      return false;
+    }
+  }
+
   Future<void> logout() async {
     // TODO(Backend):
     // Hapus access token dan refresh token sebelum logout.

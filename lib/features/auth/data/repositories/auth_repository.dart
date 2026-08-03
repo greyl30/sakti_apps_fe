@@ -8,6 +8,7 @@ import '../../../../core/supabase/supabase_client.dart';
 import '../../../../core/storage/secure_storage_service.dart';
 import '../datasources/auth_remote_data_source.dart';
 import '../models/login_request.dart';
+import '../models/reset_password_request.dart';
 import '../models/user_model.dart';
 
 // Repository untuk komunikasi data auth
@@ -95,12 +96,45 @@ class AuthRepository {
     try {
       await _remoteDataSource.forgotPassword(email);
     } on DioException catch (error) {
-      throw AuthException(_mapDioError(error));
+      throw AuthException(
+        _mapDioError(
+          error,
+          fallbackMessage: 'Gagal mengirim link reset password.',
+        ),
+      );
+    } on SocketException {
+      throw const AuthException('Tidak dapat terhubung ke server.');
+    }
+  }
+
+  // Reset password menggunakan token dari link reset.
+  Future<void> resetPassword({
+    required String token,
+    required String newPassword,
+    required String confirmPassword,
+  }) async {
+    try {
+      await _remoteDataSource.resetPassword(
+        ResetPasswordRequest(
+          token: token,
+          newPassword: newPassword,
+          confirmPassword: confirmPassword,
+        ),
+      );
+    } on DioException catch (error) {
+      throw AuthException(
+        _mapDioError(error, fallbackMessage: 'Gagal mereset password.'),
+      );
+    } on SocketException {
+      throw const AuthException('Tidak dapat terhubung ke server.');
     }
   }
 
   // Error handling dikelola di repository agar UI tetap sederhana
-  String _mapDioError(DioException error) {
+  String _mapDioError(
+    DioException error, {
+    String fallbackMessage = 'Email atau password salah',
+  }) {
     if (error.type == DioExceptionType.connectionTimeout ||
         error.type == DioExceptionType.sendTimeout ||
         error.type == DioExceptionType.receiveTimeout) {
@@ -113,11 +147,17 @@ class AuthRepository {
     }
 
     final statusCode = error.response?.statusCode;
+    final responseData = error.response?.data;
+    if (responseData is Map<String, dynamic>) {
+      final message = responseData['message']?.toString().trim();
+      if (message != null && message.isNotEmpty) return message;
+    }
+
     if (statusCode != null && statusCode >= 500) {
       return 'Server sedang tidak tersedia.';
     }
 
-    return 'Email atau password salah';
+    return fallbackMessage;
   }
 
   String _mapSupabaseAuthError(supabase.AuthException error) {

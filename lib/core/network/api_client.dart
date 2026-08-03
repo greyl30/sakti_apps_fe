@@ -22,6 +22,11 @@ class ApiClient {
     dio.interceptors.add(
       InterceptorsWrapper(
         onRequest: (options, handler) {
+          if (options.extra['skipAuth'] == true) {
+            handler.next(options);
+            return;
+          }
+
           final accessToken =
               AppSupabaseClient.client.auth.currentSession?.accessToken;
 

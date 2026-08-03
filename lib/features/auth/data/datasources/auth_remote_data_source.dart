@@ -3,6 +3,7 @@ import 'package:supabase_flutter/supabase_flutter.dart' as supabase;
 
 import '../../../../core/supabase/supabase_client.dart';
 import '../models/login_request.dart';
+import '../models/reset_password_request.dart';
 
 // Remote data source untuk memanggil endpoint auth
 class AuthRemoteDataSource {
@@ -39,13 +40,21 @@ class AuthRemoteDataSource {
     return Map<String, dynamic>.from(data);
   }
 
-  // Memanggil endpoint lupa password
+  // Memanggil endpoint lupa password tanpa Bearer token.
   Future<void> forgotPassword(String email) async {
-    // TODO(Supabase):
-    // Migrasikan forgot password ke Supabase Auth pada sprint berikutnya.
     await _dio.post<Map<String, dynamic>>(
       '/api/auth/forgot-password',
       data: {'email': email},
+      options: Options(extra: const <String, dynamic>{'skipAuth': true}),
+    );
+  }
+
+  // Memanggil endpoint reset password tanpa Bearer token.
+  Future<void> resetPassword(ResetPasswordRequest request) async {
+    await _dio.post<Map<String, dynamic>>(
+      '/api/auth/reset-password',
+      data: request.toJson(),
+      options: Options(extra: const <String, dynamic>{'skipAuth': true}),
     );
   }
 }

@@ -10,6 +10,7 @@ import '../../features/attendance/presentation/pages/attendance_verification_pag
 import '../../features/attendance/presentation/pages/attendance_page.dart';
 import '../../features/auth/presentation/pages/forgot_password_page.dart';
 import '../../features/auth/presentation/pages/login_page.dart';
+import '../../features/auth/presentation/pages/reset_password_page.dart';
 import '../../features/auth/presentation/providers/auth_provider.dart';
 import '../../features/history/presentation/pages/history_page.dart';
 import '../../features/leave/presentation/models/leave_form_data.dart';
@@ -44,9 +45,10 @@ const _publicRoutes = {
   RouteName.splash,
   RouteName.login,
   RouteName.forgotPassword,
+  RouteName.resetPassword,
 };
 
-const _authEntryRoutes = {RouteName.login, RouteName.forgotPassword};
+const _authEntryRoutes = {RouteName.login};
 
 const _roleProtectedRoutes = <String, Set<String>>{
   RouteName.managerLeaveApprovals: {'atasan'},
@@ -62,6 +64,13 @@ final appRouter = GoRouter(
   initialLocation: RouteName.splash,
   redirect: (context, state) {
     final location = state.uri.path;
+    final resetPasswordLocation = _resetPasswordLocationFromDeepLink(
+      state.uri,
+    );
+    if (resetPasswordLocation != null) {
+      return resetPasswordLocation;
+    }
+
     final hasSession = AppSupabaseClient.client.auth.currentSession != null;
     final authState = ProviderScope.containerOf(
       context,
@@ -76,7 +85,10 @@ final appRouter = GoRouter(
       return RouteName.login;
     }
 
-    if (hasSession && authState.user == null && location != RouteName.splash) {
+    if (hasSession &&
+        authState.user == null &&
+        location != RouteName.splash &&
+        !isPublicRoute) {
       return RouteName.splash;
     }
 
@@ -102,6 +114,12 @@ final appRouter = GoRouter(
     GoRoute(
       path: RouteName.forgotPassword,
       builder: (context, state) => const ForgotPasswordPage(),
+    ),
+    GoRoute(
+      path: RouteName.resetPassword,
+      builder: (context, state) => ResetPasswordPage(
+        token: _extractResetPasswordToken(state.uri),
+      ),
     ),
     GoRoute(
       path: RouteName.home,
@@ -320,3 +338,30 @@ Set<String>? _allowedRolesFor(String location) {
 }
 
 String _normalizeRole(String? role) => role?.trim().toLowerCase() ?? '';
+
+String? _resetPasswordLocationFromDeepLink(Uri uri) {
+  if (uri.scheme != 'sakti' || uri.host != 'reset-password') return null;
+
+  final token = _extractResetPasswordToken(uri);
+  final query = token.isEmpty
+      ? ''
+      : '?access_token=${Uri.encodeQueryComponent(token)}';
+  return '${RouteName.resetPassword}$query';
+}
+
+String _extractResetPasswordToken(Uri uri) {
+  final queryToken =
+      uri.queryParameters['access_token'] ?? uri.queryParameters['token'];
+  if (queryToken != null && queryToken.trim().isNotEmpty) {
+    return queryToken.trim();
+  }
+
+  final fragment = uri.fragment.trim();
+  if (fragment.isEmpty) return '';
+
+  final queryStart = fragment.contains('?')
+      ? fragment.substring(fragment.indexOf('?') + 1)
+      : fragment;
+  final parameters = Uri.splitQueryString(queryStart);
+  return (parameters['access_token'] ?? parameters['token'] ?? '').trim();
+}
