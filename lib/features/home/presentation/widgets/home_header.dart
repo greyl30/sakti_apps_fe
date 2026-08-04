@@ -25,8 +25,8 @@ class HomeHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 98,
-      padding: const EdgeInsets.fromLTRB(24, 18, 24, 18),
+      height: 104,
+      padding: const EdgeInsets.fromLTRB(28, 18, 25, 18),
       decoration: const BoxDecoration(
         gradient: LinearGradient(
           colors: [AppColors.gradientTop, AppColors.gradientBottom],
@@ -46,7 +46,7 @@ class HomeHeader extends StatelessWidget {
             child: Container(
               width: 50,
               height: 50,
-              padding: const EdgeInsets.all(11),
+              padding: const EdgeInsets.all(13),
               decoration: BoxDecoration(
                 color: Colors.white.withValues(alpha: 0.15),
                 shape: BoxShape.circle,
@@ -76,9 +76,9 @@ class HomeHeader extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
                     color: Colors.white,
-                    fontSize: 18,
-                    fontWeight: FontWeight.w700,
-                    height: 1.1,
+                    fontSize: 20,
+                    fontWeight: FontWeight.w600,
+                    height: 1.4,
                   ),
                 ),
                 const SizedBox(height: 5),
@@ -88,8 +88,8 @@ class HomeHeader extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     color: Colors.white.withValues(alpha: 0.88),
-                    fontSize: 11,
-                    fontWeight: FontWeight.w500,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w400,
                     height: 1,
                   ),
                 ),
@@ -105,8 +105,8 @@ class HomeHeader extends StatelessWidget {
               children: [
                 SvgPicture.asset(
                   AppAssets.iconBelbulat,
-                  width: 40.36,
-                  height: 40.36,
+                  width: 41,
+                  height: 41,
                 ),
                 if (hasUnreadNotifications)
                   Positioned(

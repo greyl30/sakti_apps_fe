@@ -90,7 +90,7 @@ class _WelcomePageState extends ConsumerState<WelcomePage> {
                           style: TextStyle(
                             color: AppColors.primaryRed,
                             fontFamily: 'StackSansHeadline',
-                            fontSize: 39,
+                            fontSize: 48,
                             fontWeight: FontWeight.w700,
                             height: .95,
                           ),
@@ -101,10 +101,10 @@ class _WelcomePageState extends ConsumerState<WelcomePage> {
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             color: AppColors.primaryRed,
-                            fontSize: 12,
+                            fontSize: 14,
                             fontStyle: FontStyle.italic,
                             fontWeight: FontWeight.w500,
-                            height: 1,
+                            height: 1.5,
                           ),
                         ),
                         const Spacer(flex: 16),
@@ -141,31 +141,31 @@ class _WelcomeCtaArea extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: height + 34,
+      height: height + 100,
       child: Stack(
         clipBehavior: Clip.none,
         alignment: Alignment.topCenter,
         children: [
           Positioned(
-            left: 0,
-            right: 0,
-            top: 20,
+            left: 25,
+            right: 25,
+            top: 0,
             child: Container(
               height: height,
               decoration: BoxDecoration(
                 color: AppColors.primaryRed,
-                borderRadius: BorderRadius.circular(13),
+                borderRadius: BorderRadius.circular(15),
               ),
             ),
           ),
           Positioned(
-            top: 0,
+            top: -33,
             child: Container(
               width: overlayWidth,
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 11),
               decoration: BoxDecoration(
                 color: const Color(0xFFFFF1F1),
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(15),
                 boxShadow: [
                   BoxShadow(
                     color: Colors.black.withValues(alpha: .04),
@@ -179,15 +179,15 @@ class _WelcomeCtaArea extends StatelessWidget {
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   color: AppColors.primaryRed,
-                  fontSize: 10,
+                  fontSize: 13,
                   fontWeight: FontWeight.w500,
-                  height: 1.35,
+                  height: 1.6,
                 ),
               ),
             ),
           ),
           Positioned(
-            bottom: 0,
+            bottom: 84,
             child: Material(
               color: Colors.transparent,
               child: InkWell(

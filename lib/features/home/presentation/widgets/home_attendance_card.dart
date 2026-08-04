@@ -41,7 +41,7 @@ class HomeAttendanceCard extends StatelessWidget {
         ),
         const SizedBox(height: 10),
         SizedBox(
-          height: 144,
+          height: 130,
           child: Stack(
             clipBehavior: Clip.none,
             children: [
@@ -50,8 +50,8 @@ class HomeAttendanceCard extends StatelessWidget {
                 right: 0,
                 top: 0,
                 child: Container(
-                  height: 117,
-                  padding: const EdgeInsets.fromLTRB(18, 18, 18, 34),
+                  height: 120,
+                  padding: const EdgeInsets.fromLTRB(18, 18, 18, 50),
                   decoration: BoxDecoration(
                     color: AppColors.whiteBackground,
                     borderRadius: BorderRadius.circular(15),
@@ -72,9 +72,9 @@ class HomeAttendanceCard extends StatelessWidget {
                 ),
               ),
               Positioned(
-                left: 18,
-                right: 18,
-                bottom: 0,
+                left: 20,
+                right: 20,
+                bottom: -10,
                 child: Row(
                   children: [
                     Expanded(
@@ -85,7 +85,7 @@ class HomeAttendanceCard extends StatelessWidget {
                         onTap: onCheckInTap,
                       ),
                     ),
-                    const SizedBox(width: 14),
+                    const SizedBox(width: 10),
                     Expanded(
                       child: _AttendanceActionButton(
                         label: 'Presensi Keluar',
@@ -144,8 +144,8 @@ class _WorkScheduleBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 47,
-      padding: const EdgeInsets.symmetric(horizontal: 14),
+      height: 30,
+      padding: const EdgeInsets.symmetric(horizontal: 16),
       decoration: BoxDecoration(
         color: AppColors.primaryRed,
         borderRadius: BorderRadius.circular(15),
@@ -154,11 +154,11 @@ class _WorkScheduleBar extends StatelessWidget {
         children: [
           SvgPicture.asset(
             AppAssets.iconCalendar,
-            width: 18,
-            height: 18,
+            width: 22,
+            height: 22,
             colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: 5),
           Expanded(
             child: Text(
               todayLabel,
@@ -172,26 +172,26 @@ class _WorkScheduleBar extends StatelessWidget {
             ),
           ),
           Transform.translate(
-            offset: const Offset(-12, 0),
+            offset: const Offset(0, 0),
             child: Container(
               width: 1,
-              height: 28,
+              height: 32,
               color: Colors.white.withValues(alpha: 0.65),
             ),
           ),
           const SizedBox(width: 11),
           SvgPicture.asset(
             AppAssets.iconJam,
-            width: 18,
-            height: 18,
+            width: 22,
+            height: 22,
             colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: 7),
           Text(
             isHoliday ? '-' : '08.00 - 16.30',
             style: TextStyle(
               color: Colors.white,
-              fontSize: 12,
+              fontSize: 13,
               fontWeight: FontWeight.w700,
             ),
           ),
@@ -222,13 +222,13 @@ class _AttendanceActionButton extends StatelessWidget {
         : Colors.white.withValues(alpha: .75);
 
     return SizedBox(
-      height: 46,
+      height: 48,
       child: FilledButton(
         onPressed: isEnabled ? onTap : null,
         style: FilledButton.styleFrom(
           backgroundColor: backgroundColor,
           foregroundColor: foregroundColor,
-          padding: const EdgeInsets.symmetric(horizontal: 12),
+          padding: const EdgeInsets.symmetric(horizontal: 8),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(26),
           ),
@@ -242,20 +242,20 @@ class _AttendanceActionButton extends StatelessWidget {
               height: 16,
               colorFilter: ColorFilter.mode(foregroundColor, BlendMode.srcIn),
             ),
-            const SizedBox(width: 6),
+            const SizedBox(width: 5),
             Flexible(
               child: Text(
                 label,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: const TextStyle(
-                  fontSize: 10,
+                  fontSize: 13,
                   fontWeight: FontWeight.w700,
                 ),
               ),
             ),
             const SizedBox(width: 4),
-            Icon(Icons.chevron_right_rounded, size: 17, color: foregroundColor),
+            Icon(Icons.chevron_right_rounded, size: 20, color: foregroundColor),
           ],
         ),
       ),

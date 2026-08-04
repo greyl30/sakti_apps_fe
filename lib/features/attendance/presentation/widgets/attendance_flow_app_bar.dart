@@ -19,8 +19,8 @@ class AttendanceFlowAppBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 96,
-      padding: const EdgeInsets.fromLTRB(22, 18, 24, 18),
+      height: 104,
+      padding: const EdgeInsets.fromLTRB(38, 18, 24, 18),
       decoration: const BoxDecoration(
         gradient: LinearGradient(
           colors: [AppColors.gradientTop, AppColors.gradientBottom],
@@ -45,7 +45,7 @@ class AttendanceFlowAppBar extends StatelessWidget {
               context.go(RouteName.attendance);
             },
             borderRadius: BorderRadius.circular(22),
-            child: SvgPicture.asset(AppAssets.iconBack, width: 40, height: 40),
+            child: SvgPicture.asset(AppAssets.iconBack, width: 41, height: 41),
           ),
           const SizedBox(width: 16),
           Expanded(
@@ -59,9 +59,9 @@ class AttendanceFlowAppBar extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
                     color: Colors.white,
-                    fontSize: 22,
+                    fontSize: 26,
                     fontWeight: FontWeight.w700,
-                    height: 1.1,
+                    height: 1.2,
                   ),
                 ),
                 const SizedBox(height: 5),
@@ -71,7 +71,7 @@ class AttendanceFlowAppBar extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     color: Colors.white.withValues(alpha: .92),
-                    fontSize: 12,
+                    fontSize: 14,
                     fontWeight: FontWeight.w500,
                     height: 1,
                   ),

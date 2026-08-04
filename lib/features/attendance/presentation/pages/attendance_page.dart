@@ -186,7 +186,7 @@ class _AttendanceHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       height: 104,
-      padding: const EdgeInsets.fromLTRB(22, 18, 24, 20),
+      padding: const EdgeInsets.fromLTRB(38, 18, 24, 20),
       decoration: const BoxDecoration(
         gradient: LinearGradient(
           colors: [AppColors.gradientTop, AppColors.gradientBottom],
@@ -203,9 +203,9 @@ class _AttendanceHeader extends StatelessWidget {
           InkWell(
             onTap: onBackPressed,
             borderRadius: BorderRadius.circular(22),
-            child: SvgPicture.asset(AppAssets.iconBack, width: 40, height: 40),
+            child: SvgPicture.asset(AppAssets.iconBack, width: 41, height: 41),
           ),
-          const SizedBox(width: 14),
+          const SizedBox(width: 16),
           const Expanded(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -217,9 +217,9 @@ class _AttendanceHeader extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     color: Colors.white,
-                    fontSize: 22,
+                    fontSize: 26,
                     fontWeight: FontWeight.w700,
-                    height: 1.1,
+                    height: 1.2,
                   ),
                 ),
                 SizedBox(height: 5),
@@ -229,7 +229,7 @@ class _AttendanceHeader extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     color: Colors.white,
-                    fontSize: 12,
+                    fontSize: 14,
                     fontWeight: FontWeight.w500,
                     height: 1,
                   ),
@@ -274,7 +274,7 @@ class _AttendanceOptionCard extends StatelessWidget {
         onTap: isEnabled ? onTap : null,
         borderRadius: BorderRadius.circular(12),
         child: Ink(
-          height: 100,
+          height: 112,
           padding: const EdgeInsets.symmetric(horizontal: 24),
           decoration: BoxDecoration(
             color: isEnabled ? backgroundColor : const Color(0xFFF3F4F6),
@@ -286,8 +286,8 @@ class _AttendanceOptionCard extends StatelessWidget {
           child: Row(
             children: [
               Container(
-                width: 55,
-                height: 55,
+                width: 60,
+                height: 60,
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
                   color: isEnabled ? iconBackgroundColor : AppColors.gray,
@@ -295,8 +295,8 @@ class _AttendanceOptionCard extends StatelessWidget {
                 ),
                 child: SvgPicture.asset(
                   icon,
-                  width: 25,
-                  height: 25,
+                  width: 30,
+                  height: 30,
                   colorFilter: ColorFilter.mode(
                     isEnabled ? foregroundColor : Colors.white,
                     BlendMode.srcIn,
@@ -317,12 +317,12 @@ class _AttendanceOptionCard extends StatelessWidget {
                         color: isEnabled
                             ? foregroundColor
                             : const Color(0xFFB7BBC2),
-                        fontSize: 13,
+                        fontSize: 14,
                         fontWeight: FontWeight.w600,
                         height: 1,
                       ),
                     ),
-                    const SizedBox(height: 10),
+                    const SizedBox(height: 7),
                     Text(
                       title,
                       maxLines: 1,
@@ -331,7 +331,7 @@ class _AttendanceOptionCard extends StatelessWidget {
                         color: isEnabled
                             ? foregroundColor
                             : const Color(0xFF8F949C),
-                        fontSize: 21,
+                        fontSize: 23,
                         fontWeight: FontWeight.w700,
                         height: 1,
                       ),

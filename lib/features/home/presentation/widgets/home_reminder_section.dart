@@ -22,6 +22,7 @@ class HomeReminderSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        const SizedBox(height: 20),
         const Text(
           'Pengingat',
           style: TextStyle(
@@ -30,7 +31,7 @@ class HomeReminderSection extends StatelessWidget {
             color: Colors.black,
           ),
         ),
-        const SizedBox(height: 10),
+        const SizedBox(height: 13),
         Container(
           decoration: BoxDecoration(
             color: Colors.white,
@@ -57,13 +58,13 @@ class HomeReminderSection extends StatelessWidget {
                 : [
                     _ReminderTile(
                       title: 'Lengkapi Presensi Masuk',
-                      subtitle: 'Segera lakukan sebelum pukul 08.00',
+                      subtitle: 'Segera lakukan sebelum pukul 08.30',
                       onTap: onCheckInReminderTap,
                     ),
                     const Divider(
                       height: 1,
-                      indent: 20,
-                      endIndent: 20,
+                      indent: 18,
+                      endIndent: 18,
                       color: AppColors.gray,
                     ),
                     _ReminderTile(
@@ -94,14 +95,14 @@ class _ReminderTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(14),
+      borderRadius: BorderRadius.circular(15),
       child: Padding(
         padding: const EdgeInsets.fromLTRB(16, 14.5, 12, 14.5),
         child: Row(
           children: [
             Container(
-              width: 32,
-              height: 32,
+              width: 40,
+              height: 40,
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
                 color: const Color(0xFFFFEFED),
@@ -125,8 +126,8 @@ class _ReminderTile extends StatelessWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w700,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
                       color: Colors.black,
                     ),
                   ),
@@ -136,7 +137,7 @@ class _ReminderTile extends StatelessWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
-                      fontSize: 10,
+                      fontSize: 13,
                       fontWeight: FontWeight.w500,
                       color: Color(0xFF8A8A8A),
                     ),
@@ -145,11 +146,11 @@ class _ReminderTile extends StatelessWidget {
               ),
             ),
             Transform.translate(
-              offset: const Offset(-12, 0),
+              offset: const Offset(-15, 0),
               child: SvgPicture.asset(
                 AppAssets.iconNext,
-                width: 12,
-                height: 12,
+                width: 13,
+                height: 13,
                 colorFilter: const ColorFilter.mode(
                   Color(0xFF9B9B9B),
                   BlendMode.srcIn,

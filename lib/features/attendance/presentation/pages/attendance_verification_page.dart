@@ -455,11 +455,11 @@ class _CheckInVerificationPageState extends State<CheckInVerificationPage>
             ),
             Expanded(
               child: ListView(
-                padding: const EdgeInsets.fromLTRB(24, 24, 24, 28),
+                padding: const EdgeInsets.fromLTRB(20, 24, 24, 28),
                 children: [
                   // Preview kamera depan
                   Container(
-                    height: 350,
+                    height: 355,
                     decoration: BoxDecoration(
                       color: const Color(0xFF101318),
                       borderRadius: BorderRadius.circular(15),
@@ -486,7 +486,7 @@ class _CheckInVerificationPageState extends State<CheckInVerificationPage>
                   const SizedBox(height: 25),
                   // Card Tips Verifikasi
                   Container(
-                    padding: const EdgeInsets.fromLTRB(18, 16, 18, 16),
+                    padding: const EdgeInsets.fromLTRB(20, 16, 18, 16),
                     decoration: BoxDecoration(
                       color: const Color(0xFFEAF8FD),
                       borderRadius: BorderRadius.circular(15),
@@ -497,14 +497,14 @@ class _CheckInVerificationPageState extends State<CheckInVerificationPage>
                       children: [
                         SvgPicture.asset(
                           AppAssets.iconTips,
-                          width: 18,
-                          height: 18,
+                          width: 20,
+                          height: 20,
                           colorFilter: const ColorFilter.mode(
                             Color(0xFF4C9CB2),
                             BlendMode.srcIn,
                           ),
                         ),
-                        const SizedBox(width: 10),
+                        const SizedBox(width: 12),
                         const Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -513,19 +513,19 @@ class _CheckInVerificationPageState extends State<CheckInVerificationPage>
                                 'Tips Verifikasi',
                                 style: TextStyle(
                                   color: Color(0xFF4C9CB2),
-                                  fontSize: 12,
+                                  fontSize: 14,
                                   fontWeight: FontWeight.w700,
                                   height: 1,
                                 ),
                               ),
                               SizedBox(height: 8),
                               Text(
-                                'Pastikan pencahayaan cukup, wajah terlihat jelas, dan lokasi aktif.',
+                                'Pastikan pencahayaan cukup, lepas masker atau kacamata hitam, posisikan wajah dengan benar, dan aktifkan GPS',
                                 style: TextStyle(
                                   color: Color(0xFF6A7B83),
-                                  fontSize: 10,
+                                  fontSize: 12,
                                   fontWeight: FontWeight.w500,
-                                  height: 1.35,
+                                  height: 1.37,
                                 ),
                               ),
                             ],
@@ -534,7 +534,7 @@ class _CheckInVerificationPageState extends State<CheckInVerificationPage>
                       ],
                     ),
                   ),
-                  const SizedBox(height: 22),
+                  const SizedBox(height: 24),
                   // Tombol mulai verifikasi
                   AttendancePrimaryButton(
                     label: _isTakingPicture
