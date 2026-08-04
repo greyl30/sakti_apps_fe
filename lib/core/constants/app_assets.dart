@@ -44,6 +44,8 @@ class AppAssets {
   static const iconIzin = 'assets/icons/izin.svg';
   static const iconAdd = 'assets/icons/add.svg';
   static const iconLogout = 'assets/icons/logout.svg';
+  static const iconSaktilogo = 'assets/icons/saktilogo.svg';
+  static const iconBackmulai = 'assets/icons/backmulai.svg';
 
   static const jabatan = iconJabatan;
   static const divisi = iconDivisi;

@@ -39,9 +39,11 @@ import '../../features/profile/presentation/pages/profile_page.dart';
 import '../../features/profile/presentation/pages/telegram_connect_page.dart';
 import '../../features/profile/presentation/pages/telegram_success_page.dart';
 import '../../features/splash/presentation/pages/splash_page.dart';
+import '../../features/splash/presentation/pages/welcome_page.dart';
 import 'route_name.dart';
 
 const _publicRoutes = {
+  RouteName.welcome,
   RouteName.splash,
   RouteName.login,
   RouteName.forgotPassword,
@@ -61,12 +63,10 @@ const _roleProtectedRoutes = <String, Set<String>>{
 };
 
 final appRouter = GoRouter(
-  initialLocation: RouteName.splash,
+  initialLocation: RouteName.welcome,
   redirect: (context, state) {
     final location = state.uri.path;
-    final resetPasswordLocation = _resetPasswordLocationFromDeepLink(
-      state.uri,
-    );
+    final resetPasswordLocation = _resetPasswordLocationFromDeepLink(state.uri);
     if (resetPasswordLocation != null) {
       return resetPasswordLocation;
     }
@@ -89,7 +89,7 @@ final appRouter = GoRouter(
         authState.user == null &&
         location != RouteName.splash &&
         !isPublicRoute) {
-      return RouteName.splash;
+      return RouteName.welcome;
     }
 
     if (hasSession && isAuthEntryRoute) {
@@ -104,6 +104,10 @@ final appRouter = GoRouter(
   },
   routes: [
     GoRoute(
+      path: RouteName.welcome,
+      builder: (context, state) => const WelcomePage(),
+    ),
+    GoRoute(
       path: RouteName.splash,
       builder: (context, state) => const SplashPage(),
     ),
@@ -117,9 +121,8 @@ final appRouter = GoRouter(
     ),
     GoRoute(
       path: RouteName.resetPassword,
-      builder: (context, state) => ResetPasswordPage(
-        token: _extractResetPasswordToken(state.uri),
-      ),
+      builder: (context, state) =>
+          ResetPasswordPage(token: _extractResetPasswordToken(state.uri)),
     ),
     GoRoute(
       path: RouteName.home,

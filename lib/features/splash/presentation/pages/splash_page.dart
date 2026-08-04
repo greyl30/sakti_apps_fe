@@ -5,8 +5,8 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/constants/app_assets.dart';
 import '../../../../core/router/route_name.dart';
+import '../../../../core/storage/onboarding_storage_service.dart';
 import '../../../../core/theme/app_colors.dart';
-import '../../../auth/presentation/providers/auth_provider.dart';
 import '../widgets/splash_bottom_button.dart';
 import '../widgets/splash_content.dart';
 import '../widgets/splash_indicator.dart';
@@ -45,24 +45,9 @@ class _SplashPageState extends ConsumerState<SplashPage> {
   ];
 
   @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _restoreSession();
-    });
-  }
-
-  @override
   void dispose() {
     _pageController.dispose();
     super.dispose();
-  }
-
-  Future<void> _restoreSession() async {
-    final hasSession = await ref.read(authProvider.notifier).restoreSession();
-    if (!mounted) return;
-
-    context.go(hasSession ? RouteName.home : RouteName.login);
   }
 
   void _goToLogin() {
@@ -78,9 +63,15 @@ class _SplashPageState extends ConsumerState<SplashPage> {
     );
   }
 
+  Future<void> _completeOnboarding() async {
+    await OnboardingStorageService.setCompleted();
+    if (!mounted) return;
+    _goToLogin();
+  }
+
   void _handlePrimaryButton() {
     if (_currentPage == _items.length - 1) {
-      _goToLogin();
+      _completeOnboarding();
       return;
     }
 

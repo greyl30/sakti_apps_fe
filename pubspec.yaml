@@ -50,6 +50,7 @@ dependencies:
 
   # Secure Storage
   flutter_secure_storage: ^9.2.4
+  shared_preferences: ^2.5.5
 
   # JSON
   json_annotation: ^4.9.0
@@ -124,6 +125,11 @@ flutter:
         - asset: assets/fonts/Poppins-SemiBold.ttf
           weight: 600
         - asset: assets/fonts/Poppins-Bold.ttf
+          weight: 700
+
+    - family: StackSansHeadline
+      fonts:
+        - asset: assets/fonts/StackSansHeadline-Bold.ttf
           weight: 700
 
   # For details regarding fonts from package dependencies,

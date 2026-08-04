@@ -1,5 +1,6 @@
 class RouteName {
-  static const splash = '/';
+  static const welcome = '/';
+  static const splash = '/onboarding';
   static const login = '/login';
   static const forgotPassword = '/forgot-password';
   static const resetPassword = '/reset-password';
