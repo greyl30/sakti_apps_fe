@@ -71,16 +71,6 @@ class _HrdLeaveFinalizationListPageState
                         () => _selectedType = ManagerApprovalType.sickLeave,
                       ),
                     ),
-                    const SizedBox(width: 8),
-                    HistoryFilterChip(
-                      label: 'Cuti Darurat',
-                      isSelected:
-                          _selectedType == ManagerApprovalType.emergencyLeave,
-                      onTap: () => setState(
-                        () =>
-                            _selectedType = ManagerApprovalType.emergencyLeave,
-                      ),
-                    ),
                   ],
                 ),
               ),

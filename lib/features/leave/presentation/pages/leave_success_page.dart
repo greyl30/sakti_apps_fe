@@ -35,14 +35,13 @@ class LeaveSuccessPage extends ConsumerWidget {
       backgroundColor: AppColors.whiteBackground,
       body: SafeArea(
         child: ListView(
-          padding: EdgeInsets.fromLTRB(24, isRejected ? 40 : 54, 24, 28),
+          padding: const EdgeInsets.fromLTRB(24, 45, 24, 28),
           children: [
             // Tombol kembali tanpa Top AppBar.
             Align(
               alignment: Alignment.centerLeft,
               child: InkWell(
-                onTap: () =>
-                    isRejected ? context.go(RouteName.leave) : _goBack(context),
+                onTap: () => _goBack(context),
                 customBorder: const CircleBorder(),
                 child: SvgPicture.asset(AppAssets.back2, width: 41, height: 41),
               ),

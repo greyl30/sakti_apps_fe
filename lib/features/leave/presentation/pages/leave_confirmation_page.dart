@@ -318,7 +318,7 @@ class LeaveConfirmationPage extends ConsumerWidget {
                   if (hasNoWorkdays) ...[
                     const SizedBox(height: 12),
                     const Text(
-                      'Rentang tanggal yang dipilih tidak memiliki hari kerja.',
+                      'Rentang tanggal yang dipilih bukan hari kerja.',
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         color: AppColors.primaryRed,

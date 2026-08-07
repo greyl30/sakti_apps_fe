@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/constants/app_assets.dart';
 import '../../../../core/router/route_name.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../models/leave_request_status.dart';
@@ -23,9 +25,17 @@ class LeaveCancelSuccessPage extends StatelessWidget {
       backgroundColor: AppColors.whiteBackground,
       body: SafeArea(
         child: ListView(
-          padding: const EdgeInsets.fromLTRB(24, 110, 24, 28),
+          padding: const EdgeInsets.fromLTRB(24, 45, 24, 28),
           children: [
-            // Halaman sukses pembatalan tanpa Top AppBar.
+            Align(
+              alignment: Alignment.centerLeft,
+              child: InkWell(
+                onTap: () => _goBack(context),
+                customBorder: const CircleBorder(),
+                child: SvgPicture.asset(AppAssets.back2, width: 41, height: 41),
+              ),
+            ),
+            const SizedBox(height: 20),
             const LeaveSuccessHeader(
               title: 'Pembatalan Berhasil!',
               description: 'Kuota cuti yang sebelumnya akan dikembalikan',
@@ -35,11 +45,20 @@ class LeaveCancelSuccessPage extends StatelessWidget {
             const SizedBox(height: 28),
             LeavePrimaryButton(
               label: 'Kembali ke Beranda',
-              onPressed: () => context.go(RouteName.leave),
+              onPressed: () => context.go(RouteName.home),
             ),
           ],
         ),
       ),
     );
+  }
+
+  void _goBack(BuildContext context) {
+    if (context.canPop()) {
+      context.pop();
+      return;
+    }
+
+    context.go(RouteName.leave);
   }
 }

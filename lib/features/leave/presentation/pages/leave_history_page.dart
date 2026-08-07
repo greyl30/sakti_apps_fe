@@ -193,7 +193,7 @@ class _LeaveHistoryMessageList extends StatelessWidget {
           textAlign: TextAlign.center,
           style: const TextStyle(
             color: Color(0xFF8A8F98),
-            fontSize: 12,
+            fontSize: 13,
             fontWeight: FontWeight.w500,
           ),
         ),

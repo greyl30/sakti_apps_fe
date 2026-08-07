@@ -56,6 +56,7 @@ class LeaveRequestResponse {
     this.finalizedAt,
     this.pdfUrl,
     this.cancelReason,
+    this.rejectionReason,
     this.cancelledAt,
     this.createdAt,
     this.updatedAt,
@@ -80,6 +81,7 @@ class LeaveRequestResponse {
   final DateTime? finalizedAt;
   final String? pdfUrl;
   final String? cancelReason;
+  final String? rejectionReason;
   final DateTime? cancelledAt;
   final DateTime? createdAt;
   final DateTime? updatedAt;
@@ -105,6 +107,17 @@ class LeaveRequestResponse {
       finalizedAt: _readNullableDate(json['tanggal_difinalisasi']),
       pdfUrl: _readNullableString(json['url_pdf']),
       cancelReason: _readNullableString(json['alasan_batal']),
+      rejectionReason: _readFirstNullableString(json, const [
+        'alasan_ditolak',
+        'alasan_tolak',
+        'alasan_reject',
+        'alasan_penolakan',
+        'alasan_ditolak_atasan',
+        'alasan_penolakan_atasan',
+        'catatan_penolakan',
+        'keterangan_penolakan',
+        'catatan_atasan',
+      ]),
       cancelledAt: _readNullableDate(json['tanggal_dibatalkan']),
       createdAt: _readNullableDate(json['dibuat_pada']),
       updatedAt: _readNullableDate(json['diperbarui_pada']),
@@ -287,7 +300,9 @@ class LeaveRequestResponse {
       hrdApprovalDate: finalizedAt,
       cancelledDate: cancelledAt,
       statusUpdatedDate: updatedAt,
-      resultReason: cancelReason,
+      resultReason: approvalStatus == LeaveApprovalStatus.rejected
+          ? rejectionReason ?? cancelReason
+          : cancelReason,
       skipsHrdFinalization: directlyFinal,
       totalDaysOverride: totalDays,
     );
@@ -408,6 +423,15 @@ String? _readNullableString(Object? value) {
   final text = value?.toString().trim();
   if (text == null || text.isEmpty) return null;
   return text;
+}
+
+String? _readFirstNullableString(Map<String, dynamic> json, List<String> keys) {
+  for (final key in keys) {
+    final value = _readNullableString(json[key]);
+    if (value != null) return value;
+  }
+
+  return null;
 }
 
 int _readInt(Object? value) {
