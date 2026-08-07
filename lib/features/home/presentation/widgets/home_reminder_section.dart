@@ -22,7 +22,7 @@ class HomeReminderSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const SizedBox(height: 20),
+        const SizedBox(height: 12),
         const Text(
           'Pengingat',
           style: TextStyle(

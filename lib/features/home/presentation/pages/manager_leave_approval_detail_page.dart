@@ -52,7 +52,10 @@ class ManagerLeaveApprovalDetailPage extends ConsumerWidget {
                     isPrimary: false,
                     onPressed: actionState.isLoading
                         ? null
-                        : () => _showRejectDialog(context),
+                        : () => context.push(
+                            RouteName.managerLeaveRejectReason,
+                            extra: approval,
+                          ),
                   ),
                 ],
               ),
@@ -89,19 +92,6 @@ class ManagerLeaveApprovalDetailPage extends ConsumerWidget {
           Navigator.of(dialogContext).pop();
           context.go(RouteName.managerLeaveApprovals);
         },
-      ),
-    );
-  }
-
-  void _showRejectDialog(BuildContext context) {
-    showDialog<void>(
-      context: context,
-      builder: (dialogContext) => ManagerRejectConfirmationDialog(
-        onConfirm: () {
-          Navigator.of(dialogContext).pop();
-          context.push(RouteName.managerLeaveRejectReason, extra: approval);
-        },
-        onCancel: () => Navigator.of(dialogContext).pop(),
       ),
     );
   }

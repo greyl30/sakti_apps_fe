@@ -126,6 +126,27 @@ class LeaveRequestResponse {
     return subType.trim().toLowerCase() == 'dispensasi';
   }
 
+  bool coversDate(DateTime date) {
+    final target = DateTime(date.year, date.month, date.day);
+    final start = DateTime(startDate.year, startDate.month, startDate.day);
+    final end = DateTime(endDate.year, endDate.month, endDate.day);
+
+    return !target.isBefore(start) && !target.isAfter(end);
+  }
+
+  bool get blocksAttendanceReminder {
+    final normalized = status.trim().toLowerCase();
+    if (_isRejectedStatus(normalized) || _isCanceledStatus(normalized)) {
+      return false;
+    }
+
+    if (isDispensation) {
+      return _isApprovedStatus(normalized);
+    }
+
+    return approvalStatus == LeaveApprovalStatus.approved;
+  }
+
   LeaveApprovalStatus get approvalStatus {
     if (isDispensation) return LeaveApprovalStatus.approved;
 
@@ -303,15 +324,40 @@ String _mapPresentationTypeToApi(String value) {
 }
 
 String _mapApiTypeToPresentation(String value) {
-  switch (value.trim().toLowerCase()) {
+  final normalized = value.trim().toLowerCase();
+  switch (normalized) {
+    case 'cuti_sakit':
+    case 'cuti sakit':
     case 'sakit':
-      return 'Sakit';
+      return 'Cuti Sakit';
     case 'dispensasi':
       return 'Dispensasi';
+    case 'cuti_tahunan':
+    case 'cuti tahunan':
+      return 'Cuti Tahunan';
     case 'izin':
-    default:
       return 'Izin';
   }
+
+  return _titleCaseApiLabel(value);
+}
+
+String _titleCaseApiLabel(String value) {
+  final words = value
+      .trim()
+      .replaceAll(RegExp(r'[_-]+'), ' ')
+      .split(RegExp(r'\s+'))
+      .where((word) => word.isNotEmpty)
+      .toList();
+
+  if (words.isEmpty) return 'Izin';
+
+  return words
+      .map((word) {
+        if (word.length == 1) return word.toUpperCase();
+        return '${word[0].toUpperCase()}${word.substring(1).toLowerCase()}';
+      })
+      .join(' ');
 }
 
 LeaveHistoryStatus _mapApiStatusToHistoryStatus(String value) {

@@ -11,6 +11,7 @@ import '../../../home/presentation/providers/hrd_leave_finalization_provider.dar
 import '../models/leave_form_data.dart';
 import '../models/leave_request_status.dart';
 import '../providers/leave_submit_provider.dart';
+import '../utils/leave_workday_calculator.dart';
 import '../widgets/leave_list_item.dart';
 import '../widgets/leave_top_bar.dart';
 
@@ -64,8 +65,8 @@ class LeaveConfirmationPage extends ConsumerWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               Container(
-                width: 55,
-                height: 55,
+                width: 65,
+                height: 65,
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
                   color: const Color(0xFFEAF8FD),
@@ -73,8 +74,8 @@ class LeaveConfirmationPage extends ConsumerWidget {
                 ),
                 child: SvgPicture.asset(
                   AppAssets.iconCheck,
-                  width: 30,
-                  height: 30,
+                  width: 40,
+                  height: 40,
                   colorFilter: const ColorFilter.mode(
                     AppColors.secondaryBlue,
                     BlendMode.srcIn,
@@ -97,8 +98,8 @@ class LeaveConfirmationPage extends ConsumerWidget {
               const SizedBox(height: 10),
               Text(
                 isDispensation
-                    ? 'Dispensasi telah tercatat dalam sistem. Notifikasi telah dikirim kepada Atasan dan HRD.'
-                    : 'Pengajuan cuti Anda telah berhasil dikirim dan sedang menunggu proses persetujuan.',
+                    ? 'Dispensasi telah tercatat dalam sistem. Notifikasi telah dikirim kepada Atasan.'
+                    : 'Pengajuan cuti Anda telah berhasil dikirim dan sedang dalam proses persetujuan.',
                 textAlign: TextAlign.center,
                 style: const TextStyle(
                   color: Color(0xFF8A8F98),
@@ -131,7 +132,7 @@ class LeaveConfirmationPage extends ConsumerWidget {
                     'OK',
                     style: TextStyle(
                       color: Colors.white,
-                      fontSize: 12,
+                      fontSize: 14,
                       fontWeight: FontWeight.w800,
                     ),
                   ),
@@ -150,18 +151,35 @@ class LeaveConfirmationPage extends ConsumerWidget {
     final submitState = ref.watch(leaveSubmitProvider);
     final balance = ref.watch(leaveBalanceProvider);
     final balanceData = balance.valueOrNull;
+    final holidays = ref.watch(activeLeaveHolidayDatesProvider);
+    final holidayDates = holidays.valueOrNull;
+    final totalDays = holidayDates == null
+        ? data.totalWorkdays
+        : calculateLeaveWorkdays(
+            startDate: data.startDate,
+            endDate: data.endDate,
+            holidays: holidayDates,
+          );
+    final isHolidayLoading = holidays.isLoading && holidayDates == null;
+    final isHolidayError = holidays.hasError && holidayDates == null;
+    final hasNoWorkdays = totalDays != null && totalDays <= 0;
     final isBalanceLoading = balance.isLoading && balanceData == null;
     final remainingAfterRequest = balanceData == null
         ? null
-        : _remainingAfterRequest(balanceData.remainingLeave, data.totalDays);
+        : _remainingAfterRequest(balanceData.remainingLeave, totalDays ?? 0);
     final availableRequestQuota = balanceData?.availableRequestQuota;
-    final isDispensationDurationExceeded = isDispensation && data.totalDays > 2;
+    final isDispensationDurationExceeded =
+        isDispensation && totalDays != null && totalDays > 2;
     final isQuotaExceeded =
         !isDispensation &&
+        totalDays != null &&
         availableRequestQuota != null &&
-        data.totalDays > availableRequestQuota;
+        totalDays > availableRequestQuota;
     final canSubmit =
         !submitState.isLoading &&
+        totalDays != null &&
+        totalDays > 0 &&
+        !isHolidayError &&
         !isDispensationDurationExceeded &&
         (isDispensation || availableRequestQuota != null) &&
         !isQuotaExceeded;
@@ -174,12 +192,8 @@ class LeaveConfirmationPage extends ConsumerWidget {
           children: [
             // Top AppBar halaman konfirmasi pengajuan
             LeaveTopBar(
-              title: isDispensation
-                  ? 'Konfirmasi Pengajuan Dispensasi'
-                  : 'Konfirmasi Pengajuan',
-              subtitle: isDispensation
-                  ? 'Konfirmasi pengajuan dispensasi Anda'
-                  : 'Konfirmasi pengajuan cuti Anda',
+              title: 'Konfirmasi Pengajuan',
+              subtitle: 'Konfirmasi pengajuan Anda',
             ),
             Expanded(
               child: ListView(
@@ -209,7 +223,7 @@ class LeaveConfirmationPage extends ConsumerWidget {
                               : 'RINGKASAN PENGAJUAN CUTI',
                           style: const TextStyle(
                             color: Color(0xFF8A8F98),
-                            fontSize: 12,
+                            fontSize: 15,
                             fontWeight: FontWeight.w800,
                           ),
                         ),
@@ -229,7 +243,11 @@ class LeaveConfirmationPage extends ConsumerWidget {
                         _SummaryRow(
                           icon: AppAssets.iconDurasi,
                           label: 'Durasi',
-                          value: '${data.totalDays} hari kerja',
+                          value: totalDays == null
+                              ? isHolidayLoading
+                                    ? 'Menghitung...'
+                                    : '-'
+                              : '$totalDays hari kerja',
                         ),
                         const SizedBox(height: 14),
                         if (!isDispensation) ...[
@@ -246,7 +264,7 @@ class LeaveConfirmationPage extends ConsumerWidget {
                         ],
                         _SummaryRow(
                           icon: AppAssets.iconAlasan,
-                          label: 'Alasan',
+                          label: 'Jenis Cuti',
                           value: data.type,
                         ),
                       ],
@@ -264,18 +282,18 @@ class LeaveConfirmationPage extends ConsumerWidget {
                       children: [
                         SvgPicture.asset(
                           AppAssets.iconInfo,
-                          width: 30,
-                          height: 30,
+                          width: 38,
+                          height: 38,
                         ),
                         const SizedBox(width: 12),
                         Expanded(
                           child: Text(
                             isDispensation
-                                ? 'Setelah diklik, dispensasi akan langsung tercatat dalam sistem serta notifikasi akan dikirim kepada Atasan dan HRD.'
-                                : 'Setelah diklik, pengajuan akan dikirim ke atasan Anda untuk mendapat persetujuan.',
+                                ? 'Setelah diklik, dispensasi akan langsung tercatat dalam sistem serta notifikasi akan dikirim kepada Atasan.'
+                                : 'Setelah diklik, pengajuan akan dikirim ke Atasan dan HRD untuk mendapat persetujuan.',
                             style: const TextStyle(
                               color: Color(0xFF5F6972),
-                              fontSize: 11,
+                              fontSize: 13,
                               fontWeight: FontWeight.w500,
                               height: 1.5,
                             ),
@@ -291,7 +309,33 @@ class LeaveConfirmationPage extends ConsumerWidget {
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         color: AppColors.primaryRed,
-                        fontSize: 11,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                        height: 1.35,
+                      ),
+                    ),
+                  ],
+                  if (hasNoWorkdays) ...[
+                    const SizedBox(height: 12),
+                    const Text(
+                      'Rentang tanggal yang dipilih tidak memiliki hari kerja.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: AppColors.primaryRed,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                        height: 1.35,
+                      ),
+                    ),
+                  ],
+                  if (isHolidayError) ...[
+                    const SizedBox(height: 12),
+                    const Text(
+                      'Data hari libur belum dapat dimuat.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: AppColors.primaryRed,
+                        fontSize: 13,
                         fontWeight: FontWeight.w700,
                         height: 1.35,
                       ),
@@ -304,7 +348,7 @@ class LeaveConfirmationPage extends ConsumerWidget {
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         color: AppColors.primaryRed,
-                        fontSize: 11,
+                        fontSize: 13,
                         fontWeight: FontWeight.w700,
                         height: 1.35,
                       ),
@@ -376,8 +420,8 @@ class _SummaryRow extends StatelessWidget {
     return Row(
       children: [
         Container(
-          width: 36,
-          height: 36,
+          width: 40,
+          height: 40,
           alignment: Alignment.center,
           decoration: BoxDecoration(
             color: const Color(0xFFEAF8FD),
@@ -385,8 +429,8 @@ class _SummaryRow extends StatelessWidget {
           ),
           child: SvgPicture.asset(
             icon,
-            width: 20,
-            height: 20,
+            width: 22,
+            height: 22,
             colorFilter: const ColorFilter.mode(
               AppColors.secondaryBlue,
               BlendMode.srcIn,
@@ -402,16 +446,16 @@ class _SummaryRow extends StatelessWidget {
                 label,
                 style: const TextStyle(
                   color: Color(0xFF8A8F98),
-                  fontSize: 11,
+                  fontSize: 14,
                   fontWeight: FontWeight.w500,
                 ),
               ),
-              const SizedBox(height: 4),
+              const SizedBox(height: 2),
               Text(
                 value,
                 style: const TextStyle(
                   color: Colors.black,
-                  fontSize: 13,
+                  fontSize: 15,
                   fontWeight: FontWeight.w800,
                 ),
               ),

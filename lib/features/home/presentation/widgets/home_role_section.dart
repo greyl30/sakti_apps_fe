@@ -176,12 +176,12 @@ class _RoleRequestCard extends StatelessWidget {
       ),
       child: Column(
         children: [
-          // Header role section, nanti count berasal dari backend.
+          // Header role section, count berasal dari backend.
           Row(
             children: [
               Container(
-                width: 20,
-                height: 20,
+                width: 30,
+                height: 30,
                 alignment: Alignment.center,
                 decoration: const BoxDecoration(
                   color: AppColors.primaryRed,
@@ -191,19 +191,19 @@ class _RoleRequestCard extends StatelessWidget {
                   pendingCount.toString(),
                   style: const TextStyle(
                     color: Colors.white,
-                    fontSize: 9,
+                    fontSize: 14,
                     fontWeight: FontWeight.w800,
                     height: 1,
                   ),
                 ),
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: 10),
               Expanded(
                 child: Text(
                   title,
                   style: const TextStyle(
                     color: Colors.black,
-                    fontSize: 16,
+                    fontSize: 18,
                     fontWeight: FontWeight.w800,
                     height: 1,
                   ),
@@ -219,7 +219,7 @@ class _RoleRequestCard extends StatelessWidget {
                 ),
                 child: const Text(
                   'Lihat semua',
-                  style: TextStyle(fontSize: 10, fontWeight: FontWeight.w800),
+                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.w800),
                 ),
               ),
             ],
@@ -262,7 +262,7 @@ class _RoleRequestEmptyMessage extends StatelessWidget {
         textAlign: TextAlign.center,
         style: const TextStyle(
           color: Color(0xFF8A8F98),
-          fontSize: 10,
+          fontSize: 13,
           fontWeight: FontWeight.w600,
           height: 1.2,
         ),
@@ -336,7 +336,7 @@ class _RoleRequestItem extends StatelessWidget {
         onTap: onTap,
         borderRadius: BorderRadius.circular(16),
         child: Ink(
-          height: 32,
+          height: 34,
           padding: const EdgeInsets.symmetric(horizontal: 14),
           decoration: BoxDecoration(
             color: Colors.white,
@@ -351,7 +351,7 @@ class _RoleRequestItem extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
                     color: Color(0xFF5F6972),
-                    fontSize: 10,
+                    fontSize: 13,
                     fontWeight: FontWeight.w600,
                     height: 1,
                   ),
@@ -362,7 +362,7 @@ class _RoleRequestItem extends StatelessWidget {
                 item.dateRange,
                 style: const TextStyle(
                   color: Colors.black,
-                  fontSize: 10,
+                  fontSize: 13,
                   fontWeight: FontWeight.w800,
                   height: 1,
                 ),

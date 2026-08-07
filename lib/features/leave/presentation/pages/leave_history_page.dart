@@ -41,42 +41,48 @@ class _LeaveHistoryPageState extends ConsumerState<LeaveHistoryPage> {
             ),
             const SizedBox(height: 22),
             // Filter status riwayat pengajuan.
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 24),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  HistoryFilterChip(
-                    label: 'Semua',
-                    isSelected: _selectedStatus == null,
-                    onTap: () => setState(() => _selectedStatus = null),
-                  ),
-                  const SizedBox(width: 9),
-                  HistoryFilterChip(
-                    label: 'Disetujui',
-                    isSelected: _selectedStatus == LeaveHistoryStatus.approved,
-                    onTap: () => setState(
-                      () => _selectedStatus = LeaveHistoryStatus.approved,
+            SizedBox(
+              width: double.infinity,
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    HistoryFilterChip(
+                      label: 'Semua',
+                      isSelected: _selectedStatus == null,
+                      onTap: () => setState(() => _selectedStatus = null),
                     ),
-                  ),
-                  const SizedBox(width: 9),
-                  HistoryFilterChip(
-                    label: 'Ditolak',
-                    isSelected: _selectedStatus == LeaveHistoryStatus.rejected,
-                    onTap: () => setState(
-                      () => _selectedStatus = LeaveHistoryStatus.rejected,
+                    const SizedBox(width: 9),
+                    HistoryFilterChip(
+                      label: 'Disetujui',
+                      isSelected:
+                          _selectedStatus == LeaveHistoryStatus.approved,
+                      onTap: () => setState(
+                        () => _selectedStatus = LeaveHistoryStatus.approved,
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: 9),
-                  HistoryFilterChip(
-                    label: 'Dibatalkan',
-                    isSelected: _selectedStatus == LeaveHistoryStatus.canceled,
-                    onTap: () => setState(
-                      () => _selectedStatus = LeaveHistoryStatus.canceled,
+                    const SizedBox(width: 9),
+                    HistoryFilterChip(
+                      label: 'Ditolak',
+                      isSelected:
+                          _selectedStatus == LeaveHistoryStatus.rejected,
+                      onTap: () => setState(
+                        () => _selectedStatus = LeaveHistoryStatus.rejected,
+                      ),
                     ),
-                  ),
-                ],
+                    const SizedBox(width: 9),
+                    HistoryFilterChip(
+                      label: 'Dibatalkan',
+                      isSelected:
+                          _selectedStatus == LeaveHistoryStatus.canceled,
+                      onTap: () => setState(
+                        () => _selectedStatus = LeaveHistoryStatus.canceled,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
 
@@ -150,10 +156,7 @@ void _openHistoryRequest(BuildContext context, LeaveRequestResponse request) {
   if (statusData.status == LeaveApprovalStatus.canceled) {
     context.push(
       RouteName.leaveCancelSuccess,
-      extra: {
-        'data': statusData,
-        'reason': request.cancelReason ?? 'Tidak ada alasan pembatalan',
-      },
+      extra: {'data': statusData, 'reason': request.cancelReason ?? ''},
     );
     return;
   }

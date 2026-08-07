@@ -40,42 +40,49 @@ class _HrdLeaveFinalizationListPageState
               fallbackRoute: RouteName.home,
             ),
             const SizedBox(height: 22),
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Row(
-                children: [
-                  HistoryFilterChip(
-                    label: 'Semua',
-                    isSelected: _selectedType == null,
-                    onTap: () => setState(() => _selectedType = null),
-                  ),
-                  const SizedBox(width: 8),
-                  HistoryFilterChip(
-                    label: 'Izin',
-                    isSelected: _selectedType == ManagerApprovalType.permission,
-                    onTap: () => setState(
-                      () => _selectedType = ManagerApprovalType.permission,
+            SizedBox(
+              width: double.infinity,
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    HistoryFilterChip(
+                      label: 'Semua',
+                      isSelected: _selectedType == null,
+                      onTap: () => setState(() => _selectedType = null),
                     ),
-                  ),
-                  const SizedBox(width: 8),
-                  HistoryFilterChip(
-                    label: 'Cuti Sakit',
-                    isSelected: _selectedType == ManagerApprovalType.sickLeave,
-                    onTap: () => setState(
-                      () => _selectedType = ManagerApprovalType.sickLeave,
+                    const SizedBox(width: 8),
+                    HistoryFilterChip(
+                      label: 'Izin',
+                      isSelected:
+                          _selectedType == ManagerApprovalType.permission,
+                      onTap: () => setState(
+                        () => _selectedType = ManagerApprovalType.permission,
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: 8),
-                  HistoryFilterChip(
-                    label: 'Cuti Darurat',
-                    isSelected:
-                        _selectedType == ManagerApprovalType.emergencyLeave,
-                    onTap: () => setState(
-                      () => _selectedType = ManagerApprovalType.emergencyLeave,
+                    const SizedBox(width: 8),
+                    HistoryFilterChip(
+                      label: 'Cuti Sakit',
+                      isSelected:
+                          _selectedType == ManagerApprovalType.sickLeave,
+                      onTap: () => setState(
+                        () => _selectedType = ManagerApprovalType.sickLeave,
+                      ),
                     ),
-                  ),
-                ],
+                    const SizedBox(width: 8),
+                    HistoryFilterChip(
+                      label: 'Cuti Darurat',
+                      isSelected:
+                          _selectedType == ManagerApprovalType.emergencyLeave,
+                      onTap: () => setState(
+                        () =>
+                            _selectedType = ManagerApprovalType.emergencyLeave,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
             const SizedBox(height: 16),

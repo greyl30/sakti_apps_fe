@@ -216,10 +216,10 @@ class _AttendanceActionButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final backgroundColor = isEnabled ? AppColors.primaryRed : AppColors.gray;
-    final foregroundColor = isEnabled
-        ? Colors.white
-        : Colors.white.withValues(alpha: .75);
+    final backgroundColor = isEnabled
+        ? AppColors.primaryRed
+        : const Color(0xFFD0D4DA);
+    final foregroundColor = Colors.white;
 
     return SizedBox(
       height: 48,
@@ -227,7 +227,9 @@ class _AttendanceActionButton extends StatelessWidget {
         onPressed: isEnabled ? onTap : null,
         style: FilledButton.styleFrom(
           backgroundColor: backgroundColor,
+          disabledBackgroundColor: backgroundColor,
           foregroundColor: foregroundColor,
+          disabledForegroundColor: foregroundColor,
           padding: const EdgeInsets.symmetric(horizontal: 8),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(26),

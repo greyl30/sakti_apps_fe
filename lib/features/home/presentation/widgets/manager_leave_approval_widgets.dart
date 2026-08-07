@@ -41,9 +41,9 @@ class ManagerApprovalCard extends StatelessWidget {
                       approval.employeeName,
                       style: const TextStyle(
                         color: Colors.black,
-                        fontSize: 12,
+                        fontSize: 16,
                         fontWeight: FontWeight.w800,
-                        height: 1,
+                        height: 1.3,
                       ),
                     ),
                     const SizedBox(height: 6),
@@ -51,7 +51,7 @@ class ManagerApprovalCard extends StatelessWidget {
                       approval.division,
                       style: const TextStyle(
                         color: Color(0xFF8A8F98),
-                        fontSize: 9,
+                        fontSize: 11,
                         fontWeight: FontWeight.w500,
                         height: 1,
                       ),
@@ -68,9 +68,9 @@ class ManagerApprovalCard extends StatelessWidget {
                   'Lihat Detail',
                   style: TextStyle(
                     color: AppColors.secondaryBlue,
-                    fontSize: 9,
+                    fontSize: 13,
                     fontWeight: FontWeight.w800,
-                    height: 1,
+                    height: 1.8,
                   ),
                 ),
               ),
@@ -80,7 +80,7 @@ class ManagerApprovalCard extends StatelessWidget {
           Row(
             children: [
               _InfoPill(label: managerApprovalTypeLabel(approval.type)),
-              const SizedBox(width: 8),
+              const SizedBox(width: 10),
               _InfoPill(
                 icon: AppAssets.iconCalendar,
                 label:
@@ -186,7 +186,7 @@ class ManagerApprovalDetailCard extends StatelessWidget {
             'DETAIL PENGAJUAN CUTI',
             style: TextStyle(
               color: Color(0xFF8A8F98),
-              fontSize: 10,
+              fontSize: 14,
               fontWeight: FontWeight.w800,
               height: 1,
             ),
@@ -231,20 +231,25 @@ class ManagerApprovalButton extends StatelessWidget {
     required this.label,
     required this.isPrimary,
     required this.onPressed,
+    this.height = 50,
   });
 
   final String label;
   final bool isPrimary;
   final VoidCallback? onPressed;
+  final double height;
 
   @override
   Widget build(BuildContext context) {
-    return _ApprovalActionButton(
-      label: label,
-      isPrimary: isPrimary,
-      height: 48,
-      borderRadius: 24,
-      onPressed: onPressed,
+    return SizedBox(
+      width: double.infinity,
+      child: _ApprovalActionButton(
+        label: label,
+        isPrimary: isPrimary,
+        height: height,
+        borderRadius: 24,
+        onPressed: onPressed,
+      ),
     );
   }
 }
@@ -406,7 +411,7 @@ class _InfoPill extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 20,
+      height: 25,
       padding: const EdgeInsets.symmetric(horizontal: 9),
       decoration: BoxDecoration(
         color: const Color(0xFFEAF8FD),
@@ -419,8 +424,8 @@ class _InfoPill extends StatelessWidget {
           if (icon != null) ...[
             SvgPicture.asset(
               icon!,
-              width: 10,
-              height: 10,
+              width: 15,
+              height: 15,
               colorFilter: const ColorFilter.mode(
                 AppColors.secondaryBlue,
                 BlendMode.srcIn,
@@ -432,7 +437,7 @@ class _InfoPill extends StatelessWidget {
             label,
             style: const TextStyle(
               color: AppColors.secondaryBlue,
-              fontSize: 8,
+              fontSize: 12,
               fontWeight: FontWeight.w700,
               height: 1,
             ),
@@ -460,28 +465,38 @@ class _ApprovalActionButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isEnabled = onPressed != null;
+    final activeBackgroundColor = isPrimary
+        ? const Color(0xFFD33B32)
+        : const Color(0xFFFFE7E7);
+    final activeForegroundColor = isPrimary
+        ? Colors.white
+        : AppColors.primaryRed;
+    final activeBorderColor = isPrimary
+        ? const Color(0xFFD33B32)
+        : const Color(0xFFF1BDBD);
+    final disabledColor = const Color(0xFFD0D4DA);
+
     return SizedBox(
       height: height,
       child: FilledButton(
         onPressed: onPressed,
         style: FilledButton.styleFrom(
-          backgroundColor: isPrimary
-              ? const Color(0xFFD33B32)
-              : const Color(0xFFFFE7E7),
-          foregroundColor: isPrimary ? Colors.white : AppColors.primaryRed,
+          backgroundColor: activeBackgroundColor,
+          disabledBackgroundColor: disabledColor,
+          foregroundColor: activeForegroundColor,
+          disabledForegroundColor: Colors.white,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(borderRadius),
             side: BorderSide(
-              color: isPrimary
-                  ? const Color(0xFFD33B32)
-                  : const Color(0xFFF1BDBD),
+              color: isEnabled ? activeBorderColor : disabledColor,
             ),
           ),
         ),
         child: Text(
           label,
           style: const TextStyle(
-            fontSize: 12,
+            fontSize: 14,
             fontWeight: FontWeight.w800,
             height: 1,
           ),

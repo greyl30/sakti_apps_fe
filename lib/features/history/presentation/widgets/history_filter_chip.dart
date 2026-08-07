@@ -20,7 +20,7 @@ class HistoryFilterChip extends StatelessWidget {
       onTap: onTap,
       borderRadius: BorderRadius.circular(18),
       child: Container(
-        height: 28,
+        height: 32,
         alignment: Alignment.center,
         padding: const EdgeInsets.symmetric(horizontal: 16),
         decoration: BoxDecoration(
@@ -36,7 +36,7 @@ class HistoryFilterChip extends StatelessWidget {
           label,
           style: TextStyle(
             color: isSelected ? Colors.white : AppColors.primaryRed,
-            fontSize: 10,
+            fontSize: 12,
             fontWeight: FontWeight.w800,
             height: 1,
           ),

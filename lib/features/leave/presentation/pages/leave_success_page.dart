@@ -28,20 +28,23 @@ class LeaveSuccessPage extends ConsumerWidget {
         !isDispensation &&
         data.status == LeaveApprovalStatus.approved &&
         (data.id?.isNotEmpty ?? false);
+    final isBeforeLeaveStart = _isBeforeLeaveStart(DateTime.now(), data);
+    final canSubmitCancellation = canCancel && isBeforeLeaveStart;
 
     return Scaffold(
       backgroundColor: AppColors.whiteBackground,
       body: SafeArea(
         child: ListView(
-          padding: const EdgeInsets.fromLTRB(24, 54, 24, 28),
+          padding: EdgeInsets.fromLTRB(24, isRejected ? 40 : 54, 24, 28),
           children: [
             // Tombol kembali tanpa Top AppBar.
             Align(
               alignment: Alignment.centerLeft,
               child: InkWell(
-                onTap: () => _goBack(context),
+                onTap: () =>
+                    isRejected ? context.go(RouteName.leave) : _goBack(context),
                 customBorder: const CircleBorder(),
-                child: SvgPicture.asset(AppAssets.back2, width: 40, height: 40),
+                child: SvgPicture.asset(AppAssets.back2, width: 41, height: 41),
               ),
             ),
             const SizedBox(height: 20),
@@ -64,14 +67,14 @@ class LeaveSuccessPage extends ConsumerWidget {
             LeaveSummaryCard(
               data: data,
               cancelReason: isRejected ? data.resultReason : null,
-              cancelReasonLabel: 'Alasan penolakan',
+              cancelReasonLabel: 'Alasan Ditolak',
               showRemainingLeave: false,
             ),
             const SizedBox(height: 28),
             if (isRejected)
-              LeaveSecondaryButton(
-                label: 'Kembali ke Cuti',
-                onPressed: () => context.go(RouteName.leave),
+              LeavePrimaryButton(
+                label: 'Kembali ke Beranda',
+                onPressed: () => context.go(RouteName.home),
               )
             else ...[
               LeavePrimaryButton(
@@ -91,10 +94,27 @@ class LeaveSuccessPage extends ConsumerWidget {
                   onPressed: () => context.go(RouteName.home),
                 )
               else if (canCancel)
-                LeaveSecondaryButton(
-                  label: 'Batalkan Cuti',
-                  onPressed: () =>
-                      context.push(RouteName.leaveCancel, extra: data),
+                Column(
+                  children: [
+                    LeaveSecondaryButton(
+                      label: 'Batalkan Cuti',
+                      onPressed: canSubmitCancellation
+                          ? () =>
+                                context.push(RouteName.leaveCancel, extra: data)
+                          : null,
+                    ),
+                    const SizedBox(height: 8),
+                    const Text(
+                      'Pembatalan hanya dapat dilakukan sebelum hari H.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: Color(0xFF8A8F98),
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        height: 1.35,
+                      ),
+                    ),
+                  ],
                 )
               else
                 LeaveSecondaryButton(
@@ -147,5 +167,16 @@ class LeaveSuccessPage extends ConsumerWidget {
     ScaffoldMessenger.of(
       context,
     ).showSnackBar(SnackBar(content: Text(message)));
+  }
+
+  bool _isBeforeLeaveStart(DateTime now, LeaveRequestStatusData data) {
+    final today = DateTime(now.year, now.month, now.day);
+    final leaveStart = DateTime(
+      data.startDate.year,
+      data.startDate.month,
+      data.startDate.day,
+    );
+
+    return today.isBefore(leaveStart);
   }
 }

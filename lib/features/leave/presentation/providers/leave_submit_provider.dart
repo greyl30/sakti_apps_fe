@@ -8,6 +8,7 @@ import '../../data/models/leave_balance_model.dart';
 import '../../data/models/leave_request_model.dart';
 import '../../data/repositories/leave_repository.dart';
 import '../models/leave_form_data.dart';
+import '../utils/leave_workday_calculator.dart';
 
 enum LeaveSubmitStatus { initial, loading, success, error }
 
@@ -72,6 +73,14 @@ final leaveStatusesProvider = FutureProvider<List<LeaveRequestResponse>>((
   if (userId == null || userId.isEmpty) return statuses;
 
   return statuses.where((request) => request.employeeId == userId).toList();
+});
+
+final activeLeaveHolidayDatesProvider = FutureProvider<Set<DateTime>>((
+  ref,
+) async {
+  final repository = ref.watch(leaveRepositoryProvider);
+  final holidays = await repository.getActiveHolidays();
+  return holidays.map((holiday) => normalizeLeaveDate(holiday.date)).toSet();
 });
 
 final activeLeaveRequestsProvider = FutureProvider<List<LeaveRequestResponse>>((

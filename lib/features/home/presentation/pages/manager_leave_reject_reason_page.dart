@@ -25,15 +25,30 @@ class _ManagerLeaveRejectReasonPageState
   String? _reasonError;
 
   @override
+  void initState() {
+    super.initState();
+    _reasonController.addListener(_onReasonChanged);
+  }
+
+  @override
   void dispose() {
+    _reasonController.removeListener(_onReasonChanged);
     _reasonController.dispose();
     super.dispose();
+  }
+
+  void _onReasonChanged() {
+    if (_reasonError != null && _reasonController.text.trim().isNotEmpty) {
+      _reasonError = null;
+    }
+    setState(() {});
   }
 
   @override
   Widget build(BuildContext context) {
     final actionState = ref.watch(managerLeaveApprovalActionProvider);
     final isProcessing = actionState.isProcessing(widget.approval.id);
+    final hasReason = _reasonController.text.trim().isNotEmpty;
 
     return Scaffold(
       backgroundColor: AppColors.whiteBackground,
@@ -59,7 +74,7 @@ class _ManagerLeaveRejectReasonPageState
                     'Isi Alasan',
                     style: TextStyle(
                       color: Colors.black,
-                      fontSize: 13,
+                      fontSize: 15,
                       fontWeight: FontWeight.w800,
                       height: 1,
                     ),
@@ -76,7 +91,7 @@ class _ManagerLeaveRejectReasonPageState
                       errorText: _reasonError,
                       hintStyle: const TextStyle(
                         color: Color(0xFFB0B4BC),
-                        fontSize: 11,
+                        fontSize: 14,
                         fontWeight: FontWeight.w500,
                       ),
                       filled: true,
@@ -98,7 +113,9 @@ class _ManagerLeaveRejectReasonPageState
                   ManagerApprovalButton(
                     label: isProcessing ? 'Memproses...' : 'Selesai',
                     isPrimary: true,
-                    onPressed: actionState.isLoading ? null : _rejectLeave,
+                    onPressed: actionState.isLoading || !hasReason
+                        ? null
+                        : _rejectLeave,
                   ),
                 ],
               ),

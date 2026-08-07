@@ -14,6 +14,7 @@ class HomeHeader extends StatelessWidget {
     required this.onProfileTap,
     required this.onNotificationTap,
     required this.hasUnreadNotifications,
+    this.photoUrl,
   });
 
   final String userName;
@@ -21,6 +22,7 @@ class HomeHeader extends StatelessWidget {
   final VoidCallback onProfileTap;
   final VoidCallback onNotificationTap;
   final bool hasUnreadNotifications;
+  final String? photoUrl;
 
   @override
   Widget build(BuildContext context) {
@@ -43,26 +45,7 @@ class HomeHeader extends StatelessWidget {
           InkWell(
             onTap: onProfileTap,
             customBorder: const CircleBorder(),
-            child: Container(
-              width: 50,
-              height: 50,
-              padding: const EdgeInsets.all(13),
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.15),
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: Colors.white.withValues(alpha: 0.75),
-                  width: 2,
-                ),
-              ),
-              child: SvgPicture.asset(
-                AppAssets.iconPerson,
-                colorFilter: const ColorFilter.mode(
-                  Colors.white,
-                  BlendMode.srcIn,
-                ),
-              ),
-            ),
+            child: _ProfileAvatar(photoUrl: photoUrl),
           ),
           const SizedBox(width: 14),
           Expanded(
@@ -76,8 +59,8 @@ class HomeHeader extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
                     color: Colors.white,
-                    fontSize: 20,
-                    fontWeight: FontWeight.w600,
+                    fontSize: 21,
+                    fontWeight: FontWeight.w700,
                     height: 1.4,
                   ),
                 ),
@@ -88,7 +71,7 @@ class HomeHeader extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     color: Colors.white.withValues(alpha: 0.88),
-                    fontSize: 12,
+                    fontSize: 13,
                     fontWeight: FontWeight.w400,
                     height: 1,
                   ),
@@ -103,11 +86,7 @@ class HomeHeader extends StatelessWidget {
             child: Stack(
               clipBehavior: Clip.none,
               children: [
-                SvgPicture.asset(
-                  AppAssets.iconBelbulat,
-                  width: 41,
-                  height: 41,
-                ),
+                SvgPicture.asset(AppAssets.iconBelbulat, width: 41, height: 41),
                 if (hasUnreadNotifications)
                   Positioned(
                     top: 1,
@@ -126,6 +105,58 @@ class HomeHeader extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _ProfileAvatar extends StatelessWidget {
+  const _ProfileAvatar({this.photoUrl});
+
+  final String? photoUrl;
+
+  @override
+  Widget build(BuildContext context) {
+    final url = photoUrl?.trim();
+
+    return Container(
+      width: 50,
+      height: 50,
+      padding: const EdgeInsets.all(2),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.15),
+        shape: BoxShape.circle,
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.75),
+          width: 2,
+        ),
+      ),
+      child: ClipOval(
+        child: url == null || url.isEmpty
+            ? const _ProfileAvatarFallback()
+            : Image.network(
+                url,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) {
+                  return const _ProfileAvatarFallback();
+                },
+              ),
+      ),
+    );
+  }
+}
+
+class _ProfileAvatarFallback extends StatelessWidget {
+  const _ProfileAvatarFallback();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(11),
+      color: Colors.transparent,
+      child: SvgPicture.asset(
+        AppAssets.iconPerson,
+        colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
       ),
     );
   }

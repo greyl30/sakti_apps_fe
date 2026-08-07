@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -11,10 +10,13 @@ import '../../../../core/widgets/app_bottom_navigation.dart';
 import '../../../attendance/data/datasources/attendance_remote_data_source.dart';
 import '../../../attendance/data/repositories/attendance_repository.dart';
 import '../../../attendance/presentation/models/attendance_ui_state.dart';
+import '../../../attendance/presentation/utils/attendance_reminder_guard.dart';
 import '../../../attendance/presentation/widgets/attendance_status_dialog.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
+import '../../../history/presentation/models/attendance_history_model.dart';
 import '../../../history/presentation/providers/attendance_history_provider.dart';
 import '../../../notification/presentation/providers/notification_provider.dart';
+import '../../../leave/presentation/providers/leave_submit_provider.dart';
 import '../models/home_role.dart';
 import '../providers/hrd_leave_finalization_provider.dart';
 import '../providers/manager_leave_approval_provider.dart';
@@ -39,8 +41,21 @@ class HomePage extends ConsumerWidget {
       user?.levelJabatan ?? user?.peran,
       user?.divisi ?? user?.unit,
     ].whereType<String>().where((value) => value.trim().isNotEmpty).toList();
-    // Dummy state presensi, nantinya diganti dari backend/provider.
-    const attendanceState = dummyAttendanceUiState;
+    final histories = ref.watch(attendanceHistoriesProvider);
+    final holidays = ref.watch(activeLeaveHolidayDatesProvider);
+    final leaveStatuses = ref.watch(leaveStatusesProvider);
+    final attendanceState = _attendanceStateFromHistories(
+      histories.valueOrNull,
+    );
+    final isAttendanceUnavailable = isAttendanceReminderSuppressed(
+      date: DateTime.now(),
+      holidays: holidays.valueOrNull ?? const <DateTime>{},
+      leaveRequests: leaveStatuses.valueOrNull ?? const [],
+    );
+    final isCalendarHoliday = _isCalendarHoliday(
+      DateTime.now(),
+      holidays.valueOrNull ?? const <DateTime>{},
+    );
     final unreadCount = ref.watch(notificationUnreadCountProvider);
     final hasUnreadNotifications = (unreadCount.valueOrNull ?? 0) > 0;
 
@@ -63,6 +78,7 @@ class HomePage extends ConsumerWidget {
                 onProfileTap: () => context.push(RouteName.profile),
                 onNotificationTap: () => context.push(RouteName.notification),
                 hasUnreadNotifications: hasUnreadNotifications,
+                photoUrl: user?.fotoUrl,
               ),
               Padding(
                 padding: const EdgeInsets.fromLTRB(24, 16, 24, 28),
@@ -70,34 +86,39 @@ class HomePage extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     HomeAttendanceCard(
-                      isHoliday: attendanceState.isHoliday,
-                      canCheckIn: kDebugMode || !attendanceState.hasClockIn,
+                      isHoliday: isAttendanceUnavailable,
+                      canCheckIn:
+                          !isAttendanceUnavailable &&
+                          !attendanceState.hasClockIn,
                       canCheckOut:
-                          !attendanceState.isHoliday &&
-                          (kDebugMode || attendanceState.hasClockIn),
+                          !isAttendanceUnavailable &&
+                          attendanceState.hasClockIn &&
+                          !attendanceState.hasClockOut,
                       onCheckInTap: () => _handleCheckInTap(
                         context,
-                        isHoliday: attendanceState.isHoliday,
+                        isHoliday: isAttendanceUnavailable,
                         hasClockIn: attendanceState.hasClockIn,
                       ),
                       onCheckOutTap: () => _handleCheckOutTap(
                         context,
-                        isHoliday: attendanceState.isHoliday,
+                        isHoliday: isAttendanceUnavailable,
                         hasClockIn: attendanceState.hasClockIn,
+                        hasClockOut: attendanceState.hasClockOut,
                       ),
                     ),
                     const SizedBox(height: 20),
                     HomeReminderSection(
-                      isHoliday: attendanceState.isHoliday,
+                      isHoliday: isCalendarHoliday,
                       onCheckInReminderTap: () => _handleCheckInTap(
                         context,
-                        isHoliday: attendanceState.isHoliday,
+                        isHoliday: isAttendanceUnavailable,
                         hasClockIn: attendanceState.hasClockIn,
                       ),
                       onCheckOutReminderTap: () => _handleCheckOutTap(
                         context,
-                        isHoliday: attendanceState.isHoliday,
+                        isHoliday: isAttendanceUnavailable,
                         hasClockIn: attendanceState.hasClockIn,
+                        hasClockOut: attendanceState.hasClockOut,
                       ),
                     ),
                     HomeRoleSection(
@@ -132,7 +153,7 @@ class HomePage extends ConsumerWidget {
       return;
     }
 
-    if (!kDebugMode && hasClockIn) return;
+    if (hasClockIn) return;
 
     context.push(RouteName.checkInVerification);
   }
@@ -141,22 +162,23 @@ class HomePage extends ConsumerWidget {
     BuildContext context, {
     required bool isHoliday,
     required bool hasClockIn,
+    required bool hasClockOut,
   }) async {
     if (isHoliday) {
       _showHolidayDialog(context);
       return;
     }
 
-    if (!kDebugMode && !hasClockIn) {
+    if (!hasClockIn) {
       _showCheckOutUnavailableDialog(context);
       return;
     }
 
-    if (!kDebugMode) {
-      final canCheckOut = await _canCheckOutByWorkConfig(context);
-      if (!context.mounted) return;
-      if (!canCheckOut) return;
-    }
+    if (hasClockOut) return;
+
+    final canCheckOut = await _canCheckOutByWorkConfig(context);
+    if (!context.mounted) return;
+    if (!canCheckOut) return;
 
     context.push(RouteName.checkOutVerification);
   }
@@ -181,6 +203,8 @@ class HomePage extends ConsumerWidget {
 
   Future<void> _refreshHome(WidgetRef ref, UserRole role) async {
     ref.invalidate(attendanceHistoriesProvider);
+    ref.invalidate(activeLeaveHolidayDatesProvider);
+    ref.invalidate(leaveStatusesProvider);
     switch (role) {
       case UserRole.manager:
         ref.invalidate(managerPendingLeaveApprovalsProvider);
@@ -192,6 +216,8 @@ class HomePage extends ConsumerWidget {
 
     final futures = <Future<void>>[
       ref.read(attendanceHistoriesProvider.future).then((_) {}),
+      ref.read(activeLeaveHolidayDatesProvider.future).then((_) {}),
+      ref.read(leaveStatusesProvider.future).then((_) {}),
       ref.read(notificationsProvider.notifier).refresh(),
       ref.read(notificationUnreadCountProvider.notifier).refresh(),
       if (role == UserRole.manager)
@@ -240,5 +266,29 @@ class HomePage extends ConsumerWidget {
     final trimmed = value?.trim();
     if (trimmed == null || trimmed.isEmpty) return '-';
     return trimmed;
+  }
+
+  AttendanceUiState _attendanceStateFromHistories(
+    List<AttendanceHistoryModel>? histories,
+  ) {
+    final today = DateTime.now();
+    final todayHistory = histories?.where((history) {
+      return history.date.year == today.year &&
+          history.date.month == today.month &&
+          history.date.day == today.day;
+    }).firstOrNull;
+
+    return AttendanceUiState(
+      isHoliday: false,
+      hasClockIn: todayHistory?.clockInTime != null,
+      hasClockOut: todayHistory?.clockOutTime != null,
+    );
+  }
+
+  bool _isCalendarHoliday(DateTime date, Set<DateTime> holidays) {
+    final normalizedDate = DateTime(date.year, date.month, date.day);
+    return normalizedDate.weekday == DateTime.saturday ||
+        normalizedDate.weekday == DateTime.sunday ||
+        holidays.contains(normalizedDate);
   }
 }

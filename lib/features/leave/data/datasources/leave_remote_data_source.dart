@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 
 import '../models/leave_letter_download.dart';
 import '../models/leave_request_model.dart';
@@ -24,6 +25,34 @@ class LeaveRemoteDataSource {
     );
 
     return response.data ?? <String, dynamic>{};
+  }
+
+  // Mengambil hari libur aktif dari backend untuk estimasi durasi hari kerja.
+  Future<Map<String, dynamic>> getActiveHolidays() async {
+    const path = '/api/libur';
+
+    debugPrint('[LeaveHoliday] GET $path');
+
+    try {
+      final response = await _dio.get<Map<String, dynamic>>(path);
+
+      debugPrint('[LeaveHoliday] URL: ${response.realUri}');
+      debugPrint('[LeaveHoliday] status: ${response.statusCode}');
+      debugPrint('[LeaveHoliday] body: ${response.data}');
+
+      return response.data ?? <String, dynamic>{};
+    } on DioException catch (error) {
+      debugPrint('[LeaveHoliday] URL: ${error.requestOptions.uri}');
+      debugPrint(
+        '[LeaveHoliday] Authorization header exists: '
+        '${error.requestOptions.headers.containsKey('Authorization')}',
+      );
+      debugPrint('[LeaveHoliday] error type: ${error.type}');
+      debugPrint('[LeaveHoliday] status: ${error.response?.statusCode}');
+      debugPrint('[LeaveHoliday] response body: ${error.response?.data}');
+      debugPrint('[LeaveHoliday] raw error: ${error.error}');
+      rethrow;
+    }
   }
 
   // Mengirim pengajuan cuti karyawan ke backend.

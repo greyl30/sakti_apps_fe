@@ -43,7 +43,7 @@ class LeaveBalanceCard extends StatelessWidget {
             value,
             style: TextStyle(
               color: color,
-              fontSize: 25,
+              fontSize: 28,
               fontWeight: FontWeight.w800,
               height: 1,
             ),
@@ -56,7 +56,7 @@ class LeaveBalanceCard extends StatelessWidget {
             textAlign: TextAlign.center,
             style: TextStyle(
               color: color,
-              fontSize: 11,
+              fontSize: 13,
               fontWeight: FontWeight.w700,
               height: 1,
             ),
@@ -95,7 +95,7 @@ class LeaveActionCard extends StatelessWidget {
         onTap: onTap,
         borderRadius: BorderRadius.circular(12),
         child: Ink(
-          height: 70,
+          height: 75,
           padding: const EdgeInsets.symmetric(horizontal: 14),
           decoration: BoxDecoration(
             color: const Color(0xFFD33B32),
@@ -104,8 +104,8 @@ class LeaveActionCard extends StatelessWidget {
           child: Row(
             children: [
               Container(
-                width: 42,
-                height: 42,
+                width: 44,
+                height: 44,
                 alignment: Alignment.center,
                 decoration: const BoxDecoration(
                   color: Colors.white,
@@ -114,7 +114,7 @@ class LeaveActionCard extends StatelessWidget {
                 child: const Icon(
                   Icons.add_rounded,
                   color: AppColors.primaryRed,
-                  size: 28,
+                  size: 32,
                 ),
               ),
               const SizedBox(width: 14),
@@ -127,7 +127,7 @@ class LeaveActionCard extends StatelessWidget {
                       'Ajukan Cuti Baru',
                       style: TextStyle(
                         color: Colors.white,
-                        fontSize: 14,
+                        fontSize: 16,
                         fontWeight: FontWeight.w800,
                         height: 1,
                       ),
@@ -137,8 +137,8 @@ class LeaveActionCard extends StatelessWidget {
                       'Pilih tanggal, alasan & kirim pengajuan',
                       style: TextStyle(
                         color: Colors.white,
-                        fontSize: 10,
-                        fontWeight: FontWeight.w500,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w400,
                         height: 1,
                       ),
                     ),

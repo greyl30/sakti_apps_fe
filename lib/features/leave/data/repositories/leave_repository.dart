@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart';
 import '../../presentation/models/leave_form_data.dart';
 import '../datasources/leave_remote_data_source.dart';
 import '../models/leave_balance_model.dart';
+import '../models/leave_holiday_model.dart';
 import '../models/leave_letter_download.dart';
 import '../models/leave_request_model.dart';
 
@@ -60,6 +61,30 @@ class LeaveRepository {
       debugPrint('Leave status unexpected error: $error');
       debugPrintStack(stackTrace: stackTrace);
       throw const LeaveStatusException('Gagal mengambil data pengajuan cuti.');
+    }
+  }
+
+  // Mengambil hari libur aktif untuk estimasi durasi pengajuan di FE.
+  Future<List<LeaveHolidayModel>> getActiveHolidays() async {
+    try {
+      final response = await _remoteDataSource.getActiveHolidays();
+      return _mapHolidayResponse(response);
+    } on LeaveHolidayException {
+      rethrow;
+    } on DioException catch (error) {
+      throw LeaveHolidayException(
+        _mapDioError(
+          error,
+          timeoutMessage: 'Request data hari libur melebihi batas waktu.',
+          fallbackMessage: 'Gagal mengambil data hari libur.',
+        ),
+      );
+    } on SocketException {
+      throw const LeaveHolidayException('Tidak dapat terhubung ke server.');
+    } catch (error, stackTrace) {
+      debugPrint('Leave holiday unexpected error: $error');
+      debugPrintStack(stackTrace: stackTrace);
+      throw const LeaveHolidayException('Gagal mengambil data hari libur.');
     }
   }
 
@@ -187,6 +212,27 @@ class LeaveRepository {
     throw LeaveStatusException(_readApiMessage(response));
   }
 
+  List<LeaveHolidayModel> _mapHolidayResponse(Map<String, dynamic> response) {
+    final isSuccess = response['success'] == true;
+    final rawData = response['data'];
+    final rawItems = rawData is Map ? rawData['items'] : rawData;
+
+    if (isSuccess && rawItems is List) {
+      return rawItems
+          .whereType<Map>()
+          .map(
+            (item) =>
+                LeaveHolidayModel.fromJson(Map<String, dynamic>.from(item)),
+          )
+          .where((holiday) => holiday.isActive)
+          .toList();
+    }
+
+    if (isSuccess && rawItems == null) return const [];
+
+    throw LeaveHolidayException(_readApiMessage(response));
+  }
+
   LeaveRequestResponse _mapSubmitResponse(Map<String, dynamic> response) {
     final isSuccess = response['success'] == true;
     final rawData = response['data'];
@@ -247,6 +293,15 @@ class LeaveBalanceException implements Exception {
 
 class LeaveStatusException implements Exception {
   const LeaveStatusException(this.message);
+
+  final String message;
+
+  @override
+  String toString() => message;
+}
+
+class LeaveHolidayException implements Exception {
+  const LeaveHolidayException(this.message);
 
   final String message;
 

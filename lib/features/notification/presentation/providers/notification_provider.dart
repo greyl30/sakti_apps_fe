@@ -1,6 +1,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/network/api_client.dart';
+import '../../../attendance/presentation/utils/attendance_reminder_guard.dart';
+import '../../../leave/data/models/leave_request_model.dart';
+import '../../../leave/presentation/providers/leave_submit_provider.dart';
 import '../../data/datasources/notification_remote_data_source.dart';
 import '../../data/repositories/notification_repository.dart';
 import '../models/notification_model.dart';
@@ -99,10 +102,36 @@ class NotificationsNotifier
 
   Future<List<NotificationModel>> _fetchNotifications() async {
     final notifications = await _repository.getNotifications();
+    final holidays = await _ref.read(activeLeaveHolidayDatesProvider.future);
+    final leaveStatuses = await _ref.read(leaveStatusesProvider.future);
 
     return notifications
         .map((notification) => notification.toPresentationModel())
+        .where(
+          (notification) => !_shouldSuppressAttendanceNotification(
+            notification,
+            holidays: holidays,
+            leaveStatuses: leaveStatuses,
+          ),
+        )
         .toList();
+  }
+
+  bool _shouldSuppressAttendanceNotification(
+    NotificationModel notification, {
+    required Set<DateTime> holidays,
+    required List<LeaveRequestResponse> leaveStatuses,
+  }) {
+    if (notification.type != NotificationType.checkIn &&
+        notification.type != NotificationType.checkOut) {
+      return false;
+    }
+
+    return isAttendanceReminderSuppressed(
+      date: notification.createdAt,
+      holidays: holidays,
+      leaveRequests: leaveStatuses,
+    );
   }
 }
 

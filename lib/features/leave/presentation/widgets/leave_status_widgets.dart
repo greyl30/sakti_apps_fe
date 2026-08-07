@@ -154,8 +154,8 @@ class LeaveInfoRow extends StatelessWidget {
       child: Row(
         children: [
           Container(
-            width: 35,
-            height: 35,
+            width: 40,
+            height: 40,
             alignment: Alignment.center,
             decoration: BoxDecoration(
               color: const Color(0xFFEAF8FD),
@@ -163,8 +163,8 @@ class LeaveInfoRow extends StatelessWidget {
             ),
             child: SvgPicture.asset(
               icon,
-              width: 16,
-              height: 16,
+              width: 20,
+              height: 20,
               colorFilter: const ColorFilter.mode(
                 AppColors.secondaryBlue,
                 BlendMode.srcIn,
@@ -180,7 +180,7 @@ class LeaveInfoRow extends StatelessWidget {
                   label,
                   style: const TextStyle(
                     color: Color(0xFF8A8F98),
-                    fontSize: 10,
+                    fontSize: 12,
                     fontWeight: FontWeight.w500,
                     height: 1,
                   ),
@@ -192,7 +192,7 @@ class LeaveInfoRow extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
                     color: Colors.black,
-                    fontSize: 12,
+                    fontSize: 14,
                     fontWeight: FontWeight.w800,
                     height: 1.2,
                   ),
@@ -235,7 +235,7 @@ class _StatusSectionCard extends StatelessWidget {
             title,
             style: const TextStyle(
               color: Color(0xFF8A8F98),
-              fontSize: 10,
+              fontSize: 14,
               fontWeight: FontWeight.w800,
               height: 1,
             ),
@@ -280,8 +280,8 @@ class _TimelineItem extends StatelessWidget {
         Column(
           children: [
             Container(
-              width: 18,
-              height: 18,
+              width: 24,
+              height: 24,
               alignment: Alignment.center,
               decoration: BoxDecoration(
                 color: isDone ? color : Colors.white,
@@ -291,8 +291,8 @@ class _TimelineItem extends StatelessWidget {
               child: isDone
                   ? SvgPicture.asset(
                       AppAssets.iconCheck,
-                      width: 10,
-                      height: 10,
+                      width: 16,
+                      height: 16,
                       colorFilter: const ColorFilter.mode(
                         Colors.white,
                         BlendMode.srcIn,
@@ -321,7 +321,7 @@ class _TimelineItem extends StatelessWidget {
                     color: state == _TimelineState.pending
                         ? const Color(0xFFB1B7C0)
                         : Colors.black,
-                    fontSize: 12,
+                    fontSize: 14,
                     fontWeight: FontWeight.w800,
                     height: 1,
                   ),
@@ -331,7 +331,7 @@ class _TimelineItem extends StatelessWidget {
                   subtitle,
                   style: const TextStyle(
                     color: Color(0xFF9AA0AA),
-                    fontSize: 10,
+                    fontSize: 12,
                     fontWeight: FontWeight.w500,
                     height: 1,
                   ),

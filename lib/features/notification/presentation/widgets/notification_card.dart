@@ -53,7 +53,7 @@ class NotificationCard extends StatelessWidget {
                           overflow: TextOverflow.ellipsis,
                           style: const TextStyle(
                             color: AppColors.primaryRed,
-                            fontSize: 14,
+                            fontSize: 16,
                             fontWeight: FontWeight.w800,
                             height: 1.15,
                           ),
@@ -63,9 +63,9 @@ class NotificationCard extends StatelessWidget {
                           formatNotificationDateTime(notification.createdAt),
                           style: const TextStyle(
                             color: AppColors.secondaryBlue,
-                            fontSize: 10,
+                            fontSize: 14,
                             fontWeight: FontWeight.w700,
-                            height: 1,
+                            height: 1.15,
                           ),
                         ),
                       ],
@@ -73,14 +73,14 @@ class NotificationCard extends StatelessWidget {
                   ),
                 ],
               ),
-              const SizedBox(height: 18),
+              const SizedBox(height: 22),
               Text(
                 notification.message,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
                 style: const TextStyle(
                   color: Colors.black,
-                  fontSize: 12,
+                  fontSize: 14,
                   fontWeight: FontWeight.w500,
                   height: 1.35,
                 ),

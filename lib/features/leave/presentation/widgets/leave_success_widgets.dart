@@ -34,8 +34,8 @@ class LeaveSuccessHeader extends StatelessWidget {
             shape: BoxShape.circle,
           ),
           child: Container(
-            width: 72,
-            height: 72,
+            width: 74,
+            height: 74,
             alignment: Alignment.center,
             decoration: const BoxDecoration(
               color: AppColors.primaryRed,
@@ -64,7 +64,7 @@ class LeaveSuccessHeader extends StatelessWidget {
             badge,
             style: const TextStyle(
               color: AppColors.secondaryBlue,
-              fontSize: 12,
+              fontSize: 13,
               fontWeight: FontWeight.w800,
               height: 1,
             ),
@@ -87,7 +87,7 @@ class LeaveSuccessHeader extends StatelessWidget {
           textAlign: TextAlign.center,
           style: const TextStyle(
             color: Color(0xFF8A8F98),
-            fontSize: 13,
+            fontSize: 14,
             fontWeight: FontWeight.w500,
             height: 1.25,
           ),
@@ -130,6 +130,11 @@ class LeaveSummaryCard extends StatelessWidget {
       child: Column(
         children: [
           LeaveSummaryRow(
+            icon: AppAssets.iconCuti,
+            label: 'Jenis Pengajuan',
+            value: data.type,
+          ),
+          LeaveSummaryRow(
             icon: AppAssets.iconCalendar,
             label: 'Tanggal Mulai',
             value: _formatLongDate(data.startDate),
@@ -155,7 +160,7 @@ class LeaveSummaryCard extends StatelessWidget {
             label: 'Alasan',
             value: data.reason,
           ),
-          if (cancelReason != null)
+          if (cancelReason != null && cancelReason!.trim().isNotEmpty)
             LeaveSummaryRow(
               icon: AppAssets.iconAlasan,
               label: cancelReasonLabel,
@@ -186,8 +191,8 @@ class LeaveSummaryRow extends StatelessWidget {
       child: Row(
         children: [
           Container(
-            width: 32,
-            height: 32,
+            width: 40,
+            height: 40,
             alignment: Alignment.center,
             decoration: BoxDecoration(
               color: const Color(0xFFEAF8FD),
@@ -195,8 +200,8 @@ class LeaveSummaryRow extends StatelessWidget {
             ),
             child: SvgPicture.asset(
               icon,
-              width: 16,
-              height: 16,
+              width: 20,
+              height: 20,
               colorFilter: const ColorFilter.mode(
                 AppColors.secondaryBlue,
                 BlendMode.srcIn,
@@ -212,7 +217,7 @@ class LeaveSummaryRow extends StatelessWidget {
                   label,
                   style: const TextStyle(
                     color: Color(0xFF8A8F98),
-                    fontSize: 11,
+                    fontSize: 13,
                     fontWeight: FontWeight.w500,
                     height: 1,
                   ),
@@ -224,7 +229,7 @@ class LeaveSummaryRow extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
                     color: Colors.black,
-                    fontSize: 13,
+                    fontSize: 15,
                     fontWeight: FontWeight.w800,
                     height: 1.2,
                   ),
@@ -246,26 +251,34 @@ class LeaveSecondaryButton extends StatelessWidget {
   });
 
   final String label;
-  final VoidCallback onPressed;
+  final VoidCallback? onPressed;
 
   @override
   Widget build(BuildContext context) {
+    final isEnabled = onPressed != null;
+
     return SizedBox(
       width: double.infinity,
-      height: 48,
+      height: 50,
       child: FilledButton(
         onPressed: onPressed,
         style: FilledButton.styleFrom(
           backgroundColor: const Color(0xFFFFE7E7),
+          disabledBackgroundColor: const Color(0xFFD0D4DA),
           foregroundColor: AppColors.primaryRed,
+          disabledForegroundColor: Colors.white,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(24),
-            side: const BorderSide(color: Color(0xFFF1BDBD)),
+            side: BorderSide(
+              color: isEnabled
+                  ? const Color(0xFFF1BDBD)
+                  : const Color(0xFFD0D4DA),
+            ),
           ),
         ),
         child: Text(
           label,
-          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w800),
+          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800),
         ),
       ),
     );

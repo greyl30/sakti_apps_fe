@@ -43,7 +43,7 @@ class LeaveHistoryCard extends StatelessWidget {
                       history.leaveType,
                       style: const TextStyle(
                         color: AppColors.primaryRed,
-                        fontSize: 16,
+                        fontSize: 17,
                         fontWeight: FontWeight.w800,
                         height: 1,
                       ),
@@ -53,7 +53,7 @@ class LeaveHistoryCard extends StatelessWidget {
                       _formatDateRange(history.startDate, history.endDate),
                       style: const TextStyle(
                         color: AppColors.secondaryBlue,
-                        fontSize: 12,
+                        fontSize: 14,
                         fontWeight: FontWeight.w600,
                         height: 1,
                       ),

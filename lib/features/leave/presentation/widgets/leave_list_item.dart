@@ -27,7 +27,7 @@ class LeaveListItem extends StatelessWidget {
         onTap: onTap,
         borderRadius: BorderRadius.circular(15),
         child: Ink(
-          height: 73,
+          height: 78,
           padding: const EdgeInsets.symmetric(horizontal: 14),
           decoration: BoxDecoration(
             color: Colors.white,
@@ -44,8 +44,8 @@ class LeaveListItem extends StatelessWidget {
           child: Row(
             children: [
               Container(
-                width: 37,
-                height: 37,
+                width: 45,
+                height: 45,
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
                   color: statusColor.withValues(alpha: .12),
@@ -53,8 +53,8 @@ class LeaveListItem extends StatelessWidget {
                 ),
                 child: SvgPicture.asset(
                   icon,
-                  width: 21,
-                  height: 21,
+                  width: 24,
+                  height: 24,
                   colorFilter: ColorFilter.mode(statusColor, BlendMode.srcIn),
                 ),
               ),
@@ -70,7 +70,7 @@ class LeaveListItem extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
                         color: Colors.black,
-                        fontSize: 13,
+                        fontSize: 16,
                         fontWeight: FontWeight.w800,
                         height: 1,
                       ),
@@ -82,7 +82,7 @@ class LeaveListItem extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
                         color: Color(0xFF8A8F98),
-                        fontSize: 12,
+                        fontSize: 14,
                         fontWeight: FontWeight.w500,
                         height: 1,
                       ),
@@ -104,7 +104,7 @@ class LeaveListItem extends StatelessWidget {
                   status,
                   style: TextStyle(
                     color: statusColor,
-                    fontSize: 8,
+                    fontSize: 13,
                     fontWeight: FontWeight.w700,
                     height: 1,
                   ),
@@ -130,6 +130,8 @@ class LeavePrimaryButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isEnabled = onPressed != null;
+
     return SizedBox(
       width: double.infinity,
       height: 48,
@@ -137,15 +139,22 @@ class LeavePrimaryButton extends StatelessWidget {
         onPressed: onPressed,
         style: FilledButton.styleFrom(
           backgroundColor: const Color(0xFFD33B32),
+          disabledBackgroundColor: const Color(0xFFD0D4DA),
+          disabledForegroundColor: Colors.white,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(35),
+            side: BorderSide(
+              color: isEnabled
+                  ? const Color(0xFFD33B32)
+                  : const Color(0xFFD0D4DA),
+            ),
           ),
         ),
         child: Text(
           label,
           style: const TextStyle(
             color: Colors.white,
-            fontSize: 13,
+            fontSize: 14,
             fontWeight: FontWeight.w800,
             height: 1,
           ),

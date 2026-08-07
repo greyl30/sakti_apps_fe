@@ -28,7 +28,7 @@ class ProfileHeader extends StatelessWidget {
         children: [
           // Top AppBar profile yang lebih tinggi untuk ruang foto.
           Container(
-            height: 145,
+            height: 165,
             padding: const EdgeInsets.fromLTRB(28, 24, 24, 0),
             decoration: const BoxDecoration(
               gradient: LinearGradient(
@@ -55,8 +55,8 @@ class ProfileHeader extends StatelessWidget {
                   borderRadius: BorderRadius.circular(22),
                   child: SvgPicture.asset(
                     AppAssets.iconBack,
-                    width: 40,
-                    height: 40,
+                    width: 41,
+                    height: 41,
                   ),
                 ),
                 const SizedBox(width: 14),
@@ -66,7 +66,7 @@ class ProfileHeader extends StatelessWidget {
                     'Profil',
                     style: TextStyle(
                       color: Colors.white,
-                      fontSize: 22,
+                      fontSize: 24,
                       fontWeight: FontWeight.w800,
                       height: 1,
                     ),
@@ -76,12 +76,12 @@ class ProfileHeader extends StatelessWidget {
             ),
           ),
           Positioned(
-            top: 82,
+            top: 85,
             child: Column(
               children: [
                 Container(
-                  width: 120,
-                  height: 120,
+                  width: 140,
+                  height: 140,
                   padding: _hasPhoto
                       ? EdgeInsets.zero
                       : const EdgeInsets.all(20),
@@ -109,21 +109,21 @@ class ProfileHeader extends StatelessWidget {
                         )
                       : const _ProfileFallbackIcon(),
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 15),
                 Text(
                   name,
                   textAlign: TextAlign.center,
                   style: const TextStyle(
                     color: Colors.black,
-                    fontSize: 20,
+                    fontSize: 21,
                     fontWeight: FontWeight.w800,
                     height: 1,
                   ),
                 ),
-                const SizedBox(height: 17),
+                const SizedBox(height: 15),
                 Container(
                   padding: const EdgeInsets.symmetric(
-                    horizontal: 15,
+                    horizontal: 17,
                     vertical: 8,
                   ),
                   decoration: BoxDecoration(
@@ -135,7 +135,7 @@ class ProfileHeader extends StatelessWidget {
                     status,
                     style: const TextStyle(
                       color: AppColors.primaryRed,
-                      fontSize: 11,
+                      fontSize: 15,
                       fontWeight: FontWeight.w700,
                       height: 1,
                     ),

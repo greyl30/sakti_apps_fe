@@ -5,6 +5,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'app/app.dart';
+import 'core/deep_link/reset_password_deep_link_service.dart';
 import 'core/firebase/firebase_messaging_service.dart';
 
 void main() async {
@@ -19,4 +20,8 @@ void main() async {
   );
 
   runApp(const ProviderScope(child: MyApp()));
+
+  WidgetsBinding.instance.addPostFrameCallback((_) {
+    ResetPasswordDeepLinkService.initialize();
+  });
 }

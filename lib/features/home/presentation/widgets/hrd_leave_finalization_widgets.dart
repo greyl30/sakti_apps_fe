@@ -24,7 +24,7 @@ class HrdFinalizationCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.fromLTRB(14, 13, 14, 14),
+      padding: const EdgeInsets.fromLTRB(14, 15, 14, 14),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
@@ -51,17 +51,17 @@ class HrdFinalizationCard extends StatelessWidget {
                       finalization.employeeName,
                       style: const TextStyle(
                         color: Colors.black,
-                        fontSize: 12,
+                        fontSize: 16,
                         fontWeight: FontWeight.w800,
-                        height: 1,
+                        height: 1.3,
                       ),
                     ),
-                    const SizedBox(height: 6),
+                    const SizedBox(height: 9),
                     Text(
                       finalization.division,
                       style: const TextStyle(
                         color: Color(0xFF8A8F98),
-                        fontSize: 9,
+                        fontSize: 11,
                         fontWeight: FontWeight.w500,
                         height: 1,
                       ),
@@ -78,9 +78,9 @@ class HrdFinalizationCard extends StatelessWidget {
                   'Lihat Detail',
                   style: TextStyle(
                     color: AppColors.secondaryBlue,
-                    fontSize: 9,
+                    fontSize: 13,
                     fontWeight: FontWeight.w800,
-                    height: 1,
+                    height: 1.8,
                   ),
                 ),
               ),
@@ -90,7 +90,7 @@ class HrdFinalizationCard extends StatelessWidget {
           Row(
             children: [
               _InfoPill(label: managerApprovalTypeLabel(finalization.type)),
-              const SizedBox(width: 8),
+              const SizedBox(width: 10),
               _InfoPill(
                 icon: AppAssets.iconCalendar,
                 label:
@@ -102,6 +102,7 @@ class HrdFinalizationCard extends StatelessWidget {
           ManagerApprovalButton(
             label: isProcessing ? '...' : 'Finalisasi',
             isPrimary: true,
+            height: 48,
             onPressed: onFinalize,
           ),
         ],
@@ -133,7 +134,7 @@ class _InfoPill extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 20,
+      height: 25,
       padding: const EdgeInsets.symmetric(horizontal: 9),
       decoration: BoxDecoration(
         color: const Color(0xFFEAF8FD),
@@ -146,20 +147,20 @@ class _InfoPill extends StatelessWidget {
           if (icon != null) ...[
             SvgPicture.asset(
               icon!,
-              width: 10,
-              height: 10,
+              width: 15,
+              height: 15,
               colorFilter: const ColorFilter.mode(
                 AppColors.secondaryBlue,
                 BlendMode.srcIn,
               ),
             ),
-            const SizedBox(width: 5),
+            const SizedBox(width: 8),
           ],
           Text(
             label,
             style: const TextStyle(
               color: AppColors.secondaryBlue,
-              fontSize: 8,
+              fontSize: 12,
               fontWeight: FontWeight.w700,
               height: 1,
             ),

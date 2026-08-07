@@ -58,7 +58,8 @@ class _ResetPasswordPageState extends ConsumerState<ResetPasswordPage> {
         context: context,
         barrierDismissible: false,
         builder: (dialogContext) => ChangePasswordSuccessDialog(
-          title: 'Password berhasil direset',
+          title: 'Password berhasil diubah. Silakan login kembali.',
+          buttonLabel: 'Kembali ke Login',
           onOkPressed: () {
             Navigator.of(dialogContext).pop();
             context.go(RouteName.login);

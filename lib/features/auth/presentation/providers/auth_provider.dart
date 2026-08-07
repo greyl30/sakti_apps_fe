@@ -118,9 +118,9 @@ class AuthNotifier extends StateNotifier<AuthState> {
         newPassword: newPassword,
         confirmPassword: confirmPassword,
       );
-      state = state.copyWith(
-        isLoading: false,
-        successMessage: 'Password berhasil direset',
+      await _repository.logout();
+      state = const AuthState(
+        successMessage: 'Password berhasil diubah. Silakan login kembali.',
       );
       return true;
     } on AuthException catch (error) {

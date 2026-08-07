@@ -43,43 +43,49 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
             ),
             const SizedBox(height: 22),
             // Filter status riwayat.
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 24),
-              child: Row(
-                children: [
-                  HistoryFilterChip(
-                    label: 'Semua',
-                    isSelected: _selectedStatus == null,
-                    onTap: () => setState(() => _selectedStatus = null),
-                  ),
-                  const SizedBox(width: 9),
-                  HistoryFilterChip(
-                    label: 'Tepat Waktu',
-                    isSelected:
-                        _selectedStatus == AttendanceHistoryStatus.onTime,
-                    onTap: () => setState(
-                      () => _selectedStatus = AttendanceHistoryStatus.onTime,
+            SizedBox(
+              width: double.infinity,
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    HistoryFilterChip(
+                      label: 'Semua',
+                      isSelected: _selectedStatus == null,
+                      onTap: () => setState(() => _selectedStatus = null),
                     ),
-                  ),
-                  const SizedBox(width: 9),
-                  HistoryFilterChip(
-                    label: 'Terlambat',
-                    isSelected: _selectedStatus == AttendanceHistoryStatus.late,
-                    onTap: () => setState(
-                      () => _selectedStatus = AttendanceHistoryStatus.late,
+                    const SizedBox(width: 9),
+                    HistoryFilterChip(
+                      label: 'Tepat Waktu',
+                      isSelected:
+                          _selectedStatus == AttendanceHistoryStatus.onTime,
+                      onTap: () => setState(
+                        () => _selectedStatus = AttendanceHistoryStatus.onTime,
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: 9),
-                  HistoryFilterChip(
-                    label: 'Lembur',
-                    isSelected:
-                        _selectedStatus == AttendanceHistoryStatus.overtime,
-                    onTap: () => setState(
-                      () => _selectedStatus = AttendanceHistoryStatus.overtime,
+                    const SizedBox(width: 9),
+                    HistoryFilterChip(
+                      label: 'Terlambat',
+                      isSelected:
+                          _selectedStatus == AttendanceHistoryStatus.late,
+                      onTap: () => setState(
+                        () => _selectedStatus = AttendanceHistoryStatus.late,
+                      ),
                     ),
-                  ),
-                ],
+                    const SizedBox(width: 9),
+                    HistoryFilterChip(
+                      label: 'Lembur',
+                      isSelected:
+                          _selectedStatus == AttendanceHistoryStatus.overtime,
+                      onTap: () => setState(
+                        () =>
+                            _selectedStatus = AttendanceHistoryStatus.overtime,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
             const SizedBox(height: 18),
@@ -95,15 +101,16 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
                     '[AttendanceHistory] history page received count: '
                     '${histories.length}',
                   );
-                  final filteredHistories = _selectedStatus == null
-                      ? histories
-                      : histories
-                            .where(
-                              (history) => history.status == _selectedStatus,
-                            )
-                            .toList();
+                  final activities = histories
+                      .expand(attendanceHistoryActivities)
+                      .where(
+                        (activity) =>
+                            _selectedStatus == null ||
+                            activity.status == _selectedStatus,
+                      )
+                      .toList();
 
-                  if (filteredHistories.isEmpty) {
+                  if (activities.isEmpty) {
                     return const _HistoryMessage(
                       message: 'Belum ada riwayat presensi',
                     );
@@ -115,12 +122,12 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
                         ref.refresh(attendanceHistoriesProvider.future),
                     child: ListView.builder(
                       padding: const EdgeInsets.fromLTRB(24, 0, 24, 28),
-                      itemCount: filteredHistories.length,
+                      itemCount: activities.length,
                       itemBuilder: (context, index) {
-                        final history = filteredHistories[index];
+                        final activity = activities[index];
                         return Padding(
                           padding: const EdgeInsets.only(bottom: 14),
-                          child: HistoryAttendanceCard(history: history),
+                          child: HistoryAttendanceCard(activity: activity),
                         );
                       },
                     ),

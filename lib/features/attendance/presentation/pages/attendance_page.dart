@@ -186,7 +186,7 @@ class _AttendanceHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       height: 104,
-      padding: const EdgeInsets.fromLTRB(38, 18, 24, 20),
+      padding: const EdgeInsets.fromLTRB(30, 18, 24, 20),
       decoration: const BoxDecoration(
         gradient: LinearGradient(
           colors: [AppColors.gradientTop, AppColors.gradientBottom],
@@ -217,7 +217,7 @@ class _AttendanceHeader extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     color: Colors.white,
-                    fontSize: 26,
+                    fontSize: 24,
                     fontWeight: FontWeight.w700,
                     height: 1.2,
                   ),

@@ -22,21 +22,23 @@ class ProfileDataCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(20, 16, 16, 14),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFFE9EAEE)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: .08),
-            blurRadius: 16,
-            offset: const Offset(0, 7),
-          ),
-        ],
-      ),
+    return Padding(
+      padding: const EdgeInsets.only(top: 9),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.fromLTRB(25, 18, 18, 14),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: const Color(0xFFE9EAEE)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: .08),
+              blurRadius: 16,
+              offset: const Offset(0, 7),
+            ),
+          ],
+        ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -44,15 +46,16 @@ class ProfileDataCard extends StatelessWidget {
             'Data Diri',
             style: TextStyle(
               color: Colors.black,
-              fontSize: 16,
+              fontSize: 18,
               fontWeight: FontWeight.w800,
               height: 1,
             ),
           ),
-          const SizedBox(height: 18),
+          const SizedBox(height: 15),
           ...items.map((item) => _ProfileDataRow(item: item)),
         ],
       ),
+    ),
     );
   }
 }
@@ -78,8 +81,8 @@ class _ProfileDataRow extends StatelessWidget {
             ),
             child: SvgPicture.asset(
               item.icon,
-              width: 16,
-              height: 16,
+              width: 17,
+              height: 17,
               colorFilter: const ColorFilter.mode(
                 AppColors.secondaryBlue,
                 BlendMode.srcIn,
@@ -95,7 +98,7 @@ class _ProfileDataRow extends StatelessWidget {
                   item.label,
                   style: const TextStyle(
                     color: Color(0xFF8A8F98),
-                    fontSize: 11,
+                    fontSize: 13,
                     fontWeight: FontWeight.w500,
                     height: 1,
                   ),
@@ -107,8 +110,8 @@ class _ProfileDataRow extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
                     color: Colors.black,
-                    fontSize: 13,
-                    fontWeight: FontWeight.w800,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
                     height: 1.15,
                   ),
                 ),

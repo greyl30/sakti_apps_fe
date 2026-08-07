@@ -22,7 +22,7 @@ class LeaveTopBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       height: 104,
-      padding: const EdgeInsets.fromLTRB(22, 18, 24, 20),
+      padding: const EdgeInsets.fromLTRB(30, 18, 24, 20),
       decoration: const BoxDecoration(
         gradient: LinearGradient(
           colors: [AppColors.gradientTop, AppColors.gradientBottom],
@@ -46,7 +46,7 @@ class LeaveTopBar extends StatelessWidget {
               context.go(fallbackRoute);
             },
             borderRadius: BorderRadius.circular(22),
-            child: SvgPicture.asset(AppAssets.iconBack, width: 40, height: 40),
+            child: SvgPicture.asset(AppAssets.iconBack, width: 41, height: 41),
           ),
           const SizedBox(width: 14),
           Expanded(
@@ -60,7 +60,7 @@ class LeaveTopBar extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
                     color: Colors.white,
-                    fontSize: 22,
+                    fontSize: 24,
                     fontWeight: FontWeight.w700,
                     height: 1.1,
                   ),
@@ -72,7 +72,7 @@ class LeaveTopBar extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     color: Colors.white.withValues(alpha: .92),
-                    fontSize: 12,
+                    fontSize: 14,
                     fontWeight: FontWeight.w500,
                     height: 1,
                   ),

@@ -310,10 +310,7 @@ void _openHistoryRequest(BuildContext context, LeaveRequestResponse request) {
   if (statusData.status == LeaveApprovalStatus.canceled) {
     context.push(
       RouteName.leaveCancelSuccess,
-      extra: {
-        'data': statusData,
-        'reason': request.cancelReason ?? 'Tidak ada alasan pembatalan',
-      },
+      extra: {'data': statusData, 'reason': request.cancelReason ?? ''},
     );
     return;
   }
@@ -420,7 +417,7 @@ class _LeaveEmptyText extends StatelessWidget {
         textAlign: TextAlign.center,
         style: const TextStyle(
           color: Color(0xFF8A8F98),
-          fontSize: 11,
+          fontSize: 13,
           fontWeight: FontWeight.w500,
         ),
       ),
@@ -465,7 +462,7 @@ class _SectionTitle extends StatelessWidget {
             ),
             child: Text(
               actionLabel!,
-              style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w800),
+              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w800),
             ),
           ),
       ],

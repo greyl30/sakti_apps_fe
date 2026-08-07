@@ -14,6 +14,19 @@ class AppTheme {
         secondary: AppColors.secondaryBlue,
         surface: AppColors.whiteBackground,
       ),
+      filledButtonTheme: FilledButtonThemeData(
+        style: ButtonStyle(
+          backgroundColor: WidgetStateProperty.resolveWith(
+            (states) => states.contains(WidgetState.disabled)
+                ? const Color(0xFFD0D4DA)
+                : null,
+          ),
+          foregroundColor: WidgetStateProperty.resolveWith(
+            (states) =>
+                states.contains(WidgetState.disabled) ? Colors.white : null,
+          ),
+        ),
+      ),
     );
   }
 }

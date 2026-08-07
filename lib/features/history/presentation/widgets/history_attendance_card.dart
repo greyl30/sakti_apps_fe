@@ -5,9 +5,9 @@ import '../models/attendance_history_model.dart';
 import 'status_badge.dart';
 
 class HistoryAttendanceCard extends StatelessWidget {
-  const HistoryAttendanceCard({super.key, required this.history});
+  const HistoryAttendanceCard({super.key, required this.activity});
 
-  final AttendanceHistoryModel history;
+  final AttendanceHistoryActivity activity;
 
   @override
   Widget build(BuildContext context) {
@@ -34,22 +34,20 @@ class HistoryAttendanceCard extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(
-                  'Riwayat Presensi',
+                  activity.title,
                   style: const TextStyle(
                     color: AppColors.primaryRed,
-                    fontSize: 14,
+                    fontSize: 17,
                     fontWeight: FontWeight.w800,
-                    height: 1,
+                    height: 1.2,
                   ),
                 ),
                 const SizedBox(height: 9),
                 Text(
-                  '${_formatDate(history.date)} | Masuk '
-                  '${history.clockInLabel} WIB'
-                  ' | Keluar ${history.clockOutLabel} WIB',
+                  '${_formatDate(activity.date)} | ${activity.timeLabel} WIB',
                   style: const TextStyle(
                     color: AppColors.secondaryBlue,
-                    fontSize: 10,
+                    fontSize: 13,
                     fontWeight: FontWeight.w600,
                     height: 1,
                   ),
@@ -58,11 +56,63 @@ class HistoryAttendanceCard extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 12),
-          StatusBadge(status: history.status),
+          StatusBadge(status: activity.status),
         ],
       ),
     );
   }
+}
+
+class AttendanceHistoryActivity {
+  const AttendanceHistoryActivity({
+    required this.id,
+    required this.title,
+    required this.date,
+    required this.timeLabel,
+    required this.status,
+  });
+
+  final String id;
+  final String title;
+  final DateTime date;
+  final String timeLabel;
+  final AttendanceHistoryStatus status;
+}
+
+List<AttendanceHistoryActivity> attendanceHistoryActivities(
+  AttendanceHistoryModel history,
+) {
+  final activities = <AttendanceHistoryActivity>[];
+
+  if (history.clockInTime != null) {
+    activities.add(
+      AttendanceHistoryActivity(
+        id: '${history.id}-clock-in',
+        title: 'Presensi Masuk',
+        date: history.date,
+        timeLabel: history.clockInLabel,
+        status: history.isOvertime
+            ? AttendanceHistoryStatus.onTime
+            : history.status,
+      ),
+    );
+  }
+
+  if (history.clockOutTime != null) {
+    activities.add(
+      AttendanceHistoryActivity(
+        id: '${history.id}-clock-out',
+        title: 'Presensi Keluar',
+        date: history.date,
+        timeLabel: history.clockOutLabel,
+        status: history.isOvertime
+            ? AttendanceHistoryStatus.overtime
+            : AttendanceHistoryStatus.onTime,
+      ),
+    );
+  }
+
+  return activities;
 }
 
 String _formatDate(DateTime date) {

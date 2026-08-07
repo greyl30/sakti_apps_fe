@@ -24,9 +24,20 @@ class _LeaveCancelPageState extends ConsumerState<LeaveCancelPage> {
   final _reasonController = TextEditingController();
 
   @override
+  void initState() {
+    super.initState();
+    _reasonController.addListener(_onReasonChanged);
+  }
+
+  @override
   void dispose() {
+    _reasonController.removeListener(_onReasonChanged);
     _reasonController.dispose();
     super.dispose();
+  }
+
+  void _onReasonChanged() {
+    setState(() {});
   }
 
   Future<void> _submitCancellation() async {
@@ -35,6 +46,11 @@ class _LeaveCancelPageState extends ConsumerState<LeaveCancelPage> {
 
     if (leaveId == null || leaveId.isEmpty) {
       _showError('Data pengajuan cuti tidak lengkap.');
+      return;
+    }
+
+    if (reason.isEmpty) {
+      _showError('Alasan pembatalan wajib diisi.');
       return;
     }
 
@@ -67,9 +83,7 @@ class _LeaveCancelPageState extends ConsumerState<LeaveCancelPage> {
   }
 
   String get _resolvedReason {
-    final reason = _reasonController.text.trim();
-    if (reason.isNotEmpty) return reason;
-    return 'Ada keperluan mendadak lainnya';
+    return _reasonController.text.trim();
   }
 
   void _showError(String message) {
@@ -81,6 +95,7 @@ class _LeaveCancelPageState extends ConsumerState<LeaveCancelPage> {
   @override
   Widget build(BuildContext context) {
     final cancelState = ref.watch(leaveCancelProvider);
+    final hasReason = _resolvedReason.isNotEmpty;
 
     return Scaffold(
       backgroundColor: AppColors.whiteBackground,
@@ -110,17 +125,17 @@ class _LeaveCancelPageState extends ConsumerState<LeaveCancelPage> {
                         Icon(
                           Icons.info_rounded,
                           color: AppColors.secondaryBlue,
-                          size: 20,
+                          size: 30,
                         ),
                         SizedBox(width: 12),
                         Expanded(
                           child: Text(
-                            'Konfirmasi Pembatalan\nPembatalan akan dikirimkan ke atasan. Kuota cuti yang terpakai akan dikembalikan.',
+                            'Pembatalan akan dikirimkan ke atasan dan kuota cuti yang terpakai akan dikembalikan.',
                             style: TextStyle(
                               color: Color(0xFF5F6972),
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
-                              height: 1.35,
+                              fontSize: 13,
+                              fontWeight: FontWeight.w500,
+                              height: 1.5,
                             ),
                           ),
                         ),
@@ -135,7 +150,7 @@ class _LeaveCancelPageState extends ConsumerState<LeaveCancelPage> {
                     'Alasan Pembatalan',
                     style: TextStyle(
                       color: Colors.black,
-                      fontSize: 14,
+                      fontSize: 17,
                       fontWeight: FontWeight.w800,
                     ),
                   ),
@@ -149,7 +164,7 @@ class _LeaveCancelPageState extends ConsumerState<LeaveCancelPage> {
                       hintText: 'Tambahkan keterangan...',
                       hintStyle: const TextStyle(
                         color: Color(0xFFB0B4BC),
-                        fontSize: 12,
+                        fontSize: 14,
                         fontWeight: FontWeight.w500,
                       ),
                       filled: true,
@@ -173,7 +188,7 @@ class _LeaveCancelPageState extends ConsumerState<LeaveCancelPage> {
                     label: cancelState.isLoading
                         ? 'Mengirim Pembatalan...'
                         : 'Kirim Pembatalan',
-                    onPressed: cancelState.isLoading
+                    onPressed: cancelState.isLoading || !hasReason
                         ? null
                         : _submitCancellation,
                   ),

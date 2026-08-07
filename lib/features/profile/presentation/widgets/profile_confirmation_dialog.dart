@@ -117,21 +117,31 @@ class _DialogButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isEnabled = onPressed != null;
+    final activeBackgroundColor = isPrimary
+        ? const Color(0xFFD33B32)
+        : const Color(0xFFFFE7E7);
+    final activeForegroundColor = isPrimary
+        ? Colors.white
+        : AppColors.primaryRed;
+    final activeBorderColor = isPrimary
+        ? const Color(0xFFD33B32)
+        : const Color(0xFFF1BDBD);
+    final disabledColor = const Color(0xFFD0D4DA);
+
     return SizedBox(
       height: 45,
       child: FilledButton(
         onPressed: onPressed,
         style: FilledButton.styleFrom(
-          backgroundColor: isPrimary
-              ? const Color(0xFFD33B32)
-              : const Color(0xFFFFE7E7),
-          foregroundColor: isPrimary ? Colors.white : AppColors.primaryRed,
+          backgroundColor: activeBackgroundColor,
+          disabledBackgroundColor: disabledColor,
+          foregroundColor: activeForegroundColor,
+          disabledForegroundColor: Colors.white,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(35),
             side: BorderSide(
-              color: isPrimary
-                  ? const Color(0xFFD33B32)
-                  : const Color(0xFFF1BDBD),
+              color: isEnabled ? activeBorderColor : disabledColor,
             ),
           ),
         ),

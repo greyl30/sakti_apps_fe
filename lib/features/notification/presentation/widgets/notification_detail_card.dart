@@ -35,8 +35,8 @@ class NotificationDetailCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Container(
-                width: 46,
-                height: 46,
+                width: 50,
+                height: 50,
                 decoration: BoxDecoration(
                   color: const Color(0xFFFFE7E7),
                   borderRadius: BorderRadius.circular(12),
@@ -44,15 +44,15 @@ class NotificationDetailCard extends StatelessWidget {
                 alignment: Alignment.center,
                 child: SvgPicture.asset(
                   AppAssets.bel,
-                  width: 22,
-                  height: 22,
+                  width: 24,
+                  height: 24,
                   colorFilter: const ColorFilter.mode(
                     AppColors.primaryRed,
                     BlendMode.srcIn,
                   ),
                 ),
               ),
-              const SizedBox(width: 14),
+              const SizedBox(width: 16),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -61,7 +61,7 @@ class NotificationDetailCard extends StatelessWidget {
                       notification.title,
                       style: const TextStyle(
                         color: AppColors.primaryRed,
-                        fontSize: 14,
+                        fontSize: 16,
                         fontWeight: FontWeight.w800,
                         height: 1.8,
                       ),
@@ -71,9 +71,9 @@ class NotificationDetailCard extends StatelessWidget {
                       formatNotificationDateTime(notification.createdAt),
                       style: const TextStyle(
                         color: AppColors.secondaryBlue,
-                        fontSize: 10,
+                        fontSize: 13,
                         fontWeight: FontWeight.w700,
-                        height: 1,
+                        height: 1.15,
                       ),
                     ),
                   ],
@@ -81,17 +81,17 @@ class NotificationDetailCard extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 14),
+          const SizedBox(height: 16),
 
           const Divider(color: Color(0xFFE5E5E5), thickness: 1, height: 1),
 
-          const SizedBox(height: 14),
+          const SizedBox(height: 16),
 
           Text(
             notification.message,
             style: const TextStyle(
               color: Colors.black,
-              fontSize: 12,
+              fontSize: 14,
               fontWeight: FontWeight.w500,
               height: 1.35,
             ),

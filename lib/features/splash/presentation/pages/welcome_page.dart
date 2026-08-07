@@ -4,6 +4,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/constants/app_assets.dart';
+import '../../../../core/deep_link/reset_password_deep_link_service.dart';
 import '../../../../core/router/route_name.dart';
 import '../../../../core/storage/onboarding_storage_service.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -28,10 +29,15 @@ class _WelcomePageState extends ConsumerState<WelcomePage> {
   }
 
   Future<void> _checkStartupFlow() async {
+    await ResetPasswordDeepLinkService.initialize();
+    if (!mounted) return;
+    if (ResetPasswordDeepLinkService.isHandlingResetPasswordLink) return;
+
     final hasCompletedOnboarding =
         await OnboardingStorageService.hasCompletedOnboarding();
 
     if (!mounted) return;
+    if (ResetPasswordDeepLinkService.isHandlingResetPasswordLink) return;
 
     if (!hasCompletedOnboarding) {
       setState(() {
@@ -42,6 +48,7 @@ class _WelcomePageState extends ConsumerState<WelcomePage> {
 
     final hasSession = await ref.read(authProvider.notifier).restoreSession();
     if (!mounted) return;
+    if (ResetPasswordDeepLinkService.isHandlingResetPasswordLink) return;
 
     context.go(hasSession ? RouteName.home : RouteName.login);
   }

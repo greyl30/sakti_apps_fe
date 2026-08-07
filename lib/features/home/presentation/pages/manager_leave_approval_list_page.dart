@@ -40,42 +40,39 @@ class _ManagerLeaveApprovalListPageState
               fallbackRoute: RouteName.home,
             ),
             const SizedBox(height: 22),
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Row(
-                children: [
-                  HistoryFilterChip(
-                    label: 'Semua',
-                    isSelected: _selectedType == null,
-                    onTap: () => setState(() => _selectedType = null),
-                  ),
-                  const SizedBox(width: 8),
-                  HistoryFilterChip(
-                    label: 'Izin',
-                    isSelected: _selectedType == ManagerApprovalType.permission,
-                    onTap: () => setState(
-                      () => _selectedType = ManagerApprovalType.permission,
+            SizedBox(
+              width: double.infinity,
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    HistoryFilterChip(
+                      label: 'Semua',
+                      isSelected: _selectedType == null,
+                      onTap: () => setState(() => _selectedType = null),
                     ),
-                  ),
-                  const SizedBox(width: 8),
-                  HistoryFilterChip(
-                    label: 'Cuti Sakit',
-                    isSelected: _selectedType == ManagerApprovalType.sickLeave,
-                    onTap: () => setState(
-                      () => _selectedType = ManagerApprovalType.sickLeave,
+                    const SizedBox(width: 8),
+                    HistoryFilterChip(
+                      label: 'Izin',
+                      isSelected:
+                          _selectedType == ManagerApprovalType.permission,
+                      onTap: () => setState(
+                        () => _selectedType = ManagerApprovalType.permission,
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: 8),
-                  HistoryFilterChip(
-                    label: 'Dispensasi',
-                    isSelected:
-                        _selectedType == ManagerApprovalType.dispensation,
-                    onTap: () => setState(
-                      () => _selectedType = ManagerApprovalType.dispensation,
+                    const SizedBox(width: 8),
+                    HistoryFilterChip(
+                      label: 'Cuti Sakit',
+                      isSelected:
+                          _selectedType == ManagerApprovalType.sickLeave,
+                      onTap: () => setState(
+                        () => _selectedType = ManagerApprovalType.sickLeave,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
             const SizedBox(height: 16),
@@ -118,7 +115,7 @@ class _ManagerLeaveApprovalListPageState
                                 : () => _approveLeave(approval),
                             onReject: isProcessing
                                 ? null
-                                : () => _showRejectDialog(approval),
+                                : () => _openRejectReasonPage(approval),
                           ),
                         );
                       },
@@ -177,17 +174,8 @@ class _ManagerLeaveApprovalListPageState
     );
   }
 
-  void _showRejectDialog(ManagerLeaveApproval approval) {
-    showDialog<void>(
-      context: context,
-      builder: (dialogContext) => ManagerRejectConfirmationDialog(
-        onConfirm: () {
-          Navigator.of(dialogContext).pop();
-          context.push(RouteName.managerLeaveRejectReason, extra: approval);
-        },
-        onCancel: () => Navigator.of(dialogContext).pop(),
-      ),
-    );
+  void _openRejectReasonPage(ManagerLeaveApproval approval) {
+    context.push(RouteName.managerLeaveRejectReason, extra: approval);
   }
 }
 

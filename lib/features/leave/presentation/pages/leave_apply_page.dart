@@ -9,6 +9,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/app_bottom_navigation.dart';
 import '../models/leave_form_data.dart';
 import '../providers/leave_submit_provider.dart';
+import '../utils/leave_workday_calculator.dart';
 import '../widgets/leave_list_item.dart';
 import '../widgets/leave_top_bar.dart';
 
@@ -20,7 +21,7 @@ class LeaveApplyPage extends ConsumerStatefulWidget {
 }
 
 class _LeaveApplyPageState extends ConsumerState<LeaveApplyPage> {
-  String _selectedType = 'Sakit';
+  String? _selectedType;
   final _reasonController = TextEditingController();
   DateTimeRange? _dateRange;
 
@@ -47,12 +48,24 @@ class _LeaveApplyPageState extends ConsumerState<LeaveApplyPage> {
   void _goToConfirmation() {
     final dateRange = _dateRange;
     if (dateRange == null) return;
-
-    final data = LeaveFormData(
-      type: _selectedType,
-      reason: _reasonController.text.trim().isEmpty ? '' : _reasonController.text.trim(),
+    if (_selectedType == null) return;
+    final holidayDates = ref.read(activeLeaveHolidayDatesProvider).valueOrNull;
+    if (holidayDates == null) return;
+    final totalWorkdays = calculateLeaveWorkdays(
       startDate: dateRange.start,
       endDate: dateRange.end,
+      holidays: holidayDates,
+    );
+    if (totalWorkdays <= 0) return;
+
+    final data = LeaveFormData(
+      type: _selectedType!,
+      reason: _reasonController.text.trim().isEmpty
+          ? ''
+          : _reasonController.text.trim(),
+      startDate: dateRange.start,
+      endDate: dateRange.end,
+      totalWorkdays: totalWorkdays,
     );
 
     context.push(RouteName.leaveConfirmation, extra: data);
@@ -62,10 +75,19 @@ class _LeaveApplyPageState extends ConsumerState<LeaveApplyPage> {
   Widget build(BuildContext context) {
     final startLabel = _dateRange == null ? '' : _formatDate(_dateRange!.start);
     final endLabel = _dateRange == null ? '' : _formatDate(_dateRange!.end);
-    final totalDays = _dateRange == null
+    final holidays = ref.watch(activeLeaveHolidayDatesProvider);
+    final holidayDates = holidays.valueOrNull;
+    final totalDays = _dateRange == null || holidayDates == null
         ? null
-        : _dateRange!.end.difference(_dateRange!.start).inDays + 1;
-    final isDispensation = _selectedType.trim().toLowerCase() == 'dispensasi';
+        : calculateLeaveWorkdays(
+            startDate: _dateRange!.start,
+            endDate: _dateRange!.end,
+            holidays: holidayDates,
+          );
+    final isHolidayLoading = holidays.isLoading && holidayDates == null;
+    final isHolidayError = holidays.hasError && holidayDates == null;
+    final hasNoWorkdays = totalDays != null && totalDays <= 0;
+    final isDispensation = _selectedType?.trim().toLowerCase() == 'dispensasi';
     final balance = ref.watch(leaveBalanceProvider);
     final balanceData = balance.valueOrNull;
     final isBalanceLoading = balance.isLoading && balanceData == null;
@@ -87,9 +109,12 @@ class _LeaveApplyPageState extends ConsumerState<LeaveApplyPage> {
         totalDays > availableRequestQuota;
     final canContinue =
         _dateRange != null &&
+        _selectedType != null &&
+        totalDays != null &&
+        totalDays > 0 &&
+        !isHolidayError &&
         !isDispensationDurationExceeded &&
-        (isDispensation ||
-            (availableRequestQuota != null && !isQuotaExceeded));
+        (isDispensation || (availableRequestQuota != null && !isQuotaExceeded));
 
     return Scaffold(
       backgroundColor: AppColors.whiteBackground,
@@ -143,7 +168,7 @@ class _LeaveApplyPageState extends ConsumerState<LeaveApplyPage> {
                               'Sisa Cuti Tahunan',
                               style: TextStyle(
                                 color: Colors.white,
-                                fontSize: 11,
+                                fontSize: 12,
                                 fontWeight: FontWeight.w700,
                                 height: 1,
                               ),
@@ -153,7 +178,7 @@ class _LeaveApplyPageState extends ConsumerState<LeaveApplyPage> {
                               '$remainingLeaveText hari tersisa',
                               style: const TextStyle(
                                 color: Colors.white,
-                                fontSize: 17,
+                                fontSize: 18,
                                 fontWeight: FontWeight.w800,
                                 height: 1,
                               ),
@@ -187,20 +212,18 @@ class _LeaveApplyPageState extends ConsumerState<LeaveApplyPage> {
                     onTap: () => setState(() => _selectedType = 'Dispensasi'),
                   ),
                   const SizedBox(height: 26),
-                  const _FormLabel('Keterangan (opsional)'),
+                  const _FormLabel('Keterangan'),
                   const SizedBox(height: 10),
                   TextField(
                     controller: _reasonController,
                     minLines: 3,
                     maxLines: 3,
-                    style: const TextStyle(fontSize: 12),
-                    decoration: _inputDecoration(
-                      'Tambahkan keterangan jika diperlukan...',
-                    ),
+                    style: const TextStyle(fontSize: 14),
+                    decoration: _inputDecoration('Tambahkan keterangan'),
                   ),
                   const SizedBox(height: 26),
                   const _FormLabel('Pilih Rentang Tanggal'),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 16),
                   Row(
                     children: [
                       Expanded(
@@ -220,8 +243,8 @@ class _LeaveApplyPageState extends ConsumerState<LeaveApplyPage> {
                       ),
                     ],
                   ),
-                  if (totalDays != null) ...[
-                    const SizedBox(height: 12),
+                  if (_dateRange != null) ...[
+                    const SizedBox(height: 16),
                     Container(
                       padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
                       decoration: BoxDecoration(
@@ -230,7 +253,11 @@ class _LeaveApplyPageState extends ConsumerState<LeaveApplyPage> {
                         border: Border.all(color: const Color(0xFFC6E6F0)),
                       ),
                       child: Text(
-                        isDispensation
+                        isHolidayLoading
+                            ? 'Menghitung durasi hari kerja...'
+                            : isHolidayError
+                            ? 'Data hari libur belum dapat dimuat.'
+                            : isDispensation
                             ? 'Durasi: $totalDays hari kerja\n'
                                   'Dispensasi tidak mengurangi saldo cuti.'
                             : 'Durasi: $totalDays hari kerja\n'
@@ -238,20 +265,32 @@ class _LeaveApplyPageState extends ConsumerState<LeaveApplyPage> {
                                   '${remainingAfterRequest?.toString() ?? (isBalanceLoading ? '...' : '-')} hari',
                         style: const TextStyle(
                           color: AppColors.secondaryBlue,
-                          fontSize: 11,
-                          fontWeight: FontWeight.w700,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
                           height: 1.35,
                         ),
                       ),
                     ),
+                    if (hasNoWorkdays) ...[
+                      const SizedBox(height: 8),
+                      const Text(
+                        'Rentang tanggal yang dipilih tidak memiliki hari kerja.',
+                        style: TextStyle(
+                          color: AppColors.primaryRed,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          height: 1.35,
+                        ),
+                      ),
+                    ],
                     if (isDispensationDurationExceeded) ...[
                       const SizedBox(height: 8),
                       const Text(
                         'Dispensasi maksimal 2 hari.',
                         style: TextStyle(
                           color: AppColors.primaryRed,
-                          fontSize: 11,
-                          fontWeight: FontWeight.w700,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
                           height: 1.35,
                         ),
                       ),
@@ -262,8 +301,8 @@ class _LeaveApplyPageState extends ConsumerState<LeaveApplyPage> {
                         'Jumlah hari cuti melebihi kuota pengajuan yang tersedia.',
                         style: TextStyle(
                           color: AppColors.primaryRed,
-                          fontSize: 11,
-                          fontWeight: FontWeight.w700,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
                           height: 1.35,
                         ),
                       ),
@@ -330,7 +369,7 @@ class _FormLabel extends StatelessWidget {
       label,
       style: const TextStyle(
         color: Colors.black,
-        fontSize: 16,
+        fontSize: 17,
         fontWeight: FontWeight.w800,
         height: 1,
       ),
@@ -357,7 +396,7 @@ class _LeaveTypeTile extends StatelessWidget {
       onTap: onTap,
       borderRadius: BorderRadius.circular(12),
       child: Container(
-        height: 70,
+        height: 75,
         padding: const EdgeInsets.symmetric(horizontal: 14),
         decoration: BoxDecoration(
           color: Colors.white,
@@ -367,8 +406,8 @@ class _LeaveTypeTile extends StatelessWidget {
         child: Row(
           children: [
             Container(
-              width: 40,
-              height: 40,
+              width: 43,
+              height: 43,
               alignment: Alignment.center,
               decoration: BoxDecoration(
                 color: const Color(0xFFFFE2E2),
@@ -376,8 +415,8 @@ class _LeaveTypeTile extends StatelessWidget {
               ),
               child: SvgPicture.asset(
                 icon,
-                width: 20,
-                height: 20,
+                width: 22,
+                height: 22,
                 colorFilter: const ColorFilter.mode(
                   AppColors.primaryRed,
                   BlendMode.srcIn,
@@ -390,7 +429,7 @@ class _LeaveTypeTile extends StatelessWidget {
                 title,
                 style: const TextStyle(
                   color: Colors.black,
-                  fontSize: 13,
+                  fontSize: 16,
                   fontWeight: FontWeight.w700,
                 ),
               ),
@@ -436,16 +475,16 @@ class _DateBox extends StatelessWidget {
           label,
           style: const TextStyle(
             color: Color(0xFF8A8F98),
-            fontSize: 9,
+            fontSize: 12,
             fontWeight: FontWeight.w700,
           ),
         ),
-        const SizedBox(height: 7),
+        const SizedBox(height: 12),
         InkWell(
           onTap: onTap,
           borderRadius: BorderRadius.circular(15),
           child: Container(
-            height: 44,
+            height: 47,
             padding: const EdgeInsets.symmetric(horizontal: 12),
             decoration: BoxDecoration(
               color: const Color(0xFFEAF8FD),
@@ -456,8 +495,8 @@ class _DateBox extends StatelessWidget {
               children: [
                 SvgPicture.asset(
                   AppAssets.iconCalendar,
-                  width: 15,
-                  height: 15,
+                  width: 22,
+                  height: 22,
                   colorFilter: const ColorFilter.mode(
                     AppColors.secondaryBlue,
                     BlendMode.srcIn,
@@ -471,7 +510,7 @@ class _DateBox extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
                       color: Color(0xFF3E6F7B),
-                      fontSize: 11,
+                      fontSize: 14,
                       fontWeight: FontWeight.w700,
                     ),
                   ),

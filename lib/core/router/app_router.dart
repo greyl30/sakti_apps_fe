@@ -1,6 +1,7 @@
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../deep_link/reset_password_deep_link_parser.dart';
 import '../supabase/supabase_client.dart';
 import '../../features/attendance/data/models/attendance_submit_response.dart';
 import '../../features/attendance/presentation/models/attendance_flow_type.dart';
@@ -122,7 +123,7 @@ final appRouter = GoRouter(
     GoRoute(
       path: RouteName.resetPassword,
       builder: (context, state) =>
-          ResetPasswordPage(token: _extractResetPasswordToken(state.uri)),
+          ResetPasswordPage(token: extractResetPasswordToken(state.uri)),
     ),
     GoRoute(
       path: RouteName.home,
@@ -246,8 +247,8 @@ final appRouter = GoRouter(
             ? extra['data'] as LeaveRequestStatusData? ?? dummyLeaveApproved
             : dummyLeaveApproved;
         final reason = extra is Map<String, Object?>
-            ? extra['reason'] as String? ?? 'Ada keperluan mendadak lainnya'
-            : 'Ada keperluan mendadak lainnya';
+            ? extra['reason'] as String? ?? ''
+            : '';
 
         return LeaveCancelSuccessPage(data: data, cancelReason: reason);
       },
@@ -343,28 +344,8 @@ Set<String>? _allowedRolesFor(String location) {
 String _normalizeRole(String? role) => role?.trim().toLowerCase() ?? '';
 
 String? _resetPasswordLocationFromDeepLink(Uri uri) {
-  if (uri.scheme != 'sakti' || uri.host != 'reset-password') return null;
+  if (!isResetPasswordDeepLink(uri)) return null;
 
-  final token = _extractResetPasswordToken(uri);
-  final query = token.isEmpty
-      ? ''
-      : '?access_token=${Uri.encodeQueryComponent(token)}';
-  return '${RouteName.resetPassword}$query';
-}
-
-String _extractResetPasswordToken(Uri uri) {
-  final queryToken =
-      uri.queryParameters['access_token'] ?? uri.queryParameters['token'];
-  if (queryToken != null && queryToken.trim().isNotEmpty) {
-    return queryToken.trim();
-  }
-
-  final fragment = uri.fragment.trim();
-  if (fragment.isEmpty) return '';
-
-  final queryStart = fragment.contains('?')
-      ? fragment.substring(fragment.indexOf('?') + 1)
-      : fragment;
-  final parameters = Uri.splitQueryString(queryStart);
-  return (parameters['access_token'] ?? parameters['token'] ?? '').trim();
+  logResetPasswordDeepLink('GoRouter', uri);
+  return resetPasswordLocationFromUri(uri);
 }

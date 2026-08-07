@@ -118,7 +118,7 @@ class _HistoryCard extends StatelessWidget {
           Text(
             _formatDate(history.date),
             style: const TextStyle(
-              fontSize: 13,
+              fontSize: 16,
               fontWeight: FontWeight.w700,
               color: Colors.black,
             ),
@@ -173,8 +173,8 @@ class _HistoryTime extends StatelessWidget {
     return Row(
       children: [
         Container(
-          width: 32,
-          height: 32,
+          width: 38,
+          height: 38,
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
             color: iconBackground,
@@ -195,7 +195,7 @@ class _HistoryTime extends StatelessWidget {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: const TextStyle(
-                  fontSize: 9,
+                  fontSize: 14,
                   fontWeight: FontWeight.w500,
                   color: Color(0xFF858585),
                 ),
@@ -206,7 +206,7 @@ class _HistoryTime extends StatelessWidget {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: const TextStyle(
-                  fontSize: 13,
+                  fontSize: 16,
                   fontWeight: FontWeight.w700,
                   color: Colors.black,
                 ),

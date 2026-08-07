@@ -23,7 +23,7 @@ class StatusBadge extends StatelessWidget {
         badge.label,
         style: TextStyle(
           color: badge.foreground,
-          fontSize: 9,
+          fontSize: 11,
           fontWeight: FontWeight.w800,
           height: 1,
         ),
