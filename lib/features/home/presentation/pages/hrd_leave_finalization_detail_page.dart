@@ -44,7 +44,7 @@ class HrdLeaveFinalizationDetailPage extends ConsumerWidget {
                   ManagerApprovalButton(
                     label: isProcessing ? 'Memproses...' : 'Finalisasi Cuti',
                     isPrimary: true,
-                    height: 48,
+                    height: 51,
                     onPressed: actionState.isLoading
                         ? null
                         : () => _finalizeLeave(context, ref),

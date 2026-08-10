@@ -87,7 +87,7 @@ class _CheckInLoadingPageState extends State<CheckInLoadingPage> {
                       'Memverifikasi presensi...',
                       style: TextStyle(
                         color: Colors.black,
-                        fontSize: 14,
+                        fontSize: 13,
                         fontWeight: FontWeight.w700,
                       ),
                     ),
@@ -96,7 +96,7 @@ class _CheckInLoadingPageState extends State<CheckInLoadingPage> {
                       'Mohon tunggu sebentar',
                       style: TextStyle(
                         color: Color(0xFF8A8F98),
-                        fontSize: 12,
+                        fontSize: 13,
                         fontWeight: FontWeight.w500,
                       ),
                     ),

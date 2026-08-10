@@ -222,9 +222,9 @@ class _AttendanceActionButton extends StatelessWidget {
     final foregroundColor = Colors.white;
 
     return SizedBox(
-      height: 48,
+      height: 51,
       child: FilledButton(
-        onPressed: isEnabled ? onTap : null,
+        onPressed: onTap,
         style: FilledButton.styleFrom(
           backgroundColor: backgroundColor,
           disabledBackgroundColor: backgroundColor,
@@ -251,7 +251,7 @@ class _AttendanceActionButton extends StatelessWidget {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: const TextStyle(
-                  fontSize: 13,
+                  fontSize: 16,
                   fontWeight: FontWeight.w700,
                 ),
               ),

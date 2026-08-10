@@ -21,6 +21,8 @@ class LeaveCancelSuccessPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final resolvedCancelReason = _cleanCancelReason(cancelReason);
+
     return Scaffold(
       backgroundColor: AppColors.whiteBackground,
       body: SafeArea(
@@ -41,7 +43,7 @@ class LeaveCancelSuccessPage extends StatelessWidget {
               description: 'Kuota cuti yang sebelumnya akan dikembalikan',
             ),
             const SizedBox(height: 28),
-            LeaveSummaryCard(data: data, cancelReason: cancelReason),
+            LeaveSummaryCard(data: data, cancelReason: resolvedCancelReason),
             const SizedBox(height: 28),
             LeavePrimaryButton(
               label: 'Kembali ke Beranda',
@@ -60,5 +62,13 @@ class LeaveCancelSuccessPage extends StatelessWidget {
     }
 
     context.go(RouteName.leave);
+  }
+
+  String? _cleanCancelReason(String value) {
+    final trimmed = value.trim();
+    if (trimmed.isEmpty) return null;
+    if (trimmed.toLowerCase() == 'dibatalkan oleh karyawan') return null;
+
+    return trimmed;
   }
 }

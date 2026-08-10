@@ -111,7 +111,7 @@ class LeaveConfirmationPage extends ConsumerWidget {
               const SizedBox(height: 24),
               SizedBox(
                 width: double.infinity,
-                height: 48,
+                height: 51,
                 child: FilledButton(
                   onPressed: () {
                     Navigator.of(dialogContext).pop();
@@ -132,7 +132,7 @@ class LeaveConfirmationPage extends ConsumerWidget {
                     'OK',
                     style: TextStyle(
                       color: Colors.white,
-                      fontSize: 14,
+                      fontSize: 16,
                       fontWeight: FontWeight.w800,
                     ),
                   ),

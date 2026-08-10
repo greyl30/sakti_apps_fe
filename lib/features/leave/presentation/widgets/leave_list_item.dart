@@ -131,10 +131,11 @@ class LeavePrimaryButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isEnabled = onPressed != null;
+    final isLoadingLabel = _isLoadingButtonLabel(label);
 
     return SizedBox(
       width: double.infinity,
-      height: 48,
+      height: 51,
       child: FilledButton(
         onPressed: onPressed,
         style: FilledButton.styleFrom(
@@ -152,9 +153,9 @@ class LeavePrimaryButton extends StatelessWidget {
         ),
         child: Text(
           label,
-          style: const TextStyle(
+          style: TextStyle(
             color: Colors.white,
-            fontSize: 14,
+            fontSize: isLoadingLabel ? 13 : 16,
             fontWeight: FontWeight.w800,
             height: 1,
           ),
@@ -162,4 +163,14 @@ class LeavePrimaryButton extends StatelessWidget {
       ),
     );
   }
+}
+
+bool _isLoadingButtonLabel(String label) {
+  final normalized = label.trim().toLowerCase();
+  return normalized.startsWith('memuat') ||
+      normalized.startsWith('mengirim') ||
+      normalized.startsWith('memproses') ||
+      normalized.startsWith('mengunduh') ||
+      normalized.startsWith('mengambil') ||
+      normalized.startsWith('loading');
 }

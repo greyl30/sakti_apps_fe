@@ -684,7 +684,7 @@ class _OvertimeDialogButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 44,
+      height: 51,
       child: FilledButton(
         onPressed: onPressed,
         style: FilledButton.styleFrom(
@@ -701,7 +701,7 @@ class _OvertimeDialogButton extends StatelessWidget {
         ),
         child: Text(
           label,
-          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800),
+          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
         ),
       ),
     );

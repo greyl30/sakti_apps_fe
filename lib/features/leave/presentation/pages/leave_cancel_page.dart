@@ -159,12 +159,13 @@ class _LeaveCancelPageState extends ConsumerState<LeaveCancelPage> {
                     controller: _reasonController,
                     minLines: 3,
                     maxLines: 3,
-                    style: const TextStyle(fontSize: 12),
+                    style: const TextStyle(fontSize: 15),
                     decoration: InputDecoration(
+                      constraints: const BoxConstraints(minHeight: 51),
                       hintText: 'Tambahkan keterangan...',
                       hintStyle: const TextStyle(
                         color: Color(0xFFB0B4BC),
-                        fontSize: 14,
+                        fontSize: 15,
                         fontWeight: FontWeight.w500,
                       ),
                       filled: true,

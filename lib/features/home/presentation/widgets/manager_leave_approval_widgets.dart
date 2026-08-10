@@ -231,7 +231,7 @@ class ManagerApprovalButton extends StatelessWidget {
     required this.label,
     required this.isPrimary,
     required this.onPressed,
-    this.height = 50,
+    this.height = 51,
   });
 
   final String label;
@@ -380,7 +380,7 @@ class ManagerRejectConfirmationDialog extends StatelessWidget {
                   child: _ApprovalActionButton(
                     label: 'Ya',
                     isPrimary: false,
-                    height: 42,
+                    height: 51,
                     onPressed: onConfirm,
                   ),
                 ),
@@ -389,7 +389,7 @@ class ManagerRejectConfirmationDialog extends StatelessWidget {
                   child: _ApprovalActionButton(
                     label: 'Tidak',
                     isPrimary: true,
-                    height: 42,
+                    height: 51,
                     onPressed: onCancel,
                   ),
                 ),
@@ -453,7 +453,7 @@ class _ApprovalActionButton extends StatelessWidget {
     required this.label,
     required this.isPrimary,
     required this.onPressed,
-    this.height = 40,
+    this.height = 47,
     this.borderRadius = 22,
   });
 
@@ -466,6 +466,7 @@ class _ApprovalActionButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isEnabled = onPressed != null;
+    final isLoadingLabel = _isLoadingButtonLabel(label);
     final activeBackgroundColor = isPrimary
         ? const Color(0xFFD33B32)
         : const Color(0xFFFFE7E7);
@@ -495,8 +496,8 @@ class _ApprovalActionButton extends StatelessWidget {
         ),
         child: Text(
           label,
-          style: const TextStyle(
-            fontSize: 14,
+          style: TextStyle(
+            fontSize: isLoadingLabel ? 13 : 16,
             fontWeight: FontWeight.w800,
             height: 1,
           ),
@@ -504,6 +505,16 @@ class _ApprovalActionButton extends StatelessWidget {
       ),
     );
   }
+}
+
+bool _isLoadingButtonLabel(String label) {
+  final normalized = label.trim().toLowerCase();
+  return normalized.startsWith('memuat') ||
+      normalized.startsWith('mengirim') ||
+      normalized.startsWith('memproses') ||
+      normalized.startsWith('mengunduh') ||
+      normalized.startsWith('mengambil') ||
+      normalized.startsWith('loading');
 }
 
 BoxDecoration _cardDecoration() {

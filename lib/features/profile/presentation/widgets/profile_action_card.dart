@@ -26,7 +26,7 @@ class ProfileActionCard extends StatelessWidget {
         onTap: onTap,
         borderRadius: BorderRadius.circular(42),
         child: Ink(
-          height: 50,
+          height: 51,
           padding: const EdgeInsets.symmetric(horizontal: 22),
           decoration: BoxDecoration(
             color: isDestructive
@@ -48,7 +48,7 @@ class ProfileActionCard extends StatelessWidget {
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
                 color: isDestructive ? Colors.white : AppColors.primaryRed,
-                fontSize: 15,
+                fontSize: 16,
                 fontWeight: FontWeight.w800,
                 height: 1,
               ),

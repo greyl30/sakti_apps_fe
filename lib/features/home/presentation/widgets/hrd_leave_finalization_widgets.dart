@@ -102,7 +102,7 @@ class HrdFinalizationCard extends StatelessWidget {
           ManagerApprovalButton(
             label: isProcessing ? '...' : 'Finalisasi',
             isPrimary: true,
-            height: 48,
+            height: 51,
             onPressed: onFinalize,
           ),
         ],

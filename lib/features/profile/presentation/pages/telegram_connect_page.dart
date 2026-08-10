@@ -88,17 +88,21 @@ class _TelegramConnectPageState extends ConsumerState<TelegramConnectPage> {
                       TextFormField(
                         controller: _codeController,
                         textCapitalization: TextCapitalization.characters,
-                        style: const TextStyle(fontSize: 13),
+                        style: const TextStyle(fontSize: 15),
                         decoration: InputDecoration(
+                          constraints: const BoxConstraints(minHeight: 51),
                           hintText: 'SAKTI-A7F3',
                           hintStyle: const TextStyle(
                             color: Color(0xFFB0B4BC),
-                            fontSize: 12,
+                            fontSize: 15,
                             fontWeight: FontWeight.w500,
                           ),
                           filled: true,
                           fillColor: const Color(0xFFFAFAFA),
-                          contentPadding: const EdgeInsets.all(16),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 13,
+                          ),
                           enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(15),
                             borderSide: const BorderSide(

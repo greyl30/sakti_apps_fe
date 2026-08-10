@@ -130,7 +130,7 @@ class _DialogButton extends StatelessWidget {
     final disabledColor = const Color(0xFFD0D4DA);
 
     return SizedBox(
-      height: 45,
+      height: 51,
       child: FilledButton(
         onPressed: onPressed,
         style: FilledButton.styleFrom(

@@ -37,13 +37,14 @@ class PasswordTextField extends StatelessWidget {
           controller: controller,
           validator: validator,
           obscureText: obscureText,
-          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
+          style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
           decoration: InputDecoration(
+            constraints: const BoxConstraints(minHeight: 51),
             filled: true,
             fillColor: AppColors.secondaryBlue.withValues(alpha: 0.08),
             contentPadding: const EdgeInsets.symmetric(
               horizontal: 18,
-              vertical: 17,
+              vertical: 13,
             ),
             suffixIcon: IconButton(
               // Toggle show/hide password.

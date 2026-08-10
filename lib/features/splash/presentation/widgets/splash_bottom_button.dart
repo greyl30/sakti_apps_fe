@@ -17,7 +17,7 @@ class SplashBottomButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return SizedBox(
       width: double.infinity,
-      height: 52,
+      height: 51,
       child: FilledButton(
         onPressed: onPrimaryPressed,
         style: FilledButton.styleFrom(
@@ -30,7 +30,7 @@ class SplashBottomButton extends StatelessWidget {
         child: Text(
           label,
           style: const TextStyle(
-            fontSize: 14,
+            fontSize: 16,
             fontWeight: FontWeight.w700,
             color: Colors.white,
             height: 1,

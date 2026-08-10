@@ -106,7 +106,7 @@ class LeaveRequestResponse {
       finalizedBy: _readNullableString(json['difinalisasi_oleh']),
       finalizedAt: _readNullableDate(json['tanggal_difinalisasi']),
       pdfUrl: _readNullableString(json['url_pdf']),
-      cancelReason: _readNullableString(json['alasan_batal']),
+      cancelReason: _readCancelReason(json),
       rejectionReason: _readFirstNullableString(json, const [
         'alasan_ditolak',
         'alasan_tolak',
@@ -432,6 +432,21 @@ String? _readFirstNullableString(Map<String, dynamic> json, List<String> keys) {
   }
 
   return null;
+}
+
+String? _readCancelReason(Map<String, dynamic> json) {
+  final reason = _readFirstNullableString(json, const [
+    'alasan_batal',
+    'alasan_pembatalan',
+    'alasan_dibatalkan',
+    'catatan_pembatalan',
+    'keterangan_pembatalan',
+  ]);
+  final normalized = reason?.trim().toLowerCase();
+  if (normalized == null || normalized.isEmpty) return null;
+  if (normalized == 'dibatalkan oleh karyawan') return null;
+
+  return reason;
 }
 
 int _readInt(Object? value) {

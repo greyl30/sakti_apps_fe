@@ -85,13 +85,14 @@ class _ManagerLeaveRejectReasonPageState
                     enabled: !actionState.isLoading,
                     minLines: 3,
                     maxLines: 3,
-                    style: const TextStyle(fontSize: 12),
+                    style: const TextStyle(fontSize: 15),
                     decoration: InputDecoration(
+                      constraints: const BoxConstraints(minHeight: 51),
                       hintText: 'Tambahkan keterangan',
                       errorText: _reasonError,
                       hintStyle: const TextStyle(
                         color: Color(0xFFB0B4BC),
-                        fontSize: 14,
+                        fontSize: 15,
                         fontWeight: FontWeight.w500,
                       ),
                       filled: true,

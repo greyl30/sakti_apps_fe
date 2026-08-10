@@ -259,7 +259,7 @@ class LeaveSecondaryButton extends StatelessWidget {
 
     return SizedBox(
       width: double.infinity,
-      height: 50,
+      height: 51,
       child: FilledButton(
         onPressed: onPressed,
         style: FilledButton.styleFrom(
@@ -278,7 +278,7 @@ class LeaveSecondaryButton extends StatelessWidget {
         ),
         child: Text(
           label,
-          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800),
+          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
         ),
       ),
     );

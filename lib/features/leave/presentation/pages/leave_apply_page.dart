@@ -218,7 +218,7 @@ class _LeaveApplyPageState extends ConsumerState<LeaveApplyPage> {
                     controller: _reasonController,
                     minLines: 3,
                     maxLines: 3,
-                    style: const TextStyle(fontSize: 14),
+                    style: const TextStyle(fontSize: 15),
                     decoration: _inputDecoration('Tambahkan keterangan'),
                   ),
                   const SizedBox(height: 26),
@@ -329,11 +329,12 @@ class _LeaveApplyPageState extends ConsumerState<LeaveApplyPage> {
       hintText: hint,
       hintStyle: const TextStyle(
         color: Color(0xFFB0B4BC),
-        fontSize: 11,
+        fontSize: 15,
         fontWeight: FontWeight.w500,
       ),
       filled: true,
       fillColor: const Color(0xFFFAFAFA),
+      constraints: const BoxConstraints(minHeight: 51),
       contentPadding: const EdgeInsets.all(16),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(15),
@@ -484,7 +485,7 @@ class _DateBox extends StatelessWidget {
           onTap: onTap,
           borderRadius: BorderRadius.circular(15),
           child: Container(
-            height: 47,
+            height: 51,
             padding: const EdgeInsets.symmetric(horizontal: 12),
             decoration: BoxDecoration(
               color: const Color(0xFFEAF8FD),
@@ -510,7 +511,7 @@ class _DateBox extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
                       color: Color(0xFF3E6F7B),
-                      fontSize: 14,
+                      fontSize: 15,
                       fontWeight: FontWeight.w700,
                     ),
                   ),

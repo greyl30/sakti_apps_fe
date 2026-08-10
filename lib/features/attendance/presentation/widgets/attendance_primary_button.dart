@@ -14,9 +14,11 @@ class AttendancePrimaryButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isLoadingLabel = _isLoadingButtonLabel(label);
+
     return SizedBox(
       width: double.infinity,
-      height: 48,
+      height: 51,
       child: FilledButton(
         onPressed: onPressed,
         style: FilledButton.styleFrom(
@@ -30,9 +32,9 @@ class AttendancePrimaryButton extends StatelessWidget {
           label,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
-          style: const TextStyle(
+          style: TextStyle(
             color: Colors.white,
-            fontSize: 14,
+            fontSize: isLoadingLabel ? 13 : 16,
             fontWeight: FontWeight.w700,
             height: 1,
           ),
@@ -40,4 +42,14 @@ class AttendancePrimaryButton extends StatelessWidget {
       ),
     );
   }
+}
+
+bool _isLoadingButtonLabel(String label) {
+  final normalized = label.trim().toLowerCase();
+  return normalized.startsWith('memuat') ||
+      normalized.startsWith('mengirim') ||
+      normalized.startsWith('memproses') ||
+      normalized.startsWith('mengunduh') ||
+      normalized.startsWith('mengambil') ||
+      normalized.startsWith('loading');
 }

@@ -9,11 +9,9 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/app_bottom_navigation.dart';
 import '../../../attendance/data/datasources/attendance_remote_data_source.dart';
 import '../../../attendance/data/repositories/attendance_repository.dart';
-import '../../../attendance/presentation/models/attendance_ui_state.dart';
-import '../../../attendance/presentation/utils/attendance_reminder_guard.dart';
+import '../../../attendance/presentation/utils/attendance_availability.dart';
 import '../../../attendance/presentation/widgets/attendance_status_dialog.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
-import '../../../history/presentation/models/attendance_history_model.dart';
 import '../../../history/presentation/providers/attendance_history_provider.dart';
 import '../../../notification/presentation/providers/notification_provider.dart';
 import '../../../leave/presentation/providers/leave_submit_provider.dart';
@@ -44,17 +42,11 @@ class HomePage extends ConsumerWidget {
     final histories = ref.watch(attendanceHistoriesProvider);
     final holidays = ref.watch(activeLeaveHolidayDatesProvider);
     final leaveStatuses = ref.watch(leaveStatusesProvider);
-    final attendanceState = _attendanceStateFromHistories(
-      histories.valueOrNull,
-    );
-    final isAttendanceUnavailable = isAttendanceReminderSuppressed(
+    final attendanceAvailability = buildAttendanceAvailability(
       date: DateTime.now(),
       holidays: holidays.valueOrNull ?? const <DateTime>{},
       leaveRequests: leaveStatuses.valueOrNull ?? const [],
-    );
-    final isCalendarHoliday = _isCalendarHoliday(
-      DateTime.now(),
-      holidays.valueOrNull ?? const <DateTime>{},
+      histories: histories.valueOrNull,
     );
     final unreadCount = ref.watch(notificationUnreadCountProvider);
     final hasUnreadNotifications = (unreadCount.valueOrNull ?? 0) > 0;
@@ -86,39 +78,32 @@ class HomePage extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     HomeAttendanceCard(
-                      isHoliday: isAttendanceUnavailable,
-                      canCheckIn:
-                          !isAttendanceUnavailable &&
-                          !attendanceState.hasClockIn,
-                      canCheckOut:
-                          !isAttendanceUnavailable &&
-                          attendanceState.hasClockIn &&
-                          !attendanceState.hasClockOut,
+                      isHoliday: attendanceAvailability.isCalendarHoliday,
+                      canCheckIn: attendanceAvailability.canCheckIn,
+                      canCheckOut: attendanceAvailability.canCheckOut,
                       onCheckInTap: () => _handleCheckInTap(
                         context,
-                        isHoliday: isAttendanceUnavailable,
-                        hasClockIn: attendanceState.hasClockIn,
+                        unavailableReason:
+                            attendanceAvailability.checkInUnavailableReason,
                       ),
                       onCheckOutTap: () => _handleCheckOutTap(
                         context,
-                        isHoliday: isAttendanceUnavailable,
-                        hasClockIn: attendanceState.hasClockIn,
-                        hasClockOut: attendanceState.hasClockOut,
+                        unavailableReason:
+                            attendanceAvailability.checkOutUnavailableReason,
                       ),
                     ),
                     const SizedBox(height: 20),
                     HomeReminderSection(
-                      isHoliday: isCalendarHoliday,
+                      isHoliday: attendanceAvailability.isCalendarHoliday,
                       onCheckInReminderTap: () => _handleCheckInTap(
                         context,
-                        isHoliday: isAttendanceUnavailable,
-                        hasClockIn: attendanceState.hasClockIn,
+                        unavailableReason:
+                            attendanceAvailability.checkInUnavailableReason,
                       ),
                       onCheckOutReminderTap: () => _handleCheckOutTap(
                         context,
-                        isHoliday: isAttendanceUnavailable,
-                        hasClockIn: attendanceState.hasClockIn,
-                        hasClockOut: attendanceState.hasClockOut,
+                        unavailableReason:
+                            attendanceAvailability.checkOutUnavailableReason,
                       ),
                     ),
                     HomeRoleSection(
@@ -145,37 +130,24 @@ class HomePage extends ConsumerWidget {
 
   void _handleCheckInTap(
     BuildContext context, {
-    required bool isHoliday,
-    required bool hasClockIn,
+    required AttendanceUnavailableReason? unavailableReason,
   }) {
-    if (isHoliday) {
-      _showHolidayDialog(context);
+    if (unavailableReason != null) {
+      _showUnavailableDialog(context, unavailableReason);
       return;
     }
-
-    if (hasClockIn) return;
 
     context.push(RouteName.checkInVerification);
   }
 
   void _handleCheckOutTap(
     BuildContext context, {
-    required bool isHoliday,
-    required bool hasClockIn,
-    required bool hasClockOut,
+    required AttendanceUnavailableReason? unavailableReason,
   }) async {
-    if (isHoliday) {
-      _showHolidayDialog(context);
+    if (unavailableReason != null) {
+      _showUnavailableDialog(context, unavailableReason);
       return;
     }
-
-    if (!hasClockIn) {
-      _showCheckOutUnavailableDialog(context);
-      return;
-    }
-
-    if (hasClockOut) return;
-
     final canCheckOut = await _canCheckOutByWorkConfig(context);
     if (!context.mounted) return;
     if (!canCheckOut) return;
@@ -235,14 +207,16 @@ class HomePage extends ConsumerWidget {
     );
   }
 
-  void _showHolidayDialog(BuildContext context) {
+  void _showUnavailableDialog(
+    BuildContext context,
+    AttendanceUnavailableReason reason,
+  ) {
     showDialog<void>(
       context: context,
       builder: (dialogContext) => AttendanceStatusDialog(
         icon: AppAssets.iconInfo,
-        title: 'Hari Ini Adalah Hari Libur',
-        description:
-            'Halaman presensi tidak tersedia,\nAnda tidak perlu melakukan presensi',
+        title: reason.title,
+        description: reason.message,
         buttonText: 'Tutup',
         onPressed: () => Navigator.of(dialogContext).pop(),
       ),
@@ -266,29 +240,5 @@ class HomePage extends ConsumerWidget {
     final trimmed = value?.trim();
     if (trimmed == null || trimmed.isEmpty) return '-';
     return trimmed;
-  }
-
-  AttendanceUiState _attendanceStateFromHistories(
-    List<AttendanceHistoryModel>? histories,
-  ) {
-    final today = DateTime.now();
-    final todayHistory = histories?.where((history) {
-      return history.date.year == today.year &&
-          history.date.month == today.month &&
-          history.date.day == today.day;
-    }).firstOrNull;
-
-    return AttendanceUiState(
-      isHoliday: false,
-      hasClockIn: todayHistory?.clockInTime != null,
-      hasClockOut: todayHistory?.clockOutTime != null,
-    );
-  }
-
-  bool _isCalendarHoliday(DateTime date, Set<DateTime> holidays) {
-    final normalizedDate = DateTime(date.year, date.month, date.day);
-    return normalizedDate.weekday == DateTime.saturday ||
-        normalizedDate.weekday == DateTime.sunday ||
-        holidays.contains(normalizedDate);
   }
 }

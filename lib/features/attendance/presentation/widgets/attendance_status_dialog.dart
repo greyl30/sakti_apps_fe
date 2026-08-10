@@ -59,7 +59,7 @@ class AttendanceStatusDialog extends StatelessWidget {
             // Tombol tutup dialog
             SizedBox(
               width: double.infinity,
-              height: 48,
+              height: 51,
               child: FilledButton(
                 onPressed: onPressed,
                 style: FilledButton.styleFrom(
@@ -72,7 +72,7 @@ class AttendanceStatusDialog extends StatelessWidget {
                   buttonText,
                   style: const TextStyle(
                     color: Colors.white,
-                    fontSize: 14,
+                    fontSize: 16,
                     fontWeight: FontWeight.w700,
                   ),
                 ),

@@ -1,5 +1,5 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 
@@ -10,10 +10,12 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/app_bottom_navigation.dart';
 import '../../data/datasources/attendance_remote_data_source.dart';
 import '../../data/repositories/attendance_repository.dart';
-import '../models/attendance_ui_state.dart';
+import '../../../history/presentation/providers/attendance_history_provider.dart';
+import '../../../leave/presentation/providers/leave_submit_provider.dart';
+import '../utils/attendance_availability.dart';
 import '../widgets/attendance_status_dialog.dart';
 
-class AttendancePage extends StatelessWidget {
+class AttendancePage extends ConsumerWidget {
   const AttendancePage({super.key});
 
   static final AttendanceRepository _attendanceRepository =
@@ -30,39 +32,28 @@ class AttendancePage extends StatelessWidget {
 
   void _startCheckIn(
     BuildContext context, {
-    required bool isHoliday,
-    required bool hasClockIn,
+    required AttendanceUnavailableReason? unavailableReason,
   }) {
-    if (isHoliday) {
-      _showHolidayDialog(context);
+    if (unavailableReason != null) {
+      _showUnavailableDialog(context, unavailableReason);
       return;
     }
-
-    if (!kDebugMode && hasClockIn) return;
 
     context.push(RouteName.checkInVerification);
   }
 
   Future<void> _startCheckOut(
     BuildContext context, {
-    required bool isHoliday,
-    required bool hasClockIn,
+    required AttendanceUnavailableReason? unavailableReason,
   }) async {
-    if (isHoliday) {
-      _showHolidayDialog(context);
+    if (unavailableReason != null) {
+      _showUnavailableDialog(context, unavailableReason);
       return;
     }
 
-    if (!kDebugMode && !hasClockIn) {
-      _showCheckOutUnavailableDialog(context);
-      return;
-    }
-
-    if (!kDebugMode) {
-      final canCheckOut = await _canCheckOutByWorkConfig(context);
-      if (!context.mounted) return;
-      if (!canCheckOut) return;
-    }
+    final canCheckOut = await _canCheckOutByWorkConfig(context);
+    if (!context.mounted) return;
+    if (!canCheckOut) return;
 
     context.push(RouteName.checkOutVerification);
   }
@@ -86,9 +77,16 @@ class AttendancePage extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
-    // Dummy state presensi, nantinya diganti dari backend/provider.
-    const attendanceState = dummyAttendanceUiState;
+  Widget build(BuildContext context, WidgetRef ref) {
+    final histories = ref.watch(attendanceHistoriesProvider);
+    final holidays = ref.watch(activeLeaveHolidayDatesProvider);
+    final leaveStatuses = ref.watch(leaveStatusesProvider);
+    final availability = buildAttendanceAvailability(
+      date: DateTime.now(),
+      holidays: holidays.valueOrNull ?? const <DateTime>{},
+      leaveRequests: leaveStatuses.valueOrNull ?? const [],
+      histories: histories.valueOrNull,
+    );
 
     return Scaffold(
       backgroundColor: AppColors.whiteBackground,
@@ -111,13 +109,10 @@ class AttendancePage extends StatelessWidget {
                     borderColor: const Color(0xFFE9B7B7),
                     iconBackgroundColor: const Color(0xFFF3C3C3),
                     foregroundColor: AppColors.primaryRed,
-                    isEnabled:
-                        !attendanceState.isHoliday &&
-                        (kDebugMode || !attendanceState.hasClockIn),
+                    isEnabled: availability.canCheckIn,
                     onTap: () => _startCheckIn(
                       context,
-                      isHoliday: attendanceState.isHoliday,
-                      hasClockIn: attendanceState.hasClockIn,
+                      unavailableReason: availability.checkInUnavailableReason,
                     ),
                   ),
                   const SizedBox(height: 28),
@@ -130,13 +125,10 @@ class AttendancePage extends StatelessWidget {
                     borderColor: const Color(0xFFB7DCE9),
                     iconBackgroundColor: const Color(0xFFC3E5F0),
                     foregroundColor: AppColors.secondaryBlue,
-                    isEnabled:
-                        !attendanceState.isHoliday &&
-                        (kDebugMode || attendanceState.hasClockIn),
+                    isEnabled: availability.canCheckOut,
                     onTap: () => _startCheckOut(
                       context,
-                      isHoliday: attendanceState.isHoliday,
-                      hasClockIn: attendanceState.hasClockIn,
+                      unavailableReason: availability.checkOutUnavailableReason,
                     ),
                   ),
                 ],
@@ -149,14 +141,16 @@ class AttendancePage extends StatelessWidget {
     );
   }
 
-  void _showHolidayDialog(BuildContext context) {
+  void _showUnavailableDialog(
+    BuildContext context,
+    AttendanceUnavailableReason reason,
+  ) {
     showDialog<void>(
       context: context,
       builder: (dialogContext) => AttendanceStatusDialog(
         icon: AppAssets.iconInfo,
-        title: 'Hari Ini Adalah Hari Libur',
-        description:
-            'Halaman presensi tidak tersedia,\nAnda tidak perlu melakukan presensi',
+        title: reason.title,
+        description: reason.message,
         buttonText: 'Tutup',
         onPressed: () => Navigator.of(dialogContext).pop(),
       ),
@@ -271,7 +265,7 @@ class _AttendanceOptionCard extends StatelessWidget {
     return Material(
       color: Colors.transparent,
       child: InkWell(
-        onTap: isEnabled ? onTap : null,
+        onTap: onTap,
         borderRadius: BorderRadius.circular(12),
         child: Ink(
           height: 112,
