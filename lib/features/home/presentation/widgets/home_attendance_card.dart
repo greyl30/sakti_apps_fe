@@ -16,6 +16,7 @@ class HomeAttendanceCard extends StatelessWidget {
     required this.canCheckOut,
     required this.onCheckInTap,
     required this.onCheckOutTap,
+    this.onScheduleTap,
   });
 
   final bool isHoliday;
@@ -23,6 +24,7 @@ class HomeAttendanceCard extends StatelessWidget {
   final bool canCheckOut;
   final VoidCallback onCheckInTap;
   final VoidCallback onCheckOutTap;
+  final VoidCallback? onScheduleTap;
 
   @override
   Widget build(BuildContext context) {
@@ -65,9 +67,16 @@ class HomeAttendanceCard extends StatelessWidget {
                       ),
                     ],
                   ),
-                  child: _WorkScheduleBar(
-                    todayLabel: todayLabel,
-                    isHoliday: isHoliday,
+                  child: Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      onTap: onScheduleTap,
+                      borderRadius: BorderRadius.circular(15),
+                      child: _WorkScheduleBar(
+                        todayLabel: todayLabel,
+                        isHoliday: isHoliday,
+                      ),
+                    ),
                   ),
                 ),
               ),

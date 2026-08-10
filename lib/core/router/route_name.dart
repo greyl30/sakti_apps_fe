@@ -5,6 +5,7 @@ class RouteName {
   static const forgotPassword = '/forgot-password';
   static const resetPassword = '/reset-password';
   static const home = '/home';
+  static const calendar = '/calendar';
   static const attendance = '/attendance';
   static const checkInVerification = '/attendance/check-in/verification';
   static const checkInLoading = '/attendance/check-in/loading';

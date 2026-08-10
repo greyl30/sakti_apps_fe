@@ -91,6 +91,7 @@ class HomePage extends ConsumerWidget {
                         unavailableReason:
                             attendanceAvailability.checkOutUnavailableReason,
                       ),
+                      onScheduleTap: () => context.push(RouteName.calendar),
                     ),
                     const SizedBox(height: 20),
                     HomeReminderSection(

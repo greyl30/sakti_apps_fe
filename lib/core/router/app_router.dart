@@ -13,6 +13,7 @@ import '../../features/auth/presentation/pages/forgot_password_page.dart';
 import '../../features/auth/presentation/pages/login_page.dart';
 import '../../features/auth/presentation/pages/reset_password_page.dart';
 import '../../features/auth/presentation/providers/auth_provider.dart';
+import '../../features/calendar/presentation/pages/calendar_page.dart';
 import '../../features/history/presentation/pages/history_page.dart';
 import '../../features/leave/presentation/models/leave_form_data.dart';
 import '../../features/leave/presentation/models/leave_request_status.dart';
@@ -128,6 +129,10 @@ final appRouter = GoRouter(
     GoRoute(
       path: RouteName.home,
       builder: (context, state) => const HomePage(),
+    ),
+    GoRoute(
+      path: RouteName.calendar,
+      builder: (context, state) => const CalendarPage(),
     ),
     GoRoute(
       path: RouteName.attendance,

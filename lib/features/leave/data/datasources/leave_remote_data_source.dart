@@ -18,12 +18,19 @@ class LeaveRemoteDataSource {
   }
 
   // Mengambil status dan riwayat pengajuan cuti user login dari backend.
-  Future<Map<String, dynamic>> getLeaveStatuses() async {
+  Future<Map<String, dynamic>> getLeaveStatuses({
+    int page = 1,
+    int limit = 10,
+  }) async {
+    debugPrint('[LeaveStatus] GET /api/leave/status?page=$page&limit=$limit');
     final response = await _dio.get<Map<String, dynamic>>(
       '/api/leave/status',
-      queryParameters: const {'limit': 10, 'page': 1},
+      queryParameters: {'limit': limit, 'page': page},
     );
 
+    debugPrint('[LeaveStatus] URL: ${response.realUri}');
+    debugPrint('[LeaveStatus] status: ${response.statusCode}');
+    debugPrint('[LeaveStatus] body: ${response.data}');
     return response.data ?? <String, dynamic>{};
   }
 

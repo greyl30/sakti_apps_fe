@@ -24,7 +24,7 @@ class _LeaveHistoryPageState extends ConsumerState<LeaveHistoryPage> {
 
   @override
   Widget build(BuildContext context) {
-    final histories = ref.watch(leaveHistoryRequestsProvider);
+    final histories = ref.watch(paginatedLeaveHistoryProvider);
 
     return Scaffold(
       backgroundColor: AppColors.whiteBackground,
@@ -91,45 +91,7 @@ class _LeaveHistoryPageState extends ConsumerState<LeaveHistoryPage> {
               child: RefreshIndicator(
                 color: AppColors.primaryRed,
                 onRefresh: _refreshHistories,
-                child: histories.when(
-                  data: (requests) {
-                    final filteredRequests = requests
-                        .where(
-                          (request) =>
-                              _selectedStatus == null ||
-                              request.historyStatus == _selectedStatus,
-                        )
-                        .toList();
-
-                    if (filteredRequests.isEmpty) {
-                      return const _LeaveHistoryMessageList(
-                        'Belum ada riwayat pengajuan',
-                      );
-                    }
-
-                    return ListView.builder(
-                      physics: const AlwaysScrollableScrollPhysics(),
-                      padding: const EdgeInsets.fromLTRB(24, 0, 24, 28),
-                      itemCount: filteredRequests.length,
-                      itemBuilder: (context, index) {
-                        final request = filteredRequests[index];
-                        return Padding(
-                          padding: const EdgeInsets.only(bottom: 15),
-                          child: LeaveHistoryCard(
-                            history: request.toHistoryModel(),
-                            onTap: () => _openHistoryRequest(context, request),
-                          ),
-                        );
-                      },
-                    );
-                  },
-                  loading: () => const _LeaveHistoryMessageList(
-                    'Memuat riwayat pengajuan...',
-                  ),
-                  error: (error, stackTrace) => const _LeaveHistoryMessageList(
-                    'Riwayat pengajuan belum dapat dimuat.',
-                  ),
-                ),
+                child: _buildHistoryList(context, histories),
               ),
             ),
           ],
@@ -138,15 +100,117 @@ class _LeaveHistoryPageState extends ConsumerState<LeaveHistoryPage> {
     );
   }
 
+  Widget _buildHistoryList(
+    BuildContext context,
+    PaginatedLeaveHistoryState histories,
+  ) {
+    if (histories.isLoading && histories.items.isEmpty) {
+      return const _LeaveHistoryMessageList('Memuat riwayat pengajuan...');
+    }
+
+    if (histories.errorMessage != null && histories.items.isEmpty) {
+      return _LeaveHistoryMessageList(histories.errorMessage!);
+    }
+
+    final filteredRequests = _uniqueRequests(histories.items)
+        .where(
+          (request) =>
+              _selectedStatus == null ||
+              request.historyStatus == _selectedStatus,
+        )
+        .toList();
+
+    if (filteredRequests.isEmpty) {
+      return const _LeaveHistoryMessageList('Belum ada riwayat pengajuan');
+    }
+
+    return ListView.builder(
+      physics: const AlwaysScrollableScrollPhysics(),
+      padding: const EdgeInsets.fromLTRB(24, 0, 24, 28),
+      itemCount: filteredRequests.length + (histories.hasMore ? 1 : 0),
+      itemBuilder: (context, index) {
+        if (index == filteredRequests.length) {
+          return _LoadMoreHistoryAction(
+            isLoading: histories.isLoadingMore,
+            onTap: () =>
+                ref.read(paginatedLeaveHistoryProvider.notifier).loadMore(),
+          );
+        }
+
+        final request = filteredRequests[index];
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 15),
+          child: LeaveHistoryCard(
+            history: request.toHistoryModel(),
+            onTap: () => _openHistoryRequest(context, request),
+          ),
+        );
+      },
+    );
+  }
+
   Future<void> _refreshHistories() async {
     ref.invalidate(leaveStatusesProvider);
     ref.invalidate(leaveHistoryRequestsProvider);
+    await ref.read(paginatedLeaveHistoryProvider.notifier).refresh();
+  }
 
-    try {
-      await ref.read(leaveStatusesProvider.future);
-    } catch (_) {
-      // Error state tetap ditampilkan oleh provider.
+  List<LeaveRequestResponse> _uniqueRequests(
+    List<LeaveRequestResponse> requests,
+  ) {
+    final seenKeys = <String>{};
+    final uniqueRequests = <LeaveRequestResponse>[];
+
+    for (final request in requests) {
+      final key = request.id.trim().isNotEmpty
+          ? request.id
+          : '${request.subType}-${request.startDate.toIso8601String()}-'
+                '${request.endDate.toIso8601String()}-${request.status}';
+      if (!seenKeys.add(key)) continue;
+
+      uniqueRequests.add(request);
     }
+
+    return uniqueRequests;
+  }
+}
+
+class _LoadMoreHistoryAction extends StatelessWidget {
+  const _LoadMoreHistoryAction({required this.isLoading, required this.onTap});
+
+  final bool isLoading;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 2, bottom: 2),
+      child: Center(
+        child: TextButton.icon(
+          onPressed: isLoading ? null : onTap,
+          style: TextButton.styleFrom(
+            foregroundColor: AppColors.secondaryBlue,
+            padding: const EdgeInsets.symmetric(horizontal: 6),
+            minimumSize: const Size(0, 32),
+            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          ),
+          icon: isLoading
+              ? const SizedBox(
+                  width: 14,
+                  height: 14,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: AppColors.secondaryBlue,
+                  ),
+                )
+              : const Icon(Icons.keyboard_arrow_down_rounded, size: 18),
+          label: Text(
+            isLoading ? 'Memuat...' : 'Muat Lebih Banyak',
+            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
+          ),
+        ),
+      ),
+    );
   }
 }
 

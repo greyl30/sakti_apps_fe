@@ -1,4 +1,5 @@
 import 'package:flutter/services.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/network/api_client.dart';
@@ -96,6 +97,172 @@ final leaveHistoryRequestsProvider = FutureProvider<List<LeaveRequestResponse>>(
     return statuses.where((request) => request.isHistoryStatus).toList();
   },
 );
+
+final calendarLeaveRequestsProvider = FutureProvider<List<LeaveRequestResponse>>((
+  ref,
+) async {
+  final repository = ref.watch(leaveRepositoryProvider);
+  final userId = ref.watch(authProvider.select((state) => state.user?.id));
+  final requests = <LeaveRequestResponse>[];
+  var page = 1;
+  var hasMore = true;
+
+  while (hasMore) {
+    final response = await repository.getLeaveStatusPage(page: page, limit: 20);
+    debugPrint(
+      '[CalendarLeave] page=${response.page}, count=${response.items.length}, '
+      'hasMore=${response.hasMore}, totalPages=${response.totalPages}',
+    );
+    requests.addAll(response.items);
+    hasMore = response.hasMore;
+    page = response.page + 1;
+  }
+
+  final uniqueRequests = _uniqueLeaveRequests(requests);
+  debugPrint(
+    '[CalendarLeave] userId=$userId, raw=${requests.length}, '
+    'unique=${uniqueRequests.length}',
+  );
+
+  if (userId == null || userId.isEmpty) return uniqueRequests;
+
+  final filteredRequests = uniqueRequests
+      .where((request) => request.employeeId == userId)
+      .toList();
+  debugPrint(
+    '[CalendarLeave] filteredByUser=${filteredRequests.length}, '
+    'removed=${uniqueRequests.length - filteredRequests.length}',
+  );
+  return filteredRequests;
+});
+
+List<LeaveRequestResponse> _uniqueLeaveRequests(
+  List<LeaveRequestResponse> requests,
+) {
+  final seenKeys = <String>{};
+  final uniqueRequests = <LeaveRequestResponse>[];
+
+  for (final request in requests) {
+    final key = request.id.trim().isNotEmpty
+        ? request.id
+        : '${request.employeeId}-${request.subType}-'
+              '${request.startDate.toIso8601String()}-'
+              '${request.endDate.toIso8601String()}-${request.status}';
+    if (!seenKeys.add(key)) continue;
+
+    uniqueRequests.add(request);
+  }
+
+  return uniqueRequests;
+}
+
+final paginatedLeaveHistoryProvider =
+    StateNotifierProvider<
+      PaginatedLeaveHistoryNotifier,
+      PaginatedLeaveHistoryState
+    >((ref) {
+      final repository = ref.watch(leaveRepositoryProvider);
+      final userId = ref.watch(authProvider.select((state) => state.user?.id));
+      return PaginatedLeaveHistoryNotifier(repository, userId)..load();
+    });
+
+class PaginatedLeaveHistoryState {
+  const PaginatedLeaveHistoryState({
+    this.items = const [],
+    this.isLoading = false,
+    this.isLoadingMore = false,
+    this.hasMore = true,
+    this.errorMessage,
+  });
+
+  final List<LeaveRequestResponse> items;
+  final bool isLoading;
+  final bool isLoadingMore;
+  final bool hasMore;
+  final String? errorMessage;
+
+  PaginatedLeaveHistoryState copyWith({
+    List<LeaveRequestResponse>? items,
+    bool? isLoading,
+    bool? isLoadingMore,
+    bool? hasMore,
+    String? errorMessage,
+    bool clearError = false,
+  }) {
+    return PaginatedLeaveHistoryState(
+      items: items ?? this.items,
+      isLoading: isLoading ?? this.isLoading,
+      isLoadingMore: isLoadingMore ?? this.isLoadingMore,
+      hasMore: hasMore ?? this.hasMore,
+      errorMessage: clearError ? null : errorMessage ?? this.errorMessage,
+    );
+  }
+}
+
+class PaginatedLeaveHistoryNotifier
+    extends StateNotifier<PaginatedLeaveHistoryState> {
+  PaginatedLeaveHistoryNotifier(this._repository, this._userId)
+    : super(const PaginatedLeaveHistoryState(isLoading: true));
+
+  static const _limit = 10;
+
+  final LeaveRepository _repository;
+  final String? _userId;
+  int _page = 0;
+
+  Future<void> load() async {
+    _page = 0;
+    state = const PaginatedLeaveHistoryState(isLoading: true);
+    await _loadPage(1, append: false);
+  }
+
+  Future<void> refresh() => load();
+
+  Future<void> loadMore() async {
+    if (state.isLoading || state.isLoadingMore || !state.hasMore) return;
+
+    state = state.copyWith(isLoadingMore: true, clearError: true);
+    await _loadPage(_page + 1, append: true);
+  }
+
+  Future<void> _loadPage(int page, {required bool append}) async {
+    try {
+      final response = await _repository.getLeaveStatusPage(
+        page: page,
+        limit: _limit,
+      );
+      final historyItems = _filterHistoryItems(response.items);
+      _page = response.page;
+      state = PaginatedLeaveHistoryState(
+        items: append ? [...state.items, ...historyItems] : historyItems,
+        hasMore: response.hasMore,
+      );
+    } on LeaveStatusException catch (error) {
+      state = state.copyWith(
+        isLoading: false,
+        isLoadingMore: false,
+        errorMessage: error.message,
+      );
+    } catch (_) {
+      state = state.copyWith(
+        isLoading: false,
+        isLoadingMore: false,
+        errorMessage: 'Riwayat pengajuan belum dapat dimuat.',
+      );
+    }
+  }
+
+  List<LeaveRequestResponse> _filterHistoryItems(
+    List<LeaveRequestResponse> items,
+  ) {
+    final userId = _userId?.trim();
+    return items.where((request) {
+      final isCurrentUser =
+          userId == null || userId.isEmpty || request.employeeId == userId;
+      return isCurrentUser && request.isHistoryStatus;
+    }).toList();
+  }
+}
 
 class LeaveCancelState {
   const LeaveCancelState({this.isLoading = false, this.errorMessage});
@@ -199,6 +366,7 @@ class LeaveCancelNotifier extends StateNotifier<LeaveCancelState> {
     _ref.invalidate(leaveStatusesProvider);
     _ref.invalidate(activeLeaveRequestsProvider);
     _ref.invalidate(leaveHistoryRequestsProvider);
+    _ref.invalidate(paginatedLeaveHistoryProvider);
 
     await Future.wait([
       _ignoreRefreshError(_ref.read(leaveBalanceProvider.future)),

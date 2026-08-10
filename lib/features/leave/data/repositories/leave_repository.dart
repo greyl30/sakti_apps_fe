@@ -42,9 +42,20 @@ class LeaveRepository {
 
   // Mengambil daftar pengajuan cuti user login dari backend.
   Future<List<LeaveRequestResponse>> getLeaveStatuses() async {
+    final page = await getLeaveStatusPage();
+    return page.items;
+  }
+
+  Future<LeaveStatusPage> getLeaveStatusPage({
+    int page = 1,
+    int limit = 10,
+  }) async {
     try {
-      final response = await _remoteDataSource.getLeaveStatuses();
-      return _mapStatusResponse(response);
+      final response = await _remoteDataSource.getLeaveStatuses(
+        page: page,
+        limit: limit,
+      );
+      return _mapStatusPageResponse(response, page: page, limit: limit);
     } on LeaveStatusException {
       rethrow;
     } on DioException catch (error) {
@@ -192,22 +203,47 @@ class LeaveRepository {
     throw LeaveBalanceException(_readApiMessage(response));
   }
 
-  List<LeaveRequestResponse> _mapStatusResponse(Map<String, dynamic> response) {
+  LeaveStatusPage _mapStatusPageResponse(
+    Map<String, dynamic> response, {
+    required int page,
+    required int limit,
+  }) {
     final isSuccess = response['success'] == true;
     final rawData = response['data'];
     final rawItems = rawData is Map ? rawData['items'] : null;
+    final rawMeta = rawData is Map ? rawData['meta'] : null;
 
     if (isSuccess && rawItems is List) {
-      return rawItems
+      final items = rawItems
           .whereType<Map>()
           .map(
             (item) =>
                 LeaveRequestResponse.fromJson(Map<String, dynamic>.from(item)),
           )
           .toList();
+      final currentPage = _readIntFromMap(rawMeta, const ['page']) ?? page;
+      final pageLimit = _readIntFromMap(rawMeta, const ['limit']) ?? limit;
+      final totalPages = _readIntFromMap(rawMeta, const [
+        'total_pages',
+        'totalPages',
+      ]);
+
+      return LeaveStatusPage(
+        items: items,
+        page: currentPage,
+        limit: pageLimit,
+        totalPages: totalPages,
+      );
     }
 
-    if (isSuccess && rawItems == null) return const [];
+    if (isSuccess && rawItems == null) {
+      return LeaveStatusPage(
+        items: const [],
+        page: page,
+        limit: limit,
+        totalPages: page,
+      );
+    }
 
     throw LeaveStatusException(_readApiMessage(response));
   }
@@ -249,6 +285,20 @@ class LeaveRepository {
     if (message != null && message.isNotEmpty) return message;
 
     return 'Pengajuan cuti gagal diproses.';
+  }
+
+  int? _readIntFromMap(Object? source, List<String> keys) {
+    if (source is! Map) return null;
+
+    for (final key in keys) {
+      final value = source[key];
+      if (value is int) return value;
+      if (value is num) return value.toInt();
+      final parsed = int.tryParse(value?.toString() ?? '');
+      if (parsed != null) return parsed;
+    }
+
+    return null;
   }
 
   String _mapDioError(
@@ -334,4 +384,25 @@ class LeaveDownloadException implements Exception {
 
   @override
   String toString() => message;
+}
+
+class LeaveStatusPage {
+  const LeaveStatusPage({
+    required this.items,
+    required this.page,
+    required this.limit,
+    this.totalPages,
+  });
+
+  final List<LeaveRequestResponse> items;
+  final int page;
+  final int limit;
+  final int? totalPages;
+
+  bool get hasMore {
+    final total = totalPages;
+    if (total != null) return page < total;
+
+    return items.length >= limit;
+  }
 }
