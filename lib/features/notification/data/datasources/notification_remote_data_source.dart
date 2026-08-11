@@ -5,8 +5,14 @@ class NotificationRemoteDataSource {
 
   final Dio _dio;
 
-  Future<Map<String, dynamic>> getNotifications() async {
-    final response = await _dio.get<Map<String, dynamic>>('/api/notifikasi');
+  Future<Map<String, dynamic>> getNotifications({
+    int page = 1,
+    int limit = 10,
+  }) async {
+    final response = await _dio.get<Map<String, dynamic>>(
+      '/api/notifikasi',
+      queryParameters: {'page': page, 'limit': limit},
+    );
 
     return response.data ?? <String, dynamic>{};
   }

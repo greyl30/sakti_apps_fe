@@ -20,14 +20,8 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
   AttendanceHistoryStatus? _selectedStatus;
 
   @override
-  void initState() {
-    super.initState();
-    Future.microtask(() => ref.invalidate(attendanceHistoriesProvider));
-  }
-
-  @override
   Widget build(BuildContext context) {
-    final historiesAsync = ref.watch(attendanceHistoriesProvider);
+    final histories = ref.watch(paginatedAttendanceHistoriesProvider);
 
     return Scaffold(
       backgroundColor: AppColors.whiteBackground,
@@ -90,52 +84,119 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
             ),
             const SizedBox(height: 18),
             Expanded(
-              child: historiesAsync.when(
-                loading: () => const Center(
-                  child: CircularProgressIndicator(color: AppColors.primaryRed),
-                ),
-                error: (error, stackTrace) =>
-                    _HistoryMessage(message: error.toString()),
-                data: (histories) {
-                  debugPrint(
-                    '[AttendanceHistory] history page received count: '
-                    '${histories.length}',
-                  );
-                  final activities = histories
-                      .expand(attendanceHistoryActivities)
-                      .where(
-                        (activity) =>
-                            _selectedStatus == null ||
-                            activity.status == _selectedStatus,
-                      )
-                      .toList();
-
-                  if (activities.isEmpty) {
-                    return const _HistoryMessage(
-                      message: 'Belum ada riwayat presensi',
-                    );
-                  }
-
-                  return RefreshIndicator(
-                    color: AppColors.primaryRed,
-                    onRefresh: () =>
-                        ref.refresh(attendanceHistoriesProvider.future),
-                    child: ListView.builder(
-                      padding: const EdgeInsets.fromLTRB(24, 0, 24, 28),
-                      itemCount: activities.length,
-                      itemBuilder: (context, index) {
-                        final activity = activities[index];
-                        return Padding(
-                          padding: const EdgeInsets.only(bottom: 14),
-                          child: HistoryAttendanceCard(activity: activity),
-                        );
-                      },
-                    ),
-                  );
-                },
+              child: RefreshIndicator(
+                color: AppColors.primaryRed,
+                onRefresh: () => ref
+                    .read(paginatedAttendanceHistoriesProvider.notifier)
+                    .refresh(),
+                child: _buildHistoryList(histories),
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHistoryList(PaginatedAttendanceHistoriesState histories) {
+    if (histories.isLoading && histories.items.isEmpty) {
+      return const _HistoryMessage(message: 'Memuat riwayat presensi...');
+    }
+
+    if (histories.errorMessage != null && histories.items.isEmpty) {
+      return _HistoryMessage(message: histories.errorMessage!);
+    }
+
+    debugPrint(
+      '[AttendanceHistory] history page received count: '
+      '${histories.items.length}',
+    );
+    final activities =
+        _uniqueActivities(
+          histories.items.expand(attendanceHistoryActivities),
+        ).where((activity) {
+          return _selectedStatus == null || activity.status == _selectedStatus;
+        }).toList();
+
+    if (activities.isEmpty) {
+      return const _HistoryMessage(message: 'Belum ada riwayat presensi');
+    }
+
+    return ListView.builder(
+      physics: const AlwaysScrollableScrollPhysics(),
+      padding: const EdgeInsets.fromLTRB(24, 0, 24, 28),
+      itemCount: activities.length + (histories.hasMore ? 1 : 0),
+      itemBuilder: (context, index) {
+        if (index == activities.length) {
+          return _LoadMoreAttendanceAction(
+            isLoading: histories.isLoadingMore,
+            onTap: () => ref
+                .read(paginatedAttendanceHistoriesProvider.notifier)
+                .loadMore(),
+          );
+        }
+
+        final activity = activities[index];
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 14),
+          child: HistoryAttendanceCard(activity: activity),
+        );
+      },
+    );
+  }
+
+  List<AttendanceHistoryActivity> _uniqueActivities(
+    Iterable<AttendanceHistoryActivity> activities,
+  ) {
+    final seenKeys = <String>{};
+    final uniqueActivities = <AttendanceHistoryActivity>[];
+
+    for (final activity in activities) {
+      if (!seenKeys.add(activity.id)) continue;
+
+      uniqueActivities.add(activity);
+    }
+
+    return uniqueActivities;
+  }
+}
+
+class _LoadMoreAttendanceAction extends StatelessWidget {
+  const _LoadMoreAttendanceAction({
+    required this.isLoading,
+    required this.onTap,
+  });
+
+  final bool isLoading;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 2, bottom: 2),
+      child: Center(
+        child: TextButton.icon(
+          onPressed: isLoading ? null : onTap,
+          style: TextButton.styleFrom(
+            foregroundColor: AppColors.secondaryBlue,
+            padding: const EdgeInsets.symmetric(horizontal: 6),
+            minimumSize: const Size(0, 32),
+            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          ),
+          icon: isLoading
+              ? const SizedBox(
+                  width: 14,
+                  height: 14,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: AppColors.secondaryBlue,
+                  ),
+                )
+              : const Icon(Icons.keyboard_arrow_down_rounded, size: 18),
+          label: Text(
+            isLoading ? 'Memuat...' : 'Muat lebih banyak',
+            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
+          ),
         ),
       ),
     );

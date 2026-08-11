@@ -425,7 +425,7 @@ class _CalendarLegend extends StatelessWidget {
       runSpacing: 10,
       children: [
         _LegendItem(label: 'Weekend', color: Color(0xFFE9ECEF)),
-        _LegendItem(label: 'Hari Libur', color: Color(0xFFFFE1DE)),
+        _LegendItem(label: 'Libur Nasional', color: Color(0xFFFFE1DE)),
         _LegendItem(label: 'Cuti', color: Color(0xFFFFF0C7)),
         _LegendItem(label: 'Dispensasi', color: Color(0xFFDDF4FF)),
       ],

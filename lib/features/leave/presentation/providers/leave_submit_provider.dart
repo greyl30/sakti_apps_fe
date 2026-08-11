@@ -408,6 +408,10 @@ class LeaveLetterDownloadNotifier
       state = LeaveLetterDownloadState(errorMessage: error.message);
       return false;
     } on PlatformException catch (error) {
+      debugPrint(
+        'Leave letter save platform error: '
+        'code=${error.code}, message=${error.message}, details=${error.details}',
+      );
       state = LeaveLetterDownloadState(
         errorMessage: error.message ?? 'Gagal menyimpan surat ke Downloads.',
       );

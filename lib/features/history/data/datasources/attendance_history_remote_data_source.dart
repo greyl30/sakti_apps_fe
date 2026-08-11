@@ -7,13 +7,16 @@ class AttendanceHistoryRemoteDataSource {
 
   final Dio _dio;
 
-  Future<Map<String, dynamic>> getAttendanceHistories() async {
+  Future<Map<String, dynamic>> getAttendanceHistories({
+    int page = 1,
+    int limit = 10,
+  }) async {
     debugPrint(
-      '[AttendanceHistory] GET /api/attendance/history?page=1&limit=30',
+      '[AttendanceHistory] GET /api/attendance/history?page=$page&limit=$limit',
     );
     final response = await _dio.get<Map<String, dynamic>>(
       '/api/attendance/history',
-      queryParameters: const {'page': 1, 'limit': 30},
+      queryParameters: {'page': page, 'limit': limit},
     );
 
     debugPrint('[AttendanceHistory] HTTP status: ${response.statusCode}');

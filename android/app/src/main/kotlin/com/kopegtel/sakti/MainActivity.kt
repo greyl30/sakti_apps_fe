@@ -1,9 +1,12 @@
 package com.kopegtel.sakti
 
+import android.Manifest
 import android.content.ContentValues
+import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Environment
 import android.provider.MediaStore
+import android.util.Log
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
@@ -12,6 +15,8 @@ import java.io.FileOutputStream
 
 class MainActivity : FlutterActivity() {
     private val downloadsChannel = "sakti_apps_fe/downloads"
+    private val storagePermissionRequestCode = 7001
+    private var pendingDownload: PendingDownload? = null
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
@@ -32,12 +37,81 @@ class MainActivity : FlutterActivity() {
                 }
 
                 try {
-                    val savedPath = savePdfToDownloads(sanitizePdfFileName(fileName), bytes)
+                    val sanitizedFileName = sanitizePdfFileName(fileName)
+                    if (requiresLegacyStoragePermission() && !hasLegacyStoragePermission()) {
+                        if (pendingDownload != null) {
+                            result.error(
+                                "DOWNLOAD_IN_PROGRESS",
+                                "Proses unduh surat sebelumnya masih berjalan.",
+                                null
+                            )
+                            return@setMethodCallHandler
+                        }
+
+                        Log.d(
+                            "SaktiDownloads",
+                            "Requesting WRITE_EXTERNAL_STORAGE for API ${Build.VERSION.SDK_INT}"
+                        )
+                        pendingDownload = PendingDownload(sanitizedFileName, bytes, result)
+                        requestPermissions(
+                            arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
+                            storagePermissionRequestCode
+                        )
+                        return@setMethodCallHandler
+                    }
+
+                    val savedPath = savePdfToDownloads(sanitizedFileName, bytes)
+                    Log.d("SaktiDownloads", "PDF saved to $savedPath")
                     result.success(savedPath)
                 } catch (error: Exception) {
+                    Log.e("SaktiDownloads", "Failed to save PDF", error)
                     result.error("SAVE_FAILED", "Gagal menyimpan surat ke Downloads.", error.message)
                 }
             }
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        if (requestCode == storagePermissionRequestCode) {
+            val download = pendingDownload
+            pendingDownload = null
+
+            if (download == null) {
+                super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+                return
+            }
+
+            val isGranted = grantResults.isNotEmpty() &&
+                grantResults[0] == PackageManager.PERMISSION_GRANTED
+            if (!isGranted) {
+                Log.w("SaktiDownloads", "WRITE_EXTERNAL_STORAGE denied")
+                download.result.error(
+                    "PERMISSION_DENIED",
+                    "Izin penyimpanan diperlukan untuk menyimpan surat di Downloads.",
+                    null
+                )
+                return
+            }
+
+            try {
+                val savedPath = savePdfToDownloads(download.fileName, download.bytes)
+                Log.d("SaktiDownloads", "PDF saved to $savedPath after permission grant")
+                download.result.success(savedPath)
+            } catch (error: Exception) {
+                Log.e("SaktiDownloads", "Failed to save PDF after permission grant", error)
+                download.result.error(
+                    "SAVE_FAILED",
+                    "Gagal menyimpan surat ke Downloads.",
+                    error.message
+                )
+            }
+            return
+        }
+
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
     }
 
     private fun savePdfToDownloads(fileName: String, bytes: ByteArray): String {
@@ -102,4 +176,19 @@ class MainActivity : FlutterActivity() {
             "$sanitized.pdf"
         }
     }
+
+    private fun requiresLegacyStoragePermission(): Boolean {
+        return Build.VERSION.SDK_INT in Build.VERSION_CODES.M..Build.VERSION_CODES.P
+    }
+
+    private fun hasLegacyStoragePermission(): Boolean {
+        return checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) ==
+            PackageManager.PERMISSION_GRANTED
+    }
+
+    private data class PendingDownload(
+        val fileName: String,
+        val bytes: ByteArray,
+        val result: MethodChannel.Result
+    )
 }

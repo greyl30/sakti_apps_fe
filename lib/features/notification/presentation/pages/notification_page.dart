@@ -45,45 +45,49 @@ class _NotificationPageState extends ConsumerState<NotificationPage> {
               child: RefreshIndicator(
                 color: AppColors.primaryRed,
                 onRefresh: () => _refreshNotifications(ref),
-                child: notifications.when(
-                  data: (items) {
-                    if (items.isEmpty) {
-                      return const _NotificationMessageList(
-                        'Belum ada notifikasi',
-                      );
-                    }
-
-                    return ListView.builder(
-                      physics: const AlwaysScrollableScrollPhysics(),
-                      padding: const EdgeInsets.fromLTRB(20, 22, 20, 28),
-                      itemCount: items.length,
-                      itemBuilder: (context, index) {
-                        final notification = items[index];
-                        return Padding(
-                          padding: const EdgeInsets.only(bottom: 20),
-                          child: NotificationCard(
-                            notification: notification,
-                            onTap: () => _openNotificationDetail(
-                              context,
-                              ref,
-                              notification,
-                            ),
-                          ),
-                        );
-                      },
-                    );
-                  },
-                  loading: () =>
-                      const _NotificationMessageList('Memuat notifikasi...'),
-                  error: (error, stackTrace) => const _NotificationMessageList(
-                    'Notifikasi belum dapat dimuat.',
-                  ),
-                ),
+                child: _buildNotificationList(notifications),
               ),
             ),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildNotificationList(PaginatedNotificationsState notifications) {
+    if (notifications.isLoading && notifications.items.isEmpty) {
+      return const _NotificationMessageList('Memuat notifikasi...');
+    }
+
+    if (notifications.errorMessage != null && notifications.items.isEmpty) {
+      return _NotificationMessageList(notifications.errorMessage!);
+    }
+
+    if (notifications.items.isEmpty && !notifications.hasMore) {
+      return const _NotificationMessageList('Belum ada notifikasi');
+    }
+
+    return ListView.builder(
+      physics: const AlwaysScrollableScrollPhysics(),
+      padding: const EdgeInsets.fromLTRB(20, 22, 20, 28),
+      itemCount: notifications.items.length + (notifications.hasMore ? 1 : 0),
+      itemBuilder: (context, index) {
+        if (index == notifications.items.length) {
+          return _LoadMoreNotificationsAction(
+            isLoading: notifications.isLoadingMore,
+            onTap: () => ref.read(notificationsProvider.notifier).loadMore(),
+          );
+        }
+
+        final notification = notifications.items[index];
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 20),
+          child: NotificationCard(
+            notification: notification,
+            onTap: () => _openNotificationDetail(context, ref, notification),
+          ),
+        );
+      },
     );
   }
 
@@ -110,6 +114,48 @@ class _NotificationPageState extends ConsumerState<NotificationPage> {
       extra: isMarkedAsRead
           ? notification.copyWith(isRead: true)
           : notification,
+    );
+  }
+}
+
+class _LoadMoreNotificationsAction extends StatelessWidget {
+  const _LoadMoreNotificationsAction({
+    required this.isLoading,
+    required this.onTap,
+  });
+
+  final bool isLoading;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 2, bottom: 2),
+      child: Center(
+        child: TextButton.icon(
+          onPressed: isLoading ? null : onTap,
+          style: TextButton.styleFrom(
+            foregroundColor: AppColors.secondaryBlue,
+            padding: const EdgeInsets.symmetric(horizontal: 6),
+            minimumSize: const Size(0, 32),
+            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          ),
+          icon: isLoading
+              ? const SizedBox(
+                  width: 14,
+                  height: 14,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: AppColors.secondaryBlue,
+                  ),
+                )
+              : const Icon(Icons.keyboard_arrow_down_rounded, size: 18),
+          label: Text(
+            isLoading ? 'Memuat...' : 'Muat lebih banyak',
+            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
+          ),
+        ),
+      ),
     );
   }
 }

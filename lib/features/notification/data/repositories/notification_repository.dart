@@ -12,9 +12,20 @@ class NotificationRepository {
   final NotificationRemoteDataSource _remoteDataSource;
 
   Future<List<NotificationResponseModel>> getNotifications() async {
+    final page = await getNotificationPage();
+    return page.items;
+  }
+
+  Future<NotificationPage> getNotificationPage({
+    int page = 1,
+    int limit = 10,
+  }) async {
     try {
-      final response = await _remoteDataSource.getNotifications();
-      return _mapNotificationResponse(response);
+      final response = await _remoteDataSource.getNotifications(
+        page: page,
+        limit: limit,
+      );
+      return _mapNotificationPageResponse(response, page: page, limit: limit);
     } on NotificationException {
       rethrow;
     } on DioException catch (error) {
@@ -111,15 +122,18 @@ class NotificationRepository {
     }
   }
 
-  List<NotificationResponseModel> _mapNotificationResponse(
-    Map<String, dynamic> response,
-  ) {
+  NotificationPage _mapNotificationPageResponse(
+    Map<String, dynamic> response, {
+    required int page,
+    required int limit,
+  }) {
     final isSuccess = response['success'] == true;
     final rawData = response['data'];
     final rawItems = rawData is Map ? rawData['items'] : null;
+    final rawMeta = rawData is Map ? rawData['meta'] : null;
 
     if (isSuccess && rawItems is List) {
-      return rawItems
+      final items = rawItems
           .whereType<Map>()
           .map(
             (item) => NotificationResponseModel.fromJson(
@@ -127,9 +141,31 @@ class NotificationRepository {
             ),
           )
           .toList();
+      final currentPage = _readIntFromMap(rawMeta, const ['page']) ?? page;
+      final pageLimit = _readIntFromMap(rawMeta, const ['limit']) ?? limit;
+      final totalPages = _readIntFromMap(rawMeta, const [
+        'total_pages',
+        'totalPages',
+      ]);
+      final hasMore = _readBoolFromMap(rawMeta, const ['hasMore', 'has_more']);
+
+      return NotificationPage(
+        items: items,
+        page: currentPage,
+        limit: pageLimit,
+        totalPages: totalPages,
+        hasMoreOverride: hasMore,
+      );
     }
 
-    if (isSuccess && rawItems == null) return const [];
+    if (isSuccess && rawItems == null) {
+      return NotificationPage(
+        items: const [],
+        page: page,
+        limit: limit,
+        totalPages: page,
+      );
+    }
 
     throw NotificationException(_readApiMessage(response));
   }
@@ -161,6 +197,39 @@ class NotificationRepository {
     if (message != null && message.isNotEmpty) return message;
 
     return 'Gagal mengambil notifikasi.';
+  }
+
+  int? _readIntFromMap(Object? source, List<String> keys) {
+    if (source is! Map) return null;
+
+    for (final key in keys) {
+      final value = source[key];
+      if (value is int) return value;
+      if (value is num) return value.toInt();
+      final parsed = int.tryParse(value?.toString() ?? '');
+      if (parsed != null) return parsed;
+    }
+
+    return null;
+  }
+
+  bool? _readBoolFromMap(Object? source, List<String> keys) {
+    if (source is! Map) return null;
+
+    for (final key in keys) {
+      final value = source[key];
+      if (value is bool) return value;
+      if (value is num) return value != 0;
+      final normalized = value?.toString().trim().toLowerCase();
+      if (normalized == 'true' || normalized == '1' || normalized == 'ya') {
+        return true;
+      }
+      if (normalized == 'false' || normalized == '0' || normalized == 'tidak') {
+        return false;
+      }
+    }
+
+    return null;
   }
 
   String _mapDioError(
@@ -201,4 +270,30 @@ class NotificationException implements Exception {
 
   @override
   String toString() => message;
+}
+
+class NotificationPage {
+  const NotificationPage({
+    required this.items,
+    required this.page,
+    required this.limit,
+    this.totalPages,
+    this.hasMoreOverride,
+  });
+
+  final List<NotificationResponseModel> items;
+  final int page;
+  final int limit;
+  final int? totalPages;
+  final bool? hasMoreOverride;
+
+  bool get hasMore {
+    final override = hasMoreOverride;
+    if (override != null) return override;
+
+    final total = totalPages;
+    if (total != null) return page < total;
+
+    return items.length >= limit;
+  }
 }
