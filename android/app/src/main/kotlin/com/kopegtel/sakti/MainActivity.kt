@@ -12,6 +12,7 @@ import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
 import java.io.File
 import java.io.FileOutputStream
+import androidx.annotation.RequiresApi
 
 class MainActivity : FlutterActivity() {
     private val downloadsChannel = "sakti_apps_fe/downloads"
@@ -122,6 +123,7 @@ class MainActivity : FlutterActivity() {
         }
     }
 
+    @RequiresApi(Build.VERSION_CODES.Q)
     private fun savePdfWithMediaStore(fileName: String, bytes: ByteArray): String {
         val resolver = applicationContext.contentResolver
         val values = ContentValues().apply {

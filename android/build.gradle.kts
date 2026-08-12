@@ -22,3 +22,9 @@ subprojects {
 tasks.register<Delete>("clean") {
     delete(rootProject.layout.buildDirectory)
 }
+
+gradle.projectsEvaluated {
+    project(":camera_android_camerax").dependencies {
+        add("implementation", "androidx.concurrent:concurrent-futures:1.2.0")
+    }
+}
