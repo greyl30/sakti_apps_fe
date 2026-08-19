@@ -1,6 +1,25 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import '../../../../core/network/api_client.dart';
+import '../../data/datasources/attendance_remote_data_source.dart';
+import '../../data/models/attendance_work_config.dart';
+import '../../data/repositories/attendance_repository.dart';
 import '../../../history/presentation/models/attendance_history_model.dart';
 import '../../../leave/data/models/leave_request_model.dart';
 import '../../../leave/presentation/utils/leave_workday_calculator.dart';
+
+final attendanceWorkConfigRepositoryProvider = Provider<AttendanceRepository>((
+  ref,
+) {
+  return AttendanceRepository(AttendanceRemoteDataSource(ApiClient.dio));
+});
+
+final attendanceWorkConfigProvider = FutureProvider<AttendanceWorkConfig>((
+  ref,
+) async {
+  final repository = ref.watch(attendanceWorkConfigRepositoryProvider);
+  return repository.getWorkConfig();
+});
 
 class AttendanceAvailability {
   const AttendanceAvailability({
@@ -39,6 +58,7 @@ AttendanceAvailability buildAttendanceAvailability({
   required Set<DateTime> holidays,
   required List<LeaveRequestResponse> leaveRequests,
   required List<AttendanceHistoryModel>? histories,
+  AttendanceWorkConfig? workConfig,
 }) {
   final targetDate = normalizeLeaveDate(date);
   final hasClockIn = hasClockInToday(histories, targetDate);
@@ -55,6 +75,13 @@ AttendanceAvailability buildAttendanceAvailability({
               title: 'Presensi Masuk Sudah Dilakukan',
               message: 'Anda sudah melakukan presensi masuk',
             )
+          : _isBeforeMinimumClockIn(date, workConfig)
+          ? AttendanceUnavailableReason(
+              title: 'Presensi Masuk Belum Tersedia',
+              message:
+                  'Presensi masuk hanya dapat dilakukan mulai pukul '
+                  '${workConfig!.minimumClockInLabel}',
+            )
           : null);
   final checkOutReason =
       unavailableReason ??
@@ -68,6 +95,13 @@ AttendanceAvailability buildAttendanceAvailability({
               title: 'Presensi Tidak Tersedia',
               message: 'Anda sudah melakukan presensi keluar',
             )
+          : _isBeforeMinimumClockOut(date, workConfig)
+          ? AttendanceUnavailableReason(
+              title: 'Presensi Keluar Belum Tersedia',
+              message:
+                  'Presensi keluar hanya dapat dilakukan mulai pukul '
+                  '${workConfig!.minimumClockOutLabel}',
+            )
           : null);
 
   return AttendanceAvailability(
@@ -80,6 +114,16 @@ AttendanceAvailability buildAttendanceAvailability({
     checkInUnavailableReason: checkInReason,
     checkOutUnavailableReason: checkOutReason,
   );
+}
+
+bool _isBeforeMinimumClockIn(DateTime date, AttendanceWorkConfig? workConfig) {
+  return workConfig != null &&
+      date.isBefore(workConfig.minimumClockInDateTime(date));
+}
+
+bool _isBeforeMinimumClockOut(DateTime date, AttendanceWorkConfig? workConfig) {
+  return workConfig != null &&
+      date.isBefore(workConfig.minimumClockOutDateTime(date));
 }
 
 bool hasClockInToday(

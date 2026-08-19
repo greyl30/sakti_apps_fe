@@ -11,6 +11,4 @@ enum AttendanceFlowType {
 
   String get successRecordedLabel =>
       isCheckIn ? 'Presensi Masuk Tercatat' : 'Jam Keluar Tercatat';
-
-  String get successTime => isCheckIn ? '08:00 WIB' : '17:05 WIB';
 }

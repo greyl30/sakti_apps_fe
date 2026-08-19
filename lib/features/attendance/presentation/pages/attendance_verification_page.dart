@@ -89,6 +89,14 @@ class _CheckInVerificationPageState extends State<CheckInVerificationPage>
         _cameraError = null;
       });
 
+      final isAllowedTime = await _ensureWithinAllowedAttendanceTime();
+      if (!mounted) return;
+
+      if (!isAllowedTime) {
+        setState(() => _isInitializingCamera = false);
+        return;
+      }
+
       final hasCurrentLocation = await _prepareCurrentLocation();
       if (!mounted) return;
 
@@ -101,6 +109,48 @@ class _CheckInVerificationPageState extends State<CheckInVerificationPage>
     } finally {
       _isPreparingVerification = false;
     }
+  }
+
+  Future<bool> _ensureWithinAllowedAttendanceTime() async {
+    AttendanceWorkConfig workConfig;
+
+    try {
+      workConfig = await _attendanceRepository.getWorkConfig();
+    } on AttendanceWorkConfigException catch (error) {
+      if (!mounted) return false;
+      _showCameraBlockingError(error.message);
+      return false;
+    }
+
+    final now = DateTime.now();
+    if (widget.flowType.isCheckIn &&
+        now.isBefore(workConfig.minimumClockInDateTime(now))) {
+      if (!mounted) return false;
+      _showCameraBlockingError(
+        'Presensi masuk hanya dapat dilakukan mulai pukul '
+        '${workConfig.minimumClockInLabel}',
+      );
+      return false;
+    }
+
+    if (!widget.flowType.isCheckIn &&
+        now.isBefore(workConfig.minimumClockOutDateTime(now))) {
+      if (!mounted) return false;
+      _showCameraBlockingError(
+        'Presensi keluar hanya dapat dilakukan mulai pukul '
+        '${workConfig.minimumClockOutLabel}',
+      );
+      return false;
+    }
+
+    return true;
+  }
+
+  void _showCameraBlockingError(String message) {
+    setState(() => _cameraError = message);
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 
   Future<void> _initializeFrontCamera() async {

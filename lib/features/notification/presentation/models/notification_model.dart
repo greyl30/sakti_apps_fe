@@ -68,7 +68,7 @@ final dummyEmployeeNotifications = [
     id: 'notif-employee-check-in',
     title: 'Presensi Masuk',
     message:
-        'Segera lakukan presensi masuk. Jika Anda melakukan presensi masuk setelah pukul 08.30 presensi akan dihitung sebagai terlambat.',
+        'Segera lakukan presensi masuk. Jika melewati batas tepat waktu, presensi akan dihitung sebagai terlambat.',
     type: NotificationType.checkIn,
     createdAt: DateTime(2026, 7, 14, 9),
     isRead: false,
@@ -77,7 +77,7 @@ final dummyEmployeeNotifications = [
     id: 'notif-employee-check-out',
     title: 'Presensi Keluar',
     message:
-        'Segera lakukan presensi keluar. Lakukan presensi keluar sebelum pukul 23.59. Jika sedang lembur, lakukan presensi sesuai waktu Anda pulang.',
+        'Segera lakukan presensi keluar. Jika sedang lembur, lakukan presensi sesuai waktu Anda pulang.',
     type: NotificationType.checkOut,
     createdAt: DateTime(2026, 7, 14, 14, 10),
     isRead: true,
@@ -164,7 +164,7 @@ final dummyHrdNotifications = [
     id: 'notif-hrd-check-in',
     title: 'Presensi Masuk',
     message:
-        'Segera lakukan presensi masuk. Jika Anda melakukan presensi masuk setelah pukul 08.30 presensi akan dihitung sebagai terlambat.',
+        'Segera lakukan presensi masuk. Jika melewati batas tepat waktu, presensi akan dihitung sebagai terlambat.',
     type: NotificationType.checkIn,
     createdAt: DateTime(2026, 7, 17, 8),
     isRead: true,
@@ -173,7 +173,7 @@ final dummyHrdNotifications = [
     id: 'notif-hrd-check-out',
     title: 'Presensi Keluar',
     message:
-        'Segera lakukan presensi keluar. Lakukan presensi keluar sebelum pukul 23.59. Jika sedang lembur, lakukan presensi sesuai waktu Anda pulang.',
+        'Segera lakukan presensi keluar. Jika sedang lembur, lakukan presensi sesuai waktu Anda pulang.',
     type: NotificationType.checkOut,
     createdAt: DateTime(2026, 7, 16, 17, 15),
     isRead: true,

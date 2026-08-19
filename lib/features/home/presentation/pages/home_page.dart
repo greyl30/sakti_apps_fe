@@ -3,12 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/constants/app_assets.dart';
-import '../../../../core/network/api_client.dart';
 import '../../../../core/router/route_name.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/app_bottom_navigation.dart';
-import '../../../attendance/data/datasources/attendance_remote_data_source.dart';
-import '../../../attendance/data/repositories/attendance_repository.dart';
 import '../../../attendance/presentation/utils/attendance_availability.dart';
 import '../../../attendance/presentation/widgets/attendance_status_dialog.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
@@ -27,9 +24,6 @@ import '../widgets/home_reminder_section.dart';
 class HomePage extends ConsumerWidget {
   const HomePage({super.key});
 
-  static final AttendanceRepository _attendanceRepository =
-      AttendanceRepository(AttendanceRemoteDataSource(ApiClient.dio));
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     // Data profil user login dari auth provider.
@@ -42,11 +36,13 @@ class HomePage extends ConsumerWidget {
     final histories = ref.watch(attendanceHistoriesProvider);
     final holidays = ref.watch(activeLeaveHolidayDatesProvider);
     final leaveStatuses = ref.watch(leaveStatusesProvider);
+    final workConfig = ref.watch(attendanceWorkConfigProvider);
     final attendanceAvailability = buildAttendanceAvailability(
       date: DateTime.now(),
       holidays: holidays.valueOrNull ?? const <DateTime>{},
       leaveRequests: leaveStatuses.valueOrNull ?? const [],
       histories: histories.valueOrNull,
+      workConfig: workConfig.valueOrNull,
     );
     final unreadCount = ref.watch(notificationUnreadCountProvider);
     final hasUnreadNotifications = (unreadCount.valueOrNull ?? 0) > 0;
@@ -92,10 +88,13 @@ class HomePage extends ConsumerWidget {
                             attendanceAvailability.checkOutUnavailableReason,
                       ),
                       onScheduleTap: () => context.push(RouteName.calendar),
+                      scheduleLabel: workConfig.valueOrNull?.workScheduleLabel,
                     ),
                     const SizedBox(height: 20),
                     HomeReminderSection(
                       isHoliday: attendanceAvailability.isCalendarHoliday,
+                      checkInDeadlineLabel:
+                          workConfig.valueOrNull?.onTimeDeadlineLabel,
                       onCheckInReminderTap: () => _handleCheckInTap(
                         context,
                         unavailableReason:
@@ -144,34 +143,13 @@ class HomePage extends ConsumerWidget {
   void _handleCheckOutTap(
     BuildContext context, {
     required AttendanceUnavailableReason? unavailableReason,
-  }) async {
+  }) {
     if (unavailableReason != null) {
       _showUnavailableDialog(context, unavailableReason);
       return;
     }
-    final canCheckOut = await _canCheckOutByWorkConfig(context);
-    if (!context.mounted) return;
-    if (!canCheckOut) return;
 
     context.push(RouteName.checkOutVerification);
-  }
-
-  Future<bool> _canCheckOutByWorkConfig(BuildContext context) async {
-    try {
-      final config = await _attendanceRepository.getWorkConfig();
-      if (!context.mounted) return false;
-      final now = DateTime.now();
-      if (now.isBefore(config.minimumClockOutDateTime(now))) {
-        _showCheckOutUnavailableDialog(context);
-        return false;
-      }
-
-      return true;
-    } catch (_) {
-      if (!context.mounted) return false;
-      _showCheckOutUnavailableDialog(context);
-      return false;
-    }
   }
 
   Future<void> _refreshHome(WidgetRef ref, UserRole role) async {
@@ -218,19 +196,6 @@ class HomePage extends ConsumerWidget {
         icon: AppAssets.iconInfo,
         title: reason.title,
         description: reason.message,
-        buttonText: 'Tutup',
-        onPressed: () => Navigator.of(dialogContext).pop(),
-      ),
-    );
-  }
-
-  void _showCheckOutUnavailableDialog(BuildContext context) {
-    showDialog<void>(
-      context: context,
-      builder: (dialogContext) => AttendanceStatusDialog(
-        icon: AppAssets.iconInfo,
-        title: 'Presensi Keluar Belum Tersedia',
-        description: 'Presensi keluar hanya dapat\ndilakukan mulai pukul 17.00',
         buttonText: 'Tutup',
         onPressed: () => Navigator.of(dialogContext).pop(),
       ),

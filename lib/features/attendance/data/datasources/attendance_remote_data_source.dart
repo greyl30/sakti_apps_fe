@@ -18,7 +18,7 @@ class AttendanceRemoteDataSource {
     });
 
     final response = await _dio.post<Map<String, dynamic>>(
-      '/upload/image',
+      '/api/upload/presensi',
       data: formData,
       options: Options(contentType: 'multipart/form-data'),
     );

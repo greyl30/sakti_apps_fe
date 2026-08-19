@@ -11,11 +11,13 @@ class HomeReminderSection extends StatelessWidget {
     required this.isHoliday,
     required this.onCheckInReminderTap,
     required this.onCheckOutReminderTap,
+    this.checkInDeadlineLabel,
   });
 
   final bool isHoliday;
   final VoidCallback onCheckInReminderTap;
   final VoidCallback onCheckOutReminderTap;
+  final String? checkInDeadlineLabel;
 
   @override
   Widget build(BuildContext context) {
@@ -58,7 +60,9 @@ class HomeReminderSection extends StatelessWidget {
                 : [
                     _ReminderTile(
                       title: 'Lengkapi Presensi Masuk',
-                      subtitle: 'Segera lakukan sebelum pukul 08.30',
+                      subtitle: checkInDeadlineLabel == null
+                          ? 'Segera lakukan presensi masuk'
+                          : 'Segera lakukan sebelum pukul $checkInDeadlineLabel',
                       onTap: onCheckInReminderTap,
                     ),
                     const Divider(

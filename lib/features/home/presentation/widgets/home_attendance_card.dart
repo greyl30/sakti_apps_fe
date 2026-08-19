@@ -17,6 +17,7 @@ class HomeAttendanceCard extends StatelessWidget {
     required this.onCheckInTap,
     required this.onCheckOutTap,
     this.onScheduleTap,
+    this.scheduleLabel,
   });
 
   final bool isHoliday;
@@ -25,6 +26,7 @@ class HomeAttendanceCard extends StatelessWidget {
   final VoidCallback onCheckInTap;
   final VoidCallback onCheckOutTap;
   final VoidCallback? onScheduleTap;
+  final String? scheduleLabel;
 
   @override
   Widget build(BuildContext context) {
@@ -75,6 +77,7 @@ class HomeAttendanceCard extends StatelessWidget {
                       child: _WorkScheduleBar(
                         todayLabel: todayLabel,
                         isHoliday: isHoliday,
+                        scheduleLabel: scheduleLabel,
                       ),
                     ),
                   ),
@@ -145,10 +148,15 @@ class HomeAttendanceCard extends StatelessWidget {
 }
 
 class _WorkScheduleBar extends StatelessWidget {
-  const _WorkScheduleBar({required this.todayLabel, required this.isHoliday});
+  const _WorkScheduleBar({
+    required this.todayLabel,
+    required this.isHoliday,
+    required this.scheduleLabel,
+  });
 
   final String todayLabel;
   final bool isHoliday;
+  final String? scheduleLabel;
 
   @override
   Widget build(BuildContext context) {
@@ -197,8 +205,8 @@ class _WorkScheduleBar extends StatelessWidget {
           ),
           const SizedBox(width: 7),
           Text(
-            isHoliday ? '-' : '08.00 - 16.30',
-            style: TextStyle(
+            isHoliday ? '-' : scheduleLabel ?? '-',
+            style: const TextStyle(
               color: Colors.white,
               fontSize: 13,
               fontWeight: FontWeight.w700,
