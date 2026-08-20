@@ -61,3 +61,7 @@ app.*.map.json
 .env
 .env.*
 !.env.example
+
+# Android release signing
+android/app/sakti-release-key.jks
+android/key.properties
