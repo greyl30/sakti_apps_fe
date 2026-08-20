@@ -346,6 +346,11 @@ class _TimelineItem extends StatelessWidget {
 }
 
 String _statusTitle(LeaveRequestStatusData data) {
+  if (data.skipsSupervisorApproval &&
+      data.status == LeaveApprovalStatus.waitingSupervisor) {
+    return 'Menunggu HRD';
+  }
+
   return switch (data.status) {
     LeaveApprovalStatus.waitingSupervisor => 'Menunggu Atasan',
     LeaveApprovalStatus.waitingHRD => 'Menunggu HRD',
@@ -356,6 +361,11 @@ String _statusTitle(LeaveRequestStatusData data) {
 }
 
 String _statusSubtitle(LeaveRequestStatusData data) {
+  if (data.skipsSupervisorApproval &&
+      data.status == LeaveApprovalStatus.waitingSupervisor) {
+    return 'Menunggu finalisasi HRD';
+  }
+
   return switch (data.status) {
     LeaveApprovalStatus.waitingSupervisor =>
       'Dikirim: ${_formatDate(data.submittedDate)}',
@@ -400,6 +410,59 @@ List<_TimelineData> _timelineItems(LeaveRequestStatusData data) {
       state: _TimelineState.done,
     ),
   ];
+
+  if (data.skipsSupervisorApproval) {
+    if (data.status == LeaveApprovalStatus.rejected) {
+      items.add(
+        _TimelineData(
+          title: 'Pengajuan Ditolak',
+          subtitle: _terminalStatusSubtitle(data.statusUpdatedDate),
+          state: _TimelineState.failed,
+        ),
+      );
+      return items;
+    }
+
+    if (data.status == LeaveApprovalStatus.canceled) {
+      items.add(
+        _TimelineData(
+          title: 'Pengajuan Dibatalkan',
+          subtitle: _terminalStatusSubtitle(data.cancelledDate),
+          state: _TimelineState.failed,
+        ),
+      );
+      return items;
+    }
+
+    if (data.progress == ApprovalProgress.approved) {
+      items.add(
+        _TimelineData(
+          title: 'Pengajuan Cuti Berhasil',
+          subtitle: data.hrdApprovalDate == null
+              ? 'Selesai'
+              : '${data.hrdName} - ${_formatTime(data.hrdApprovalDate!)}',
+          state: _TimelineState.done,
+        ),
+      );
+      return items;
+    }
+
+    items.add(
+      const _TimelineData(
+        title: 'Menunggu Konfirmasi HRD',
+        subtitle: 'Dalam proses',
+        state: _TimelineState.active,
+      ),
+    );
+    items.add(
+      const _TimelineData(
+        title: 'Pengajuan Cuti Berhasil',
+        subtitle: 'Belum dimulai',
+        state: _TimelineState.pending,
+      ),
+    );
+    return items;
+  }
 
   if (data.status == LeaveApprovalStatus.rejected) {
     if (_hasSupervisorApproved(data)) {

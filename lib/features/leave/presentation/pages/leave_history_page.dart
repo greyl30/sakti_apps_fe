@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/router/route_name.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../../history/presentation/widgets/history_filter_chip.dart';
 import '../../data/models/leave_request_model.dart';
 import '../models/leave_history_model.dart';
@@ -25,6 +26,9 @@ class _LeaveHistoryPageState extends ConsumerState<LeaveHistoryPage> {
   @override
   Widget build(BuildContext context) {
     final histories = ref.watch(paginatedLeaveHistoryProvider);
+    final hasSupervisor = _hasSupervisor(
+      ref.watch(authProvider).user?.atasanLangsungId,
+    );
 
     return Scaffold(
       backgroundColor: AppColors.whiteBackground,
@@ -91,7 +95,11 @@ class _LeaveHistoryPageState extends ConsumerState<LeaveHistoryPage> {
               child: RefreshIndicator(
                 color: AppColors.primaryRed,
                 onRefresh: _refreshHistories,
-                child: _buildHistoryList(context, histories),
+                child: _buildHistoryList(
+                  context,
+                  histories,
+                  hasSupervisor: hasSupervisor,
+                ),
               ),
             ),
           ],
@@ -102,8 +110,9 @@ class _LeaveHistoryPageState extends ConsumerState<LeaveHistoryPage> {
 
   Widget _buildHistoryList(
     BuildContext context,
-    PaginatedLeaveHistoryState histories,
-  ) {
+    PaginatedLeaveHistoryState histories, {
+    required bool hasSupervisor,
+  }) {
     if (histories.isLoading && histories.items.isEmpty) {
       return const _LeaveHistoryMessageList('Memuat riwayat pengajuan...');
     }
@@ -142,7 +151,11 @@ class _LeaveHistoryPageState extends ConsumerState<LeaveHistoryPage> {
           padding: const EdgeInsets.only(bottom: 15),
           child: LeaveHistoryCard(
             history: request.toHistoryModel(),
-            onTap: () => _openHistoryRequest(context, request),
+            onTap: () => _openHistoryRequest(
+              context,
+              request,
+              hasSupervisor: hasSupervisor,
+            ),
           ),
         );
       },
@@ -214,8 +227,14 @@ class _LoadMoreHistoryAction extends StatelessWidget {
   }
 }
 
-void _openHistoryRequest(BuildContext context, LeaveRequestResponse request) {
-  final statusData = request.toStatusData();
+void _openHistoryRequest(
+  BuildContext context,
+  LeaveRequestResponse request, {
+  required bool hasSupervisor,
+}) {
+  final statusData = request.toStatusData(
+    skipsSupervisorApproval: !hasSupervisor,
+  );
 
   if (statusData.status == LeaveApprovalStatus.canceled) {
     context.push(
@@ -238,6 +257,11 @@ void _openHistoryRequest(BuildContext context, LeaveRequestResponse request) {
       fallbackRoute: RouteName.leaveHistory,
     ),
   );
+}
+
+bool _hasSupervisor(String? supervisorId) {
+  final trimmed = supervisorId?.trim();
+  return trimmed != null && trimmed.isNotEmpty;
 }
 
 class _LeaveHistoryMessageList extends StatelessWidget {

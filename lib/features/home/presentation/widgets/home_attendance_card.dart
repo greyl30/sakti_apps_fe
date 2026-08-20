@@ -91,7 +91,7 @@ class HomeAttendanceCard extends StatelessWidget {
                   children: [
                     Expanded(
                       child: _AttendanceActionButton(
-                        label: 'Presensi Masuk',
+                        label: 'Masuk',
                         icon: AppAssets.iconIn,
                         isEnabled: !isHoliday && canCheckIn,
                         onTap: onCheckInTap,
@@ -100,7 +100,7 @@ class HomeAttendanceCard extends StatelessWidget {
                     const SizedBox(width: 10),
                     Expanded(
                       child: _AttendanceActionButton(
-                        label: 'Presensi Keluar',
+                        label: 'Keluar',
                         icon: AppAssets.iconLogout,
                         isEnabled: !isHoliday && canCheckOut,
                         onTap: onCheckOutTap,

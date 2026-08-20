@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/router/route_name.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../../leave/data/models/leave_request_model.dart';
 import '../../../leave/presentation/models/leave_request_status.dart';
 import '../../../leave/presentation/providers/leave_submit_provider.dart';
@@ -34,6 +35,9 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
     final holidayDates = holidays.valueOrNull ?? const <DateTime>{};
     final requests =
         leaveRequests.valueOrNull ?? const <LeaveRequestResponse>[];
+    final hasSupervisor = _hasSupervisor(
+      ref.watch(authProvider).user?.atasanLangsungId,
+    );
     final markers = _buildMarkers(holidayDates, requests);
 
     return Scaffold(
@@ -69,7 +73,10 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
                               holidays.valueOrNull == null) ||
                           (leaveRequests.isLoading &&
                               leaveRequests.valueOrNull == null),
-                      onDateTap: _openMarkerDetail,
+                      onDateTap: (marker) => _openMarkerDetail(
+                        marker,
+                        hasSupervisor: hasSupervisor,
+                      ),
                     ),
                     if (holidays.hasError || leaveRequests.hasError) ...[
                       const SizedBox(height: 16),
@@ -210,15 +217,25 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
     return !requestEnd.isBefore(monthStart) && !requestStart.isAfter(monthEnd);
   }
 
-  void _openMarkerDetail(_CalendarMarker? marker) {
+  void _openMarkerDetail(
+    _CalendarMarker? marker, {
+    required bool hasSupervisor,
+  }) {
     final request = marker?.request;
     if (request == null) return;
 
-    final statusData = request.toStatusData();
+    final statusData = request.toStatusData(
+      skipsSupervisorApproval: !hasSupervisor,
+    );
     if (statusData.status == LeaveApprovalStatus.approved) {
       context.push(RouteName.leaveSuccess, extra: statusData);
     }
   }
+}
+
+bool _hasSupervisor(String? supervisorId) {
+  final trimmed = supervisorId?.trim();
+  return trimmed != null && trimmed.isNotEmpty;
 }
 
 class _CalendarMonthHeader extends StatelessWidget {

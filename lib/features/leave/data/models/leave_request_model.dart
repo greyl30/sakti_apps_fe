@@ -282,6 +282,7 @@ class LeaveRequestResponse {
   LeaveRequestStatusData toStatusData({
     String fallbackSupervisorName = '-',
     String fallbackHrdName = 'HRD',
+    bool skipsSupervisorApproval = false,
   }) {
     // Mapper sementara agar response API dapat memakai widget status yang ada.
     return LeaveRequestStatusData(
@@ -303,6 +304,7 @@ class LeaveRequestResponse {
       resultReason: approvalStatus == LeaveApprovalStatus.rejected
           ? rejectionReason ?? cancelReason
           : cancelReason,
+      skipsSupervisorApproval: skipsSupervisorApproval,
       skipsHrdFinalization: directlyFinal,
       totalDaysOverride: totalDays,
     );

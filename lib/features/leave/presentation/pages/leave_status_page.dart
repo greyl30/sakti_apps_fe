@@ -61,6 +61,11 @@ class LeaveStatusPage extends StatelessWidget {
 }
 
 String _statusSubtitle(LeaveRequestStatusData data) {
+  if (data.skipsSupervisorApproval &&
+      data.status == LeaveApprovalStatus.waitingSupervisor) {
+    return 'Menunggu finalisasi HRD';
+  }
+
   return switch (data.status) {
     LeaveApprovalStatus.waitingSupervisor => 'Menunggu persetujuan atasan',
     LeaveApprovalStatus.waitingHRD => 'Menunggu finalisasi HRD',

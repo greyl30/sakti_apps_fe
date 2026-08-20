@@ -6,6 +6,7 @@ import '../../../../core/constants/app_assets.dart';
 import '../../../../core/router/route_name.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/app_bottom_navigation.dart';
+import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../data/models/leave_request_model.dart';
 import '../models/leave_request_status.dart';
 import '../providers/leave_submit_provider.dart';
@@ -49,6 +50,9 @@ class _LeavePageState extends ConsumerState<LeavePage> {
     );
     final activeRequests = ref.watch(activeLeaveRequestsProvider);
     final historyRequests = ref.watch(leaveHistoryRequestsProvider);
+    final hasSupervisor = _hasSupervisor(
+      ref.watch(authProvider).user?.atasanLangsungId,
+    );
 
     return Scaffold(
       backgroundColor: AppColors.whiteBackground,
@@ -203,7 +207,9 @@ class _LeavePageState extends ConsumerState<LeavePage> {
                                 icon: AppAssets.iconPending,
                                 onTap: () => context.push(
                                   RouteName.leaveStatus,
-                                  extra: requests[index].toStatusData(),
+                                  extra: requests[index].toStatusData(
+                                    skipsSupervisorApproval: !hasSupervisor,
+                                  ),
                                 ),
                               ),
                               if (index != requests.length - 1)
@@ -257,6 +263,7 @@ class _LeavePageState extends ConsumerState<LeavePage> {
                                 onTap: () => _openHistoryRequest(
                                   context,
                                   visibleRequests[index],
+                                  hasSupervisor: hasSupervisor,
                                 ),
                               ),
                               if (index != visibleRequests.length - 1)
@@ -304,8 +311,14 @@ class _LeavePageState extends ConsumerState<LeavePage> {
   }
 }
 
-void _openHistoryRequest(BuildContext context, LeaveRequestResponse request) {
-  final statusData = request.toStatusData();
+void _openHistoryRequest(
+  BuildContext context,
+  LeaveRequestResponse request, {
+  required bool hasSupervisor,
+}) {
+  final statusData = request.toStatusData(
+    skipsSupervisorApproval: !hasSupervisor,
+  );
 
   if (statusData.status == LeaveApprovalStatus.canceled) {
     context.push(
@@ -361,6 +374,11 @@ String _leaveYearLabel(int? year) {
 String? _formatValidUntil(DateTime? date) {
   if (date == null) return null;
   return _formatDate(date);
+}
+
+bool _hasSupervisor(String? supervisorId) {
+  final trimmed = supervisorId?.trim();
+  return trimmed != null && trimmed.isNotEmpty;
 }
 
 Color _historyStatusColor(String statusLabel) {

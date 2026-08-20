@@ -7,6 +7,7 @@ import '../../../../core/constants/app_assets.dart';
 import '../../../../core/router/route_name.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/app_bottom_navigation.dart';
+import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../../home/presentation/providers/hrd_leave_finalization_provider.dart';
 import '../models/leave_form_data.dart';
 import '../models/leave_request_status.dart';
@@ -39,13 +40,20 @@ class LeaveConfirmationPage extends ConsumerWidget {
     ref.invalidate(activeLeaveRequestsProvider);
     ref.invalidate(leaveHistoryRequestsProvider);
     ref.invalidate(hrdPendingLeaveFinalizationsProvider);
-    _showSuccessDialog(context, response.toStatusData());
+    final user = ref.read(authProvider).user;
+    final hasSupervisor = _hasSupervisor(user?.atasanLangsungId);
+    _showSuccessDialog(
+      context,
+      response.toStatusData(skipsSupervisorApproval: !hasSupervisor),
+      hasSupervisor: hasSupervisor,
+    );
   }
 
   void _showSuccessDialog(
     BuildContext context,
-    LeaveRequestStatusData statusData,
-  ) {
+    LeaveRequestStatusData statusData, {
+    required bool hasSupervisor,
+  }) {
     final isDispensation = _isDispensation(data.type);
 
     // Popup berhasil mengirim pengajuan cuti.
@@ -98,8 +106,12 @@ class LeaveConfirmationPage extends ConsumerWidget {
               const SizedBox(height: 10),
               Text(
                 isDispensation
-                    ? 'Dispensasi telah tercatat dalam sistem. Notifikasi telah dikirim kepada Atasan.'
-                    : 'Pengajuan cuti Anda telah berhasil dikirim dan sedang dalam proses persetujuan.',
+                    ? hasSupervisor
+                          ? 'Dispensasi telah tercatat dalam sistem. Notifikasi telah dikirim kepada Atasan.'
+                          : 'Dispensasi telah tercatat dalam sistem dan akan diproses oleh HRD.'
+                    : hasSupervisor
+                    ? 'Pengajuan cuti Anda telah berhasil dikirim dan sedang dalam proses persetujuan.'
+                    : 'Pengajuan cuti Anda telah berhasil dikirim dan sedang menunggu finalisasi HRD.',
                 textAlign: TextAlign.center,
                 style: const TextStyle(
                   color: Color(0xFF8A8F98),
@@ -148,6 +160,9 @@ class LeaveConfirmationPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isDispensation = _isDispensation(data.type);
+    final hasSupervisor = _hasSupervisor(
+      ref.watch(authProvider).user?.atasanLangsungId,
+    );
     final submitState = ref.watch(leaveSubmitProvider);
     final balance = ref.watch(leaveBalanceProvider);
     final balanceData = balance.valueOrNull;
@@ -289,8 +304,12 @@ class LeaveConfirmationPage extends ConsumerWidget {
                         Expanded(
                           child: Text(
                             isDispensation
-                                ? 'Setelah diklik, dispensasi akan langsung tercatat dalam sistem serta notifikasi akan dikirim kepada Atasan.'
-                                : 'Setelah diklik, pengajuan akan dikirim ke Atasan dan HRD untuk mendapat persetujuan.',
+                                ? hasSupervisor
+                                      ? 'Setelah diklik, dispensasi akan langsung tercatat dalam sistem serta notifikasi akan dikirim kepada Atasan.'
+                                      : 'Setelah diklik, dispensasi akan langsung tercatat dalam sistem serta diproses oleh HRD.'
+                                : hasSupervisor
+                                ? 'Setelah diklik, pengajuan akan dikirim ke Atasan dan HRD untuk mendapat persetujuan.'
+                                : 'Setelah diklik, pengajuan akan dikirim langsung ke HRD untuk mendapat persetujuan.',
                             style: const TextStyle(
                               color: Color(0xFF5F6972),
                               fontSize: 13,
@@ -396,6 +415,11 @@ class LeaveConfirmationPage extends ConsumerWidget {
 
   bool _isDispensation(String type) {
     return type.trim().toLowerCase() == 'dispensasi';
+  }
+
+  bool _hasSupervisor(String? supervisorId) {
+    final trimmed = supervisorId?.trim();
+    return trimmed != null && trimmed.isNotEmpty;
   }
 }
 
