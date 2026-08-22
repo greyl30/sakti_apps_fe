@@ -18,8 +18,12 @@ class ProfilePage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final user = ref.watch(authProvider).user;
-    final isManager = _isManagerRole(user?.peran);
-    final telegramState = isManager ? ref.watch(telegramProvider) : null;
+    final canUseTelegram = _canUseTelegram(user?.peran);
+    final telegramUserId = user?.id;
+    final canWatchTelegram = canUseTelegram && telegramUserId != null;
+    final telegramState = canWatchTelegram
+        ? ref.watch(telegramProvider(telegramUserId))
+        : null;
 
     return Scaffold(
       backgroundColor: AppColors.whiteBackground,
@@ -69,7 +73,7 @@ class ProfilePage extends ConsumerWidget {
                     ],
                   ),
                   const SizedBox(height: 22),
-                  if (isManager && telegramState != null) ...[
+                  if (canWatchTelegram && telegramState != null) ...[
                     ProfileActionCard(
                       icon: AppAssets.bel,
                       title: telegramState.isConnected
@@ -83,7 +87,11 @@ class ProfilePage extends ConsumerWidget {
                       onTap: telegramState.isStatusLoading
                           ? () {}
                           : telegramState.isConnected
-                          ? () => _showTelegramDisconnectDialog(context, ref)
+                          ? () => _showTelegramDisconnectDialog(
+                              context,
+                              ref,
+                              telegramUserId,
+                            )
                           : () => context.push(RouteName.telegramConnect),
                     ),
                     const SizedBox(height: 16),
@@ -135,13 +143,17 @@ class ProfilePage extends ConsumerWidget {
     );
   }
 
-  void _showTelegramDisconnectDialog(BuildContext context, WidgetRef ref) {
+  void _showTelegramDisconnectDialog(
+    BuildContext context,
+    WidgetRef ref,
+    String userId,
+  ) {
     showDialog<void>(
       context: context,
       barrierDismissible: false,
       builder: (dialogContext) => Consumer(
         builder: (context, ref, _) {
-          final telegramState = ref.watch(telegramProvider);
+          final telegramState = ref.watch(telegramProvider(userId));
 
           return ProfileConfirmationDialog(
             icon: AppAssets.out,
@@ -152,7 +164,7 @@ class ProfilePage extends ConsumerWidget {
             onConfirm: () => Navigator.of(dialogContext).pop(),
             onCancel: () async {
               final success = await ref
-                  .read(telegramProvider.notifier)
+                  .read(telegramProvider(userId).notifier)
                   .disconnect();
 
               if (!context.mounted) return;
@@ -162,7 +174,9 @@ class ProfilePage extends ConsumerWidget {
                 return;
               }
 
-              final errorMessage = ref.read(telegramProvider).errorMessage;
+              final errorMessage = ref
+                  .read(telegramProvider(userId))
+                  .errorMessage;
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text(
@@ -183,8 +197,10 @@ class ProfilePage extends ConsumerWidget {
     return trimmed;
   }
 
-  bool _isManagerRole(String? role) {
+  bool _canUseTelegram(String? role) {
     final normalized = role?.trim().toLowerCase();
-    return normalized == 'atasan' || normalized == 'manager';
+    return normalized == 'atasan' ||
+        normalized == 'manager' ||
+        normalized == 'hrd';
   }
 }

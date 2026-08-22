@@ -28,6 +28,7 @@ class HomePage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     // Data profil user login dari auth provider.
     final user = ref.watch(authProvider).user;
+    final userId = user?.id;
     final role = userRoleFromPeran(user?.peran);
     final positionParts = [
       user?.levelJabatan ?? user?.peran,
@@ -44,7 +45,9 @@ class HomePage extends ConsumerWidget {
       histories: histories.valueOrNull,
       workConfig: workConfig.valueOrNull,
     );
-    final unreadCount = ref.watch(notificationUnreadCountProvider);
+    final unreadCount = userId == null
+        ? const AsyncValue<int>.data(0)
+        : ref.watch(notificationUnreadCountProvider(userId));
     final hasUnreadNotifications = (unreadCount.valueOrNull ?? 0) > 0;
 
     return Scaffold(
@@ -53,7 +56,7 @@ class HomePage extends ConsumerWidget {
         bottom: false,
         child: RefreshIndicator(
           color: AppColors.primaryRed,
-          onRefresh: () => _refreshHome(ref, role),
+          onRefresh: () => _refreshHome(ref, role, userId),
           child: ListView(
             physics: const AlwaysScrollableScrollPhysics(),
             padding: EdgeInsets.zero,
@@ -152,7 +155,11 @@ class HomePage extends ConsumerWidget {
     context.push(RouteName.checkOutVerification);
   }
 
-  Future<void> _refreshHome(WidgetRef ref, UserRole role) async {
+  Future<void> _refreshHome(
+    WidgetRef ref,
+    UserRole role,
+    String? userId,
+  ) async {
     ref.invalidate(attendanceHistoriesProvider);
     ref.invalidate(activeLeaveHolidayDatesProvider);
     ref.invalidate(leaveStatusesProvider);
@@ -169,8 +176,10 @@ class HomePage extends ConsumerWidget {
       ref.read(attendanceHistoriesProvider.future).then((_) {}),
       ref.read(activeLeaveHolidayDatesProvider.future).then((_) {}),
       ref.read(leaveStatusesProvider.future).then((_) {}),
-      ref.read(notificationsProvider.notifier).refresh(),
-      ref.read(notificationUnreadCountProvider.notifier).refresh(),
+      if (userId != null)
+        ref.read(notificationsProvider(userId).notifier).refresh(),
+      if (userId != null)
+        ref.read(notificationUnreadCountProvider(userId).notifier).refresh(),
       if (role == UserRole.manager)
         ref.read(managerPendingLeaveApprovalsProvider.future).then((_) {}),
       if (role == UserRole.hrd)

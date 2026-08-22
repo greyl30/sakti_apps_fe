@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/router/route_name.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../../leave/presentation/widgets/leave_top_bar.dart';
 import '../models/notification_model.dart';
 import '../providers/notification_provider.dart';
@@ -17,17 +18,22 @@ class NotificationPage extends ConsumerStatefulWidget {
 }
 
 class _NotificationPageState extends ConsumerState<NotificationPage> {
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(notificationsProvider.notifier).markAllAsRead();
-    });
-  }
+  String? _markedAllAsReadUserId;
 
   @override
   Widget build(BuildContext context) {
-    final notifications = ref.watch(notificationsProvider);
+    final userId = ref.watch(authProvider.select((state) => state.user?.id));
+    final notifications = userId == null
+        ? const PaginatedNotificationsState(hasMore: false)
+        : ref.watch(notificationsProvider(userId));
+
+    if (userId != null && _markedAllAsReadUserId != userId) {
+      _markedAllAsReadUserId = userId;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        ref.read(notificationsProvider(userId).notifier).markAllAsRead();
+      });
+    }
 
     return Scaffold(
       backgroundColor: AppColors.whiteBackground,
@@ -44,8 +50,8 @@ class _NotificationPageState extends ConsumerState<NotificationPage> {
             Expanded(
               child: RefreshIndicator(
                 color: AppColors.primaryRed,
-                onRefresh: () => _refreshNotifications(ref),
-                child: _buildNotificationList(notifications),
+                onRefresh: () => _refreshNotifications(ref, userId),
+                child: _buildNotificationList(notifications, userId),
               ),
             ),
           ],
@@ -54,7 +60,10 @@ class _NotificationPageState extends ConsumerState<NotificationPage> {
     );
   }
 
-  Widget _buildNotificationList(PaginatedNotificationsState notifications) {
+  Widget _buildNotificationList(
+    PaginatedNotificationsState notifications,
+    String? userId,
+  ) {
     if (notifications.isLoading && notifications.items.isEmpty) {
       return const _NotificationMessageList('Memuat notifikasi...');
     }
@@ -75,7 +84,11 @@ class _NotificationPageState extends ConsumerState<NotificationPage> {
         if (index == notifications.items.length) {
           return _LoadMoreNotificationsAction(
             isLoading: notifications.isLoadingMore,
-            onTap: () => ref.read(notificationsProvider.notifier).loadMore(),
+            onTap: userId == null
+                ? () {}
+                : () => ref
+                      .read(notificationsProvider(userId).notifier)
+                      .loadMore(),
           );
         }
 
@@ -84,27 +97,33 @@ class _NotificationPageState extends ConsumerState<NotificationPage> {
           padding: const EdgeInsets.only(bottom: 20),
           child: NotificationCard(
             notification: notification,
-            onTap: () => _openNotificationDetail(context, ref, notification),
+            onTap: () =>
+                _openNotificationDetail(context, ref, notification, userId),
           ),
         );
       },
     );
   }
 
-  Future<void> _refreshNotifications(WidgetRef ref) async {
-    await ref.read(notificationsProvider.notifier).refresh();
-    await ref.read(notificationUnreadCountProvider.notifier).refresh();
+  Future<void> _refreshNotifications(WidgetRef ref, String? userId) async {
+    if (userId == null) return;
+
+    await ref.read(notificationsProvider(userId).notifier).refresh();
+    await ref.read(notificationUnreadCountProvider(userId).notifier).refresh();
   }
 
   Future<void> _openNotificationDetail(
     BuildContext context,
     WidgetRef ref,
     NotificationModel notification,
+    String? userId,
   ) async {
+    if (userId == null) return;
+
     final isMarkedAsRead = notification.isRead
         ? true
         : await ref
-              .read(notificationsProvider.notifier)
+              .read(notificationsProvider(userId).notifier)
               .markAsRead(notification.id);
 
     if (!context.mounted) return;

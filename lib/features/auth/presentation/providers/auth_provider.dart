@@ -2,6 +2,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/firebase/firebase_messaging_service.dart';
 import '../../../../core/network/api_client.dart';
+import '../../../notification/presentation/providers/notification_provider.dart';
+import '../../../profile/presentation/providers/telegram_provider.dart';
 import '../../data/datasources/auth_remote_data_source.dart';
 import '../../data/models/user_model.dart';
 import '../../data/repositories/auth_repository.dart';
@@ -50,13 +52,14 @@ final authRepositoryProvider = Provider<AuthRepository>((ref) {
 // Provider untuk mengelola state login
 final authProvider = StateNotifierProvider<AuthNotifier, AuthState>((ref) {
   final repository = ref.watch(authRepositoryProvider);
-  return AuthNotifier(repository);
+  return AuthNotifier(repository, ref);
 });
 
 class AuthNotifier extends StateNotifier<AuthState> {
-  AuthNotifier(this._repository) : super(const AuthState());
+  AuthNotifier(this._repository, this._ref) : super(const AuthState());
 
   final AuthRepository _repository;
+  final Ref _ref;
 
   // Valid login akan mengirim request ke repository
   Future<bool> login({required String email, required String password}) async {
@@ -64,6 +67,10 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
     try {
       final user = await _repository.login(email: email, password: password);
+      final currentUserId = state.user?.id;
+      if (currentUserId != null && currentUserId != user.id) {
+        _clearUserScopedState(currentUserId);
+      }
       state = state.copyWith(isLoading: false, user: user);
       await AppFirebaseMessagingService.registerCurrentToken();
       return true;
@@ -118,6 +125,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
         newPassword: newPassword,
         confirmPassword: confirmPassword,
       );
+      _clearCurrentUserScopedState();
       await _repository.logout();
       state = const AuthState(
         successMessage: 'Password berhasil diubah. Silakan login kembali.',
@@ -144,6 +152,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
       );
 
       if (response.forceLogout) {
+        _clearCurrentUserScopedState();
         await _repository.logout();
       }
 
@@ -158,7 +167,21 @@ class AuthNotifier extends StateNotifier<AuthState> {
   Future<void> logout() async {
     // TODO(Backend):
     // Hapus access token dan refresh token sebelum logout.
+    _clearCurrentUserScopedState();
     await _repository.logout();
     state = const AuthState();
+  }
+
+  void _clearCurrentUserScopedState() {
+    final userId = state.user?.id;
+    if (userId == null || userId.isEmpty) return;
+
+    _clearUserScopedState(userId);
+  }
+
+  void _clearUserScopedState(String userId) {
+    _ref.invalidate(telegramProvider(userId));
+    _ref.invalidate(notificationsProvider(userId));
+    _ref.invalidate(notificationUnreadCountProvider(userId));
   }
 }

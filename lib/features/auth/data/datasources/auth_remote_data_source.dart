@@ -46,7 +46,10 @@ class AuthRemoteDataSource {
   Future<void> forgotPassword(String email) async {
     await _dio.post<Map<String, dynamic>>(
       '/api/auth/forgot-password',
-      data: {'email': email},
+      data: {
+        'email': email,
+        'redirect_to': 'sakti://reset-password',
+      },
       options: Options(extra: const <String, dynamic>{'skipAuth': true}),
     );
   }

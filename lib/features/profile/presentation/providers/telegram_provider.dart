@@ -52,12 +52,11 @@ final telegramRepositoryProvider = Provider<TelegramRepository>((ref) {
   return TelegramRepository(remoteDataSource);
 });
 
-final telegramProvider = StateNotifierProvider<TelegramNotifier, TelegramState>(
-  (ref) {
-    final repository = ref.watch(telegramRepositoryProvider);
-    return TelegramNotifier(repository)..loadStatus();
-  },
-);
+final telegramProvider = StateNotifierProvider.autoDispose
+    .family<TelegramNotifier, TelegramState, String>((ref, userId) {
+      final repository = ref.watch(telegramRepositoryProvider);
+      return TelegramNotifier(repository)..loadStatus();
+    });
 
 class TelegramNotifier extends StateNotifier<TelegramState> {
   TelegramNotifier(this._repository) : super(const TelegramState());

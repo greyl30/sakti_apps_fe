@@ -19,17 +19,19 @@ final notificationRepositoryProvider = Provider<NotificationRepository>((ref) {
   return NotificationRepository(remoteDataSource);
 });
 
-final notificationsProvider =
-    StateNotifierProvider<NotificationsNotifier, PaginatedNotificationsState>((
+final notificationsProvider = StateNotifierProvider.autoDispose
+    .family<NotificationsNotifier, PaginatedNotificationsState, String>((
       ref,
+      userId,
     ) {
       final repository = ref.watch(notificationRepositoryProvider);
-      return NotificationsNotifier(ref, repository)..load();
+      return NotificationsNotifier(ref, repository, userId)..load();
     });
 
-final notificationUnreadCountProvider =
-    StateNotifierProvider<NotificationUnreadCountNotifier, AsyncValue<int>>((
+final notificationUnreadCountProvider = StateNotifierProvider.autoDispose
+    .family<NotificationUnreadCountNotifier, AsyncValue<int>, String>((
       ref,
+      userId,
     ) {
       final repository = ref.watch(notificationRepositoryProvider);
       return NotificationUnreadCountNotifier(repository)..load();
@@ -69,13 +71,14 @@ class PaginatedNotificationsState {
 }
 
 class NotificationsNotifier extends StateNotifier<PaginatedNotificationsState> {
-  NotificationsNotifier(this._ref, this._repository)
+  NotificationsNotifier(this._ref, this._repository, this._userId)
     : super(const PaginatedNotificationsState(isLoading: true));
 
   static const _limit = 10;
 
   final Ref _ref;
   final NotificationRepository _repository;
+  final String _userId;
   int _page = 0;
 
   Future<void> load() async {
@@ -134,7 +137,9 @@ class NotificationsNotifier extends StateNotifier<PaginatedNotificationsState> {
             )
             .toList(),
       );
-      await _ref.read(notificationUnreadCountProvider.notifier).refresh();
+      await _ref
+          .read(notificationUnreadCountProvider(_userId).notifier)
+          .refresh();
       return true;
     } catch (_) {
       return false;
@@ -149,7 +154,7 @@ class NotificationsNotifier extends StateNotifier<PaginatedNotificationsState> {
             .map((notification) => notification.copyWith(isRead: true))
             .toList(),
       );
-      _ref.read(notificationUnreadCountProvider.notifier).setCount(0);
+      _ref.read(notificationUnreadCountProvider(_userId).notifier).setCount(0);
       return true;
     } catch (_) {
       return false;

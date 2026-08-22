@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/router/route_name.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../../auth/presentation/widgets/auth_primary_button.dart';
 import '../../../leave/presentation/widgets/leave_top_bar.dart';
 import '../providers/telegram_provider.dart';
@@ -30,9 +31,15 @@ class _TelegramConnectPageState extends ConsumerState<TelegramConnectPage> {
     final isValid = _formKey.currentState?.validate() ?? false;
     if (!isValid) return;
 
+    final userId = ref.read(authProvider).user?.id;
+    if (userId == null) {
+      _showMessage('Sesi login tidak ditemukan. Silakan login kembali.');
+      return;
+    }
+
     final verificationCode = _codeController.text.trim().toUpperCase();
     final success = await ref
-        .read(telegramProvider.notifier)
+        .read(telegramProvider(userId).notifier)
         .connect(verificationCode);
 
     if (!mounted) return;
@@ -42,7 +49,7 @@ class _TelegramConnectPageState extends ConsumerState<TelegramConnectPage> {
       return;
     }
 
-    final errorMessage = ref.read(telegramProvider).errorMessage;
+    final errorMessage = ref.read(telegramProvider(userId)).errorMessage;
     _showMessage(errorMessage ?? 'Gagal menghubungkan Telegram.');
   }
 
@@ -54,7 +61,10 @@ class _TelegramConnectPageState extends ConsumerState<TelegramConnectPage> {
 
   @override
   Widget build(BuildContext context) {
-    final telegramState = ref.watch(telegramProvider);
+    final userId = ref.watch(authProvider.select((state) => state.user?.id));
+    final telegramState = userId == null
+        ? const TelegramState()
+        : ref.watch(telegramProvider(userId));
 
     return Scaffold(
       backgroundColor: AppColors.whiteBackground,

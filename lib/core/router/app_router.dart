@@ -60,8 +60,8 @@ const _roleProtectedRoutes = <String, Set<String>>{
   RouteName.managerLeaveRejectReason: {'atasan'},
   RouteName.hrdLeaveFinalizations: {'hrd'},
   RouteName.hrdLeaveFinalizationDetail: {'hrd'},
-  RouteName.telegramConnect: {'atasan', 'manager'},
-  RouteName.telegramSuccess: {'atasan', 'manager'},
+  RouteName.telegramConnect: {'atasan', 'manager', 'hrd'},
+  RouteName.telegramSuccess: {'atasan', 'manager', 'hrd'},
 };
 
 final appRouter = GoRouter(
