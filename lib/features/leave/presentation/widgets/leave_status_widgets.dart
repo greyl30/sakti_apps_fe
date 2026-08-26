@@ -564,7 +564,7 @@ _TimelineData _supervisorApprovedTimeline(LeaveRequestStatusData data) {
     title: 'Disetujui Atasan',
     subtitle: data.supervisorApprovalDate == null
         ? 'Disetujui'
-        : '${data.supervisorName} - ${_formatTime(data.supervisorApprovalDate!)}',
+        : _formatDateTime(data.supervisorApprovalDate!),
     state: _TimelineState.done,
   );
 }

@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_assets.dart';
 import '../../../../core/router/route_name.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/utils/date_time_utils.dart';
 import '../../../../core/widgets/app_bottom_navigation.dart';
 import '../../data/models/attendance_submit_response.dart';
 import '../models/attendance_flow_type.dart';
@@ -287,22 +288,25 @@ String? _formatWorkDuration(AttendanceSubmitResponse? response) {
 
 DateTime? _parseAttendanceDate(String? value) {
   if (value == null || value.trim().isEmpty) return null;
-  return DateTime.tryParse(value);
+  return parseBackendDateTime(value);
 }
 
 DateTime? _parseAttendanceTime(String? value) {
   if (value == null || value.trim().isEmpty) return null;
 
-  final parsedDateTime = DateTime.tryParse(value);
-  if (parsedDateTime != null) return parsedDateTime;
-
-  final parts = value.split(':');
+  final timeText = _extractWibTimeText(value.trim());
+  final parts = timeText.split(':');
   final hour = int.tryParse(parts.elementAtOrNull(0) ?? '');
   final minute = int.tryParse(parts.elementAtOrNull(1) ?? '');
   final second = int.tryParse(parts.elementAtOrNull(2) ?? '') ?? 0;
   if (hour == null || minute == null) return null;
 
   return DateTime(0, 1, 1, hour, minute, second);
+}
+
+String _extractWibTimeText(String value) {
+  final timePart = value.contains('T') ? value.split('T').last : value;
+  return timePart.split(RegExp(r'[Z+-]')).first;
 }
 
 String? _formatAttendanceDistance(num? value) {

@@ -1,3 +1,4 @@
+import '../../../../core/utils/date_time_utils.dart';
 import '../../presentation/models/notification_model.dart';
 
 class NotificationResponseModel {
@@ -111,10 +112,5 @@ bool _readBool(Object? value) {
 }
 
 DateTime? _readNullableDate(Object? value) {
-  if (value is DateTime) return value;
-
-  final text = value?.toString().trim();
-  if (text == null || text.isEmpty) return null;
-
-  return DateTime.tryParse(text);
+  return parseBackendDateTime(value);
 }

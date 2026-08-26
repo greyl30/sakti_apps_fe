@@ -105,19 +105,18 @@ class AttendanceHistoryModel {
   static String _formatTime(String? value) {
     if (value == null) return '-';
 
-    final parsedDateTime = DateTime.tryParse(value);
-    if (parsedDateTime != null) {
-      final hour = parsedDateTime.hour.toString().padLeft(2, '0');
-      final minute = parsedDateTime.minute.toString().padLeft(2, '0');
-      return '$hour:$minute';
-    }
-
-    final parts = value.split(':');
+    final timeText = _extractWibTimeText(value);
+    final parts = timeText.split(':');
     final hour = int.tryParse(parts.elementAtOrNull(0) ?? '');
     final minute = int.tryParse(parts.elementAtOrNull(1) ?? '');
     if (hour == null || minute == null) return value;
 
     return '${hour.toString().padLeft(2, '0')}:'
         '${minute.toString().padLeft(2, '0')}';
+  }
+
+  static String _extractWibTimeText(String value) {
+    final timePart = value.contains('T') ? value.split('T').last : value;
+    return timePart.split(RegExp(r'[Z+-]')).first;
   }
 }

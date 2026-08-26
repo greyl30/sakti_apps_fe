@@ -11,7 +11,7 @@
 
     <!-- error: False positive placeholder Flutter — keterbatasan lint IDE membaca syntax -->
     <application
-        android:label="sakti_apps_fe"
+        android:label="SAKTI"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

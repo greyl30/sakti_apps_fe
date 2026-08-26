@@ -25,17 +25,19 @@ class SplashContent extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, constraints) {
         final height = constraints.maxHeight;
-        final topSpacing = (height * .15).clamp(54.0, 82.0).toDouble();
-        final imageHeight = (height * .56).clamp(230.0, 285.0).toDouble();
-        final imageTextGap = (height * .11).clamp(48.0, 68.0).toDouble();
+        final topSpacing = (height * .12).clamp(32.0, 82.0).toDouble();
+        final imageHeight = (height * .52).clamp(190.0, 285.0).toDouble();
+        final imageTextGap = (height * .08).clamp(24.0, 68.0).toDouble();
 
         return Column(
           children: [
             SizedBox(height: topSpacing),
-            SvgPicture.asset(
-              item.image,
-              height: imageHeight,
-              fit: BoxFit.contain,
+            Flexible(
+              child: SvgPicture.asset(
+                item.image,
+                height: imageHeight,
+                fit: BoxFit.contain,
+              ),
             ),
             SizedBox(height: imageTextGap),
             Text(

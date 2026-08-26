@@ -1,3 +1,4 @@
+import 'package:sakti_apps_fe/core/utils/date_time_utils.dart';
 import 'package:sakti_apps_fe/features/leave/presentation/models/leave_form_data.dart';
 import 'package:sakti_apps_fe/features/leave/presentation/models/leave_history_model.dart';
 import 'package:sakti_apps_fe/features/leave/presentation/models/leave_request_status.dart';
@@ -472,10 +473,5 @@ DateTime _readDate(Object? value) {
 }
 
 DateTime? _readNullableDate(Object? value) {
-  if (value is DateTime) return value;
-
-  final text = value?.toString().trim();
-  if (text == null || text.isEmpty) return null;
-
-  return DateTime.tryParse(text);
+  return parseBackendDateTime(value);
 }

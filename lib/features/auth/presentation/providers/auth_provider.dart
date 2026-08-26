@@ -72,6 +72,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
         _clearUserScopedState(currentUserId);
       }
       state = state.copyWith(isLoading: false, user: user);
+      ApiClient.resetAccountInactiveHandling();
       await AppFirebaseMessagingService.registerCurrentToken();
       return true;
     } on AuthException catch (error) {
@@ -170,6 +171,12 @@ class AuthNotifier extends StateNotifier<AuthState> {
     _clearCurrentUserScopedState();
     await _repository.logout();
     state = const AuthState();
+  }
+
+  Future<void> handleAccountInactive(String message) async {
+    _clearCurrentUserScopedState();
+    await _repository.logout();
+    state = AuthState(errorMessage: message);
   }
 
   void _clearCurrentUserScopedState() {

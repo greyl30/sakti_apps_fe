@@ -1,3 +1,5 @@
+import '../../../../core/utils/date_time_utils.dart';
+
 class LeaveHolidayModel {
   const LeaveHolidayModel({required this.date, required this.isActive});
 
@@ -20,7 +22,7 @@ class LeaveHolidayModel {
 }
 
 DateTime _readDate(Object? value) {
-  final parsed = DateTime.tryParse(value?.toString().trim() ?? '');
+  final parsed = parseBackendDateTime(value);
   if (parsed == null) return DateTime.fromMillisecondsSinceEpoch(0);
   return DateTime(parsed.year, parsed.month, parsed.day);
 }

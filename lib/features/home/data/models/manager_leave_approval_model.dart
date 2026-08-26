@@ -1,3 +1,4 @@
+import '../../../../core/utils/date_time_utils.dart';
 import '../../presentation/models/manager_leave_approval.dart';
 
 class ManagerLeaveApprovalModel {
@@ -179,10 +180,5 @@ DateTime _readDate(Object? value) {
 }
 
 DateTime? _readNullableDate(Object? value) {
-  if (value is DateTime) return value;
-
-  final text = value?.toString().trim();
-  if (text == null || text.isEmpty) return null;
-
-  return DateTime.tryParse(text);
+  return parseBackendDateTime(value);
 }
