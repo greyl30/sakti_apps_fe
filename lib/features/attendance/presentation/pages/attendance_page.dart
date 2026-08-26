@@ -7,8 +7,6 @@ import '../../../../core/constants/app_assets.dart';
 import '../../../../core/router/route_name.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/app_bottom_navigation.dart';
-import '../../../history/presentation/providers/attendance_history_provider.dart';
-import '../../../leave/presentation/providers/leave_submit_provider.dart';
 import '../utils/attendance_availability.dart';
 import '../widgets/attendance_status_dialog.dart';
 
@@ -50,17 +48,8 @@ class AttendancePage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final histories = ref.watch(attendanceHistoriesProvider);
-    final holidays = ref.watch(activeLeaveHolidayDatesProvider);
-    final leaveStatuses = ref.watch(leaveStatusesProvider);
-    final workConfig = ref.watch(attendanceWorkConfigProvider);
-    final availability = buildAttendanceAvailability(
-      date: DateTime.now(),
-      holidays: holidays.valueOrNull ?? const <DateTime>{},
-      leaveRequests: leaveStatuses.valueOrNull ?? const [],
-      histories: histories.valueOrNull,
-      workConfig: workConfig.valueOrNull,
-    );
+    final availability = ref.watch(attendanceAvailabilityProvider).valueOrNull;
+    final effectiveAvailability = availability ?? loadingAttendanceAvailability;
 
     return Scaffold(
       backgroundColor: AppColors.whiteBackground,
@@ -83,10 +72,11 @@ class AttendancePage extends ConsumerWidget {
                     borderColor: const Color(0xFFE9B7B7),
                     iconBackgroundColor: const Color(0xFFF3C3C3),
                     foregroundColor: AppColors.primaryRed,
-                    isEnabled: availability.canCheckIn,
+                    isEnabled: effectiveAvailability.canCheckIn,
                     onTap: () => _startCheckIn(
                       context,
-                      unavailableReason: availability.checkInUnavailableReason,
+                      unavailableReason:
+                          effectiveAvailability.checkInUnavailableReason,
                     ),
                   ),
                   const SizedBox(height: 28),
@@ -99,10 +89,11 @@ class AttendancePage extends ConsumerWidget {
                     borderColor: const Color(0xFFB7DCE9),
                     iconBackgroundColor: const Color(0xFFC3E5F0),
                     foregroundColor: AppColors.secondaryBlue,
-                    isEnabled: availability.canCheckOut,
+                    isEnabled: effectiveAvailability.canCheckOut,
                     onTap: () => _startCheckOut(
                       context,
-                      unavailableReason: availability.checkOutUnavailableReason,
+                      unavailableReason:
+                          effectiveAvailability.checkOutUnavailableReason,
                     ),
                   ),
                 ],

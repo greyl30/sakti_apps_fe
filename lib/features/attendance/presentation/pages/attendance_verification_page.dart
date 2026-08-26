@@ -21,6 +21,7 @@ import '../../data/models/attendance_work_config.dart';
 import '../../data/repositories/attendance_repository.dart';
 import '../../../history/presentation/providers/attendance_history_provider.dart';
 import '../models/attendance_flow_type.dart';
+import '../utils/attendance_availability.dart';
 import '../widgets/attendance_flow_app_bar.dart';
 import '../widgets/attendance_primary_button.dart';
 
@@ -88,6 +89,14 @@ class _CheckInVerificationPageState extends State<CheckInVerificationPage>
         _isInitializingCamera = true;
         _cameraError = null;
       });
+
+      final availability = await _resolveAttendanceAvailability();
+      if (!mounted) return;
+
+      if (!_isAttendanceAvailable(availability)) {
+        setState(() => _isInitializingCamera = false);
+        return;
+      }
 
       final isAllowedTime = await _ensureWithinAllowedAttendanceTime();
       if (!mounted) return;
@@ -276,6 +285,14 @@ class _CheckInVerificationPageState extends State<CheckInVerificationPage>
         _resetCaptureState();
         return;
       }
+
+      final availability = await _resolveAttendanceAvailability();
+      if (!mounted) return;
+      if (!_isAttendanceAvailable(availability)) {
+        _resetCaptureState();
+        return;
+      }
+
       final attendanceLatitude = _actualLatitude!;
       final attendanceLongitude = _actualLongitude!;
 
@@ -286,6 +303,13 @@ class _CheckInVerificationPageState extends State<CheckInVerificationPage>
         latitude: attendanceLatitude,
         longitude: attendanceLongitude,
       );
+      final submitAvailability = await _resolveAttendanceAvailability();
+      if (!mounted) return;
+      if (!_isAttendanceAvailable(submitAvailability)) {
+        _resetCaptureState();
+        return;
+      }
+
       final attendanceResponse = widget.flowType.isCheckIn
           ? await _attendanceRepository.checkIn(
               selfieUrl: uploadedImageUrl,
@@ -368,6 +392,32 @@ class _CheckInVerificationPageState extends State<CheckInVerificationPage>
         context,
       ).showSnackBar(const SnackBar(content: Text('Gagal mengambil foto.')));
     }
+  }
+
+  Future<AttendanceAvailability?> _resolveAttendanceAvailability() async {
+    try {
+      final container = ProviderScope.containerOf(context, listen: false);
+      return await container.read(attendanceAvailabilityProvider.future);
+    } catch (error, stackTrace) {
+      debugPrint('Attendance availability resolve failed: $error');
+      debugPrintStack(stackTrace: stackTrace);
+      return null;
+    }
+  }
+
+  bool _isAttendanceAvailable(AttendanceAvailability? availability) {
+    if (availability == null) {
+      _showCameraBlockingError('Data presensi belum dapat dimuat.');
+      return false;
+    }
+
+    final unavailableReason = widget.flowType.isCheckIn
+        ? availability.checkInUnavailableReason
+        : availability.checkOutUnavailableReason;
+    if (unavailableReason == null) return true;
+
+    _showCameraBlockingError(unavailableReason.message);
+    return false;
   }
 
   void _logAttendanceLocation({

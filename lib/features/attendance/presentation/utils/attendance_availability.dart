@@ -1,11 +1,14 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/network/api_client.dart';
+import '../../../auth/presentation/providers/auth_provider.dart';
+import '../../../history/presentation/providers/attendance_history_provider.dart';
 import '../../data/datasources/attendance_remote_data_source.dart';
 import '../../data/models/attendance_work_config.dart';
 import '../../data/repositories/attendance_repository.dart';
 import '../../../history/presentation/models/attendance_history_model.dart';
 import '../../../leave/data/models/leave_request_model.dart';
+import '../../../leave/presentation/providers/leave_submit_provider.dart';
 import '../../../leave/presentation/utils/leave_workday_calculator.dart';
 
 final attendanceWorkConfigRepositoryProvider = Provider<AttendanceRepository>((
@@ -19,6 +22,24 @@ final attendanceWorkConfigProvider = FutureProvider<AttendanceWorkConfig>((
 ) async {
   final repository = ref.watch(attendanceWorkConfigRepositoryProvider);
   return repository.getWorkConfig();
+});
+
+final attendanceAvailabilityProvider = FutureProvider<AttendanceAvailability>((
+  ref,
+) async {
+  final now = DateTime.now();
+  final holidays = await ref.watch(activeLeaveHolidayDatesProvider.future);
+  final histories = await ref.watch(attendanceHistoriesProvider.future);
+  final workConfig = await ref.watch(attendanceWorkConfigProvider.future);
+  final leaveRequests = await _loadAttendanceBlockingLeaveRequests(ref);
+
+  return buildAttendanceAvailability(
+    date: now,
+    holidays: holidays,
+    leaveRequests: leaveRequests,
+    histories: histories,
+    workConfig: workConfig,
+  );
 });
 
 class AttendanceAvailability {
@@ -51,6 +72,72 @@ class AttendanceUnavailableReason {
 
   final String title;
   final String message;
+}
+
+const loadingAttendanceUnavailableReason = AttendanceUnavailableReason(
+  title: 'Presensi Belum Tersedia',
+  message: 'Data presensi sedang dimuat',
+);
+
+const loadingAttendanceAvailability = AttendanceAvailability(
+  isCalendarHoliday: false,
+  isAttendanceUnavailable: true,
+  hasClockIn: false,
+  hasClockOut: false,
+  canCheckIn: false,
+  canCheckOut: false,
+  checkInUnavailableReason: loadingAttendanceUnavailableReason,
+  checkOutUnavailableReason: loadingAttendanceUnavailableReason,
+);
+
+Future<List<LeaveRequestResponse>> _loadAttendanceBlockingLeaveRequests(
+  Ref ref,
+) async {
+  final repository = ref.watch(leaveRepositoryProvider);
+  final userId = ref.watch(authProvider.select((state) => state.user?.id));
+  final requests = <LeaveRequestResponse>[];
+  var page = 1;
+  var hasMore = true;
+
+  while (hasMore) {
+    final response = await repository.getLeaveStatusPage(page: page, limit: 20);
+    requests.addAll(response.items);
+    hasMore = response.hasMore;
+    page = response.page + 1;
+  }
+
+  final normalizedUserId = userId?.trim();
+  final uniqueRequests = _uniqueLeaveRequests(requests);
+  final currentUserRequests =
+      normalizedUserId == null || normalizedUserId.isEmpty
+      ? uniqueRequests
+      : uniqueRequests
+            .where((request) => request.employeeId.trim() == normalizedUserId)
+            .toList();
+
+  return currentUserRequests
+      .where((request) => request.blocksAttendanceReminder)
+      .toList();
+}
+
+List<LeaveRequestResponse> _uniqueLeaveRequests(
+  List<LeaveRequestResponse> requests,
+) {
+  final seenKeys = <String>{};
+  final uniqueRequests = <LeaveRequestResponse>[];
+
+  for (final request in requests) {
+    final key = request.id.trim().isNotEmpty
+        ? request.id
+        : '${request.employeeId}-${request.subType}-'
+              '${request.startDate.toIso8601String()}-'
+              '${request.endDate.toIso8601String()}-${request.status}';
+    if (!seenKeys.add(key)) continue;
+
+    uniqueRequests.add(request);
+  }
+
+  return uniqueRequests;
 }
 
 AttendanceAvailability buildAttendanceAvailability({

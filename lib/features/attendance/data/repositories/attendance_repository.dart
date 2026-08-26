@@ -180,12 +180,29 @@ class AttendanceRepository {
       return 'Tidak dapat terhubung ke server.';
     }
 
+    final responseMessage = _readResponseMessage(error.response?.data);
+    if (responseMessage != null) return responseMessage;
+
     final statusCode = error.response?.statusCode;
     if (statusCode != null && statusCode >= 500) {
       return 'Server sedang tidak tersedia.';
     }
 
     return fallbackMessage;
+  }
+
+  String? _readResponseMessage(Object? data) {
+    if (data is Map<String, dynamic>) {
+      final message = data['message']?.toString().trim();
+      if (message != null && message.isNotEmpty) return message;
+    }
+
+    if (data is Map) {
+      final message = data['message']?.toString().trim();
+      if (message != null && message.isNotEmpty) return message;
+    }
+
+    return null;
   }
 }
 

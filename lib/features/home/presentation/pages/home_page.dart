@@ -34,17 +34,10 @@ class HomePage extends ConsumerWidget {
       user?.levelJabatan ?? user?.peran,
       user?.divisi ?? user?.unit,
     ].whereType<String>().where((value) => value.trim().isNotEmpty).toList();
-    final histories = ref.watch(attendanceHistoriesProvider);
-    final holidays = ref.watch(activeLeaveHolidayDatesProvider);
-    final leaveStatuses = ref.watch(leaveStatusesProvider);
     final workConfig = ref.watch(attendanceWorkConfigProvider);
-    final attendanceAvailability = buildAttendanceAvailability(
-      date: DateTime.now(),
-      holidays: holidays.valueOrNull ?? const <DateTime>{},
-      leaveRequests: leaveStatuses.valueOrNull ?? const [],
-      histories: histories.valueOrNull,
-      workConfig: workConfig.valueOrNull,
-    );
+    final attendanceAvailability =
+        ref.watch(attendanceAvailabilityProvider).valueOrNull ??
+        loadingAttendanceAvailability;
     final unreadCount = userId == null
         ? const AsyncValue<int>.data(0)
         : ref.watch(notificationUnreadCountProvider(userId));
@@ -160,6 +153,7 @@ class HomePage extends ConsumerWidget {
     UserRole role,
     String? userId,
   ) async {
+    ref.invalidate(attendanceAvailabilityProvider);
     ref.invalidate(attendanceHistoriesProvider);
     ref.invalidate(activeLeaveHolidayDatesProvider);
     ref.invalidate(leaveStatusesProvider);
@@ -173,6 +167,7 @@ class HomePage extends ConsumerWidget {
     }
 
     final futures = <Future<void>>[
+      ref.read(attendanceAvailabilityProvider.future).then((_) {}),
       ref.read(attendanceHistoriesProvider.future).then((_) {}),
       ref.read(activeLeaveHolidayDatesProvider.future).then((_) {}),
       ref.read(leaveStatusesProvider.future).then((_) {}),
