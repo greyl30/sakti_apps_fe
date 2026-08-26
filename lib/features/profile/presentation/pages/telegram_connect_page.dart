@@ -45,7 +45,8 @@ class _TelegramConnectPageState extends ConsumerState<TelegramConnectPage> {
     if (!mounted) return;
 
     if (success) {
-      context.go(RouteName.telegramSuccess);
+      if (!mounted) return;
+      context.pop(true);
       return;
     }
 

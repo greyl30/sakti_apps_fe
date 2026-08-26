@@ -4,7 +4,9 @@ class TelegramStatusModel {
   final bool isConnected;
 
   factory TelegramStatusModel.fromJson(Map<String, dynamic> json) {
-    return TelegramStatusModel(isConnected: _readBool(json['is_connected']));
+    return TelegramStatusModel(
+      isConnected: _readBool(json['connected'] ?? json['is_connected']),
+    );
   }
 }
 

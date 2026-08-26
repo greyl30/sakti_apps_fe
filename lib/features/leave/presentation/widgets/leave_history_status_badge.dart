@@ -47,20 +47,32 @@ class _LeaveHistoryBadgeStyle {
 
   factory _LeaveHistoryBadgeStyle.fromStatus(LeaveHistoryStatus status) {
     return switch (status) {
+      LeaveHistoryStatus.waitingSupervisor => const _LeaveHistoryBadgeStyle(
+        label: 'MENUNGGU ATASAN',
+        foreground: AppColors.secondaryBlue,
+        background: Color(0xFFEAF8FD),
+        border: Color(0xFFC6E6F0),
+      ),
+      LeaveHistoryStatus.waitingHRD => const _LeaveHistoryBadgeStyle(
+        label: 'MENUNGGU HRD',
+        foreground: AppColors.secondaryBlue,
+        background: Color(0xFFEAF8FD),
+        border: Color(0xFFC6E6F0),
+      ),
       LeaveHistoryStatus.approved => const _LeaveHistoryBadgeStyle(
-        label: 'Disetujui',
+        label: 'DISETUJUI',
         foreground: AppColors.secondaryBlue,
         background: Color(0xFFEAF8FD),
         border: Color(0xFFC6E6F0),
       ),
       LeaveHistoryStatus.rejected => const _LeaveHistoryBadgeStyle(
-        label: 'Ditolak',
+        label: 'DITOLAK',
         foreground: AppColors.primaryRed,
         background: Color(0xFFFFE7E7),
         border: Color(0xFFF1BDBD),
       ),
       LeaveHistoryStatus.canceled => const _LeaveHistoryBadgeStyle(
-        label: 'Dibatalkan',
+        label: 'DIBATALKAN',
         foreground: Color(0xFF8A8F98),
         background: Color(0xFFF3F4F6),
         border: Color(0xFFD8DCE2),

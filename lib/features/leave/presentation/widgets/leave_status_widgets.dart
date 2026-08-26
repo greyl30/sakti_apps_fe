@@ -348,15 +348,15 @@ class _TimelineItem extends StatelessWidget {
 String _statusTitle(LeaveRequestStatusData data) {
   if (data.skipsSupervisorApproval &&
       data.status == LeaveApprovalStatus.waitingSupervisor) {
-    return 'Menunggu HRD';
+    return 'MENUNGGU HRD';
   }
 
   return switch (data.status) {
-    LeaveApprovalStatus.waitingSupervisor => 'Menunggu Atasan',
-    LeaveApprovalStatus.waitingHRD => 'Menunggu HRD',
-    LeaveApprovalStatus.approved => 'Disetujui',
-    LeaveApprovalStatus.rejected => 'Ditolak',
-    LeaveApprovalStatus.canceled => 'Dibatalkan',
+    LeaveApprovalStatus.waitingSupervisor => 'MENUNGGU ATASAN',
+    LeaveApprovalStatus.waitingHRD => 'MENUNGGU HRD',
+    LeaveApprovalStatus.approved => 'DISETUJUI',
+    LeaveApprovalStatus.rejected => 'DITOLAK',
+    LeaveApprovalStatus.canceled => 'DIBATALKAN',
   };
 }
 

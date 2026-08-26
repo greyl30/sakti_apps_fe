@@ -8,8 +8,7 @@ class ManagerLeaveApprovalRemoteDataSource {
 
   Future<Map<String, dynamic>> getPendingApprovals() async {
     final response = await _dio.get<Map<String, dynamic>>(
-      '/api/leave/all',
-      queryParameters: const {'status': 'menunggu', 'limit': 10, 'page': 1},
+      '/api/leave/approval/list',
     );
 
     return response.data ?? <String, dynamic>{};

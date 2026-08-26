@@ -167,11 +167,10 @@ class LeaveRequestResponse {
 
     if (_isRejectedStatus(normalized)) return LeaveApprovalStatus.rejected;
     if (_isCanceledStatus(normalized)) return LeaveApprovalStatus.canceled;
-    if (_isApprovedStatus(normalized) && isFinalizedByHrd) {
+    if (_isApprovedStatus(normalized)) {
       return LeaveApprovalStatus.approved;
     }
-    if (_isSupervisorApprovedStatus(normalized) ||
-        _isApprovedStatus(normalized)) {
+    if (_isSupervisorApprovedStatus(normalized)) {
       return LeaveApprovalStatus.waitingHRD;
     }
 
@@ -185,11 +184,10 @@ class LeaveRequestResponse {
 
     if (_isRejectedStatus(normalized)) return ApprovalProgress.rejected;
     if (_isCanceledStatus(normalized)) return ApprovalProgress.canceled;
-    if (_isApprovedStatus(normalized) && isFinalizedByHrd) {
+    if (_isApprovedStatus(normalized)) {
       return ApprovalProgress.approved;
     }
-    if (_isSupervisorApprovedStatus(normalized) ||
-        _isApprovedStatus(normalized)) {
+    if (_isSupervisorApprovedStatus(normalized)) {
       return ApprovalProgress.waitingHRD;
     }
     if (normalized == 'submitted' || normalized == 'diajukan') {
@@ -234,17 +232,14 @@ class LeaveRequestResponse {
         normalized == 'waiting_hrd' ||
         normalized == 'menunggu_hrd' ||
         normalized == 'approved_by_supervisor' ||
-        normalized == 'disetujui_atasan' ||
-        (_isApprovedStatus(normalized) && !isFinalizedByHrd);
+        normalized == 'disetujui_atasan';
   }
 
   bool get isHistoryStatus {
     if (isDispensation) return true;
 
     final normalized = status.trim().toLowerCase();
-    return (_isApprovedStatus(normalized) && isFinalizedByHrd) ||
-        normalized == 'finalized' ||
-        normalized == 'difinalisasi' ||
+    return _isApprovedStatus(normalized) ||
         normalized == 'rejected' ||
         normalized == 'ditolak' ||
         normalized == 'cancelled' ||
@@ -253,30 +248,29 @@ class LeaveRequestResponse {
   }
 
   String get statusLabel {
-    if (isDispensation) return 'Disetujui';
+    if (isDispensation) return 'DISETUJUI';
 
     final normalized = status.trim().toLowerCase();
 
-    if (_isApprovedStatus(normalized) && isFinalizedByHrd) {
-      return 'Disetujui';
+    if (_isApprovedStatus(normalized)) {
+      return 'DISETUJUI';
     }
 
     if (normalized == 'rejected' || normalized == 'ditolak') {
-      return 'Ditolak';
+      return 'DITOLAK';
     }
 
     if (normalized == 'cancelled' ||
         normalized == 'canceled' ||
         normalized == 'dibatalkan') {
-      return 'Dibatalkan';
+      return 'DIBATALKAN';
     }
 
-    if (_isSupervisorApprovedStatus(normalized) ||
-        _isApprovedStatus(normalized)) {
-      return 'Menunggu HRD';
+    if (_isSupervisorApprovedStatus(normalized)) {
+      return 'MENUNGGU HRD';
     }
 
-    return 'Dalam Proses';
+    return 'MENUNGGU ATASAN';
   }
 
   LeaveRequestStatusData toStatusData({
@@ -390,7 +384,15 @@ LeaveHistoryStatus _mapApiStatusToHistoryStatus(String value) {
     return LeaveHistoryStatus.canceled;
   }
 
-  return LeaveHistoryStatus.approved;
+  if (_isSupervisorApprovedStatus(normalized)) {
+    return LeaveHistoryStatus.waitingHRD;
+  }
+
+  if (_isApprovedStatus(normalized)) {
+    return LeaveHistoryStatus.approved;
+  }
+
+  return LeaveHistoryStatus.waitingSupervisor;
 }
 
 bool _isApprovedStatus(String normalized) {

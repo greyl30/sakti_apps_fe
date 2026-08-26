@@ -92,7 +92,7 @@ class ProfilePage extends ConsumerWidget {
                               ref,
                               telegramUserId,
                             )
-                          : () => context.push(RouteName.telegramConnect),
+                          : () => _openTelegramConnect(context, ref, telegramUserId),
                     ),
                     const SizedBox(height: 16),
                   ],
@@ -119,6 +119,19 @@ class ProfilePage extends ConsumerWidget {
         ),
       ),
     );
+  }
+
+  Future<void> _openTelegramConnect(
+    BuildContext context,
+    WidgetRef ref,
+    String userId,
+  ) async {
+    final result = await context.push<bool>(RouteName.telegramConnect);
+    if (!context.mounted) return;
+
+    if (result == true) {
+      await ref.read(telegramProvider(userId).notifier).refreshStatus();
+    }
   }
 
   void _showLogoutDialog(BuildContext context, WidgetRef ref) {

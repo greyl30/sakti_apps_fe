@@ -1,4 +1,10 @@
-enum LeaveHistoryStatus { approved, rejected, canceled }
+enum LeaveHistoryStatus {
+  waitingSupervisor,
+  waitingHRD,
+  approved,
+  rejected,
+  canceled,
+}
 
 class LeaveHistoryModel {
   const LeaveHistoryModel({

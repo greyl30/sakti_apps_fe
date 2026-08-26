@@ -396,6 +396,10 @@ String _historyStatusIcon(String statusLabel) {
     return AppAssets.iconNo;
   }
 
+  if (normalized.startsWith('menunggu')) {
+    return AppAssets.iconPending;
+  }
+
   return AppAssets.iconCheck;
 }
 
