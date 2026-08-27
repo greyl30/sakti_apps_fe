@@ -120,7 +120,7 @@ final calendarLeaveRequestsProvider = FutureProvider<List<LeaveRequestResponse>>
 
   final uniqueRequests = _uniqueLeaveRequests(requests);
   debugPrint(
-    '[CalendarLeave] userId=$userId, raw=${requests.length}, '
+    '[CalendarLeave] hasUser=${userId != null && userId.isNotEmpty}, raw=${requests.length}, '
     'unique=${uniqueRequests.length}',
   );
 
@@ -410,7 +410,8 @@ class LeaveLetterDownloadNotifier
     } on PlatformException catch (error) {
       debugPrint(
         'Leave letter save platform error: '
-        'code=${error.code}, message=${error.message}, details=${error.details}',
+        'code=${error.code}, hasMessage=${error.message != null}, '
+        'hasDetails=${error.details != null}',
       );
       state = LeaveLetterDownloadState(
         errorMessage: error.message ?? 'Gagal menyimpan surat ke Downloads.',

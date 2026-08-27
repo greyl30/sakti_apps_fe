@@ -37,7 +37,7 @@ class ResetPasswordDeepLinkService {
   static Future<void> _handleInitialLink() async {
     try {
       final uri = await _appLinks.getInitialLink();
-      debugPrint('Reset password initial deep link raw value: $uri');
+      debugPrint('Reset password initial deep link available: ${uri != null}');
       if (uri != null) {
         _handleUri(uri, source: 'Initial');
       }
@@ -59,7 +59,7 @@ class ResetPasswordDeepLinkService {
     debugPrint(
       '$source reset password deep link token found: ${token.isNotEmpty}',
     );
-    debugPrint('$source reset password deep link navigating to: $location');
+    debugPrint('$source reset password deep link navigating to reset page.');
 
     appRouter.go(location);
   }

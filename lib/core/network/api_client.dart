@@ -7,12 +7,18 @@ class ApiClient {
   ApiClient._();
 
   static Future<void> Function(String message)? onAccountInactive;
+  static Future<void> Function(String message)? onUnauthorized;
   static bool _isHandlingAccountInactive = false;
+  static bool _isHandlingUnauthorized = false;
 
   static final Dio dio = _createDio();
 
   static void resetAccountInactiveHandling() {
     _isHandlingAccountInactive = false;
+  }
+
+  static void resetUnauthorizedHandling() {
+    _isHandlingUnauthorized = false;
   }
 
   static Dio _createDio() {
@@ -46,6 +52,8 @@ class ApiClient {
         onError: (error, handler) async {
           if (_isAccountInactiveError(error)) {
             await _handleAccountInactive(error);
+          } else if (_isUnauthorizedError(error)) {
+            await _handleUnauthorized();
           }
 
           handler.next(error);
@@ -71,6 +79,11 @@ class ApiClient {
     return false;
   }
 
+  static bool _isUnauthorizedError(DioException error) {
+    if (error.requestOptions.extra['skipAuth'] == true) return false;
+    return error.response?.statusCode == 401;
+  }
+
   static Future<void> _handleAccountInactive(DioException error) async {
     if (_isHandlingAccountInactive) return;
 
@@ -83,5 +96,12 @@ class ApiClient {
           ? 'Akun Anda sudah tidak aktif. Silakan hubungi administrator.'
           : message,
     );
+  }
+
+  static Future<void> _handleUnauthorized() async {
+    if (_isHandlingUnauthorized) return;
+
+    _isHandlingUnauthorized = true;
+    await onUnauthorized?.call('Sesi berakhir. Silakan login kembali.');
   }
 }

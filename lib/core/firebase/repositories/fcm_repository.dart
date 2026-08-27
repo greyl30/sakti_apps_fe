@@ -14,7 +14,6 @@ class FcmRepository {
   Future<void> registerToken(FcmTokenRegistrationRequest request) async {
     try {
       debugPrint('FCM register request: POST /api/fcm/register');
-      debugPrint('FCM register body: ${request.toJson()}');
       final response = await _remoteDataSource.registerToken(request);
       if (response['success'] == true) return;
 
@@ -53,13 +52,13 @@ class FcmRepository {
     if (responseData is Map<String, dynamic>) {
       final message = responseData['message']?.toString().trim();
       if (message != null && message.isNotEmpty) {
-        return '$message (status: ${error.response?.statusCode}, response: $responseData)';
+        return '$message (status: ${error.response?.statusCode})';
       }
-      return 'Gagal menyimpan FCM token. (status: ${error.response?.statusCode}, response: $responseData)';
+      return 'Gagal menyimpan FCM token. (status: ${error.response?.statusCode})';
     }
 
     if (responseData != null) {
-      return 'Gagal menyimpan FCM token. (status: ${error.response?.statusCode}, response: $responseData)';
+      return 'Gagal menyimpan FCM token. (status: ${error.response?.statusCode})';
     }
 
     final statusCode = error.response?.statusCode;

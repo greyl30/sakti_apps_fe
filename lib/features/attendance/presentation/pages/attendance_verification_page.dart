@@ -333,13 +333,14 @@ class _CheckInVerificationPageState extends State<CheckInVerificationPage>
 
       // Response presensi disimpan sementara untuk kebutuhan UI/data step berikutnya.
       debugPrint('Attendance response received, preparing success flow.');
-      debugPrint('Captured attendance photo: ${_capturedPhoto!.path}');
       debugPrint(
-        'Resized attendance photo: ${_resizedPhoto!.path} '
-        '($resizedPhotoSize bytes)',
+        'Resized attendance photo prepared '
+        '($resizedPhotoSize bytes).',
       );
-      debugPrint('Uploaded attendance image URL: $_uploadedImageUrl');
-      debugPrint('Attendance response data: ${_attendanceResponse!.data}');
+      debugPrint('Attendance image uploaded successfully.');
+      debugPrint(
+        'Attendance response parsed: success=${_attendanceResponse!.success}',
+      );
       try {
         ProviderScope.containerOf(
           context,
@@ -424,10 +425,7 @@ class _CheckInVerificationPageState extends State<CheckInVerificationPage>
     required double latitude,
     required double longitude,
   }) {
-    debugPrint(
-      'Attendance request location (${DateTime.now().toIso8601String()}): '
-      'latitude=$latitude, longitude=$longitude',
-    );
+    debugPrint('Attendance request location acquired.');
   }
 
   Future<bool> _prepareCurrentLocation() async {

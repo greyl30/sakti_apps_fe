@@ -149,11 +149,10 @@ class AttendanceRepository {
   }
 
   AttendanceSubmitResponse _mapSubmitResponse(Map<String, dynamic> data) {
-    debugPrint('AttendanceSubmitResponse parse start: $data');
     final response = AttendanceSubmitResponse.fromJson(data);
     debugPrint(
       'AttendanceSubmitResponse parse success: '
-      'success=${response.success}, data=${response.data}',
+      'success=${response.success}',
     );
     if (response.success) return response;
 

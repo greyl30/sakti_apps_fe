@@ -26,10 +26,10 @@ class AppFirebaseMessagingService {
       'FCM notification permission: ${settings.authorizationStatus.name}',
     );
 
-    await _logCurrentToken(messaging);
+    await _logCurrentTokenAvailability(messaging);
 
     FirebaseMessaging.instance.onTokenRefresh.listen((token) {
-      debugPrint('FCM token refreshed: $token');
+      debugPrint('FCM token refreshed.');
       registerToken(token);
     });
   }
@@ -72,7 +72,9 @@ class AppFirebaseMessagingService {
     }
   }
 
-  static Future<void> _logCurrentToken(FirebaseMessaging messaging) async {
+  static Future<void> _logCurrentTokenAvailability(
+    FirebaseMessaging messaging,
+  ) async {
     try {
       final token = await messaging.getToken();
       if (token == null || token.isEmpty) {
@@ -80,9 +82,9 @@ class AppFirebaseMessagingService {
         return;
       }
 
-      debugPrint('FCM token: $token');
-    } catch (error, stackTrace) {
-      debugPrint('Gagal mengambil FCM token: $error');
+      debugPrint('FCM token tersedia.');
+    } catch (_, stackTrace) {
+      debugPrint('Gagal mengambil FCM token.');
       debugPrintStack(stackTrace: stackTrace);
     }
   }

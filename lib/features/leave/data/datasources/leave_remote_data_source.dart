@@ -30,7 +30,6 @@ class LeaveRemoteDataSource {
 
     debugPrint('[LeaveStatus] URL: ${response.realUri}');
     debugPrint('[LeaveStatus] status: ${response.statusCode}');
-    debugPrint('[LeaveStatus] body: ${response.data}');
     return response.data ?? <String, dynamic>{};
   }
 
@@ -45,7 +44,6 @@ class LeaveRemoteDataSource {
 
       debugPrint('[LeaveHoliday] URL: ${response.realUri}');
       debugPrint('[LeaveHoliday] status: ${response.statusCode}');
-      debugPrint('[LeaveHoliday] body: ${response.data}');
 
       return response.data ?? <String, dynamic>{};
     } on DioException catch (error) {
@@ -56,7 +54,6 @@ class LeaveRemoteDataSource {
       );
       debugPrint('[LeaveHoliday] error type: ${error.type}');
       debugPrint('[LeaveHoliday] status: ${error.response?.statusCode}');
-      debugPrint('[LeaveHoliday] response body: ${error.response?.data}');
       debugPrint('[LeaveHoliday] raw error: ${error.error}');
       rethrow;
     }

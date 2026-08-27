@@ -33,7 +33,7 @@ class _CheckInLoadingPageState extends State<CheckInLoadingPage> {
     debugPrint(
       'AttendanceLoadingPage start: '
       'flow=${widget.flowType}, hasResponse=${widget.response != null}, '
-      'extraData=${widget.response?.data}',
+      'success=${widget.response?.success}',
     );
 
     // Loading verifikasi sementara sebelum masuk halaman berhasil.

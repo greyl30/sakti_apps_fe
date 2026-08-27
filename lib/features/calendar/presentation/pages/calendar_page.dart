@@ -153,11 +153,7 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
       final markerDecision = _requestMarkerDecision(request);
       if (_requestOverlapsMonth(request, _visibleMonth)) {
         debugPrint(
-          '[CalendarMarker][$visibleMonthLabel] id=${request.id}, '
-          'subType=${request.subType}, status=${request.status}, '
-          'start=${request.startDate.toIso8601String()}, '
-          'end=${request.endDate.toIso8601String()}, '
-          'visibleMonth=${_visibleMonth.toIso8601String()}, '
+          '[CalendarMarker][$visibleMonthLabel] request overlaps visible month, '
           'decision=$markerDecision',
         );
       }
@@ -179,12 +175,12 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
           );
           debugPrint(
             '[CalendarMarker][$visibleMonthLabel] added '
-            '${current.toIso8601String()} for id=${request.id}',
+            '${current.toIso8601String()}',
           );
         } else if (sameMonth) {
           debugPrint(
             '[CalendarMarker][$visibleMonthLabel] skipped '
-            '${current.toIso8601String()} for id=${request.id}, '
+            '${current.toIso8601String()}, '
             'weekend=$weekend, holiday=$holiday, occupied=$occupied',
           );
         }

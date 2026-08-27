@@ -38,6 +38,19 @@ void main() async {
         ..showSnackBar(SnackBar(content: Text(message)));
     });
   };
+  ApiClient.onUnauthorized = (message) async {
+    await providerContainer
+        .read(authProvider.notifier)
+        .handleSessionExpired(message);
+    appRouter.go(RouteName.login);
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final messenger = rootScaffoldMessengerKey.currentState;
+      messenger
+        ?..hideCurrentSnackBar()
+        ..showSnackBar(SnackBar(content: Text(message)));
+    });
+  };
 
   runApp(
     UncontrolledProviderScope(

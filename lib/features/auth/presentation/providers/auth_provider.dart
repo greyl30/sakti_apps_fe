@@ -73,6 +73,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
       }
       state = state.copyWith(isLoading: false, user: user);
       ApiClient.resetAccountInactiveHandling();
+      ApiClient.resetUnauthorizedHandling();
       await AppFirebaseMessagingService.registerCurrentToken();
       return true;
     } on AuthException catch (error) {
@@ -174,6 +175,12 @@ class AuthNotifier extends StateNotifier<AuthState> {
   }
 
   Future<void> handleAccountInactive(String message) async {
+    _clearCurrentUserScopedState();
+    await _repository.logout();
+    state = AuthState(errorMessage: message);
+  }
+
+  Future<void> handleSessionExpired(String message) async {
     _clearCurrentUserScopedState();
     await _repository.logout();
     state = AuthState(errorMessage: message);

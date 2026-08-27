@@ -20,7 +20,6 @@ class AttendanceHistoryRemoteDataSource {
     );
 
     debugPrint('[AttendanceHistory] HTTP status: ${response.statusCode}');
-    debugPrint('[AttendanceHistory] Raw response: ${response.data}');
     final responseBody = response.data ?? <String, dynamic>{};
     final rawData = responseBody['data'];
     final rawItems = rawData is Map ? rawData['items'] : null;

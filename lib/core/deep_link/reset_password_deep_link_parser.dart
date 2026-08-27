@@ -31,10 +31,13 @@ String resetPasswordLocationFromUri(Uri uri) {
 }
 
 void logResetPasswordDeepLink(String source, Uri uri) {
-  debugPrint('$source reset password deep link full URL: $uri');
   debugPrint('$source reset password deep link scheme: ${uri.scheme}');
   debugPrint('$source reset password deep link host: ${uri.host}');
   debugPrint('$source reset password deep link path: ${uri.path}');
-  debugPrint('$source reset password deep link query: ${uri.query}');
-  debugPrint('$source reset password deep link fragment: ${uri.fragment}');
+  debugPrint(
+    '$source reset password deep link has query: ${uri.query.isNotEmpty}',
+  );
+  debugPrint(
+    '$source reset password deep link has fragment: ${uri.fragment.isNotEmpty}',
+  );
 }
